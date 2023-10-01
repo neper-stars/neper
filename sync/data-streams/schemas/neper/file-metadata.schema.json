@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/file-metadata.schema.json",
+  "title": "file-metadata",
+  "description": "A file metadata",
+  "version": "0.2.0",
+  "type": "object",
+  "properties": {
+    "size": {
+      "type": "integer",
+      "description": "The file size in bytes"
+    },
+    "type": {
+      "type": "string",
+      "description": "The file mimetype"
+    },
+    "customtype": {
+      "type": "string",
+      "description": "A application-specific file type"
+    },
+    "filename": {
+      "type": "string",
+      "description": "The file name"
+    },
+    "encoding": {
+      "type": "string",
+      "description": "The file encoding"
+    },
+    "hash": {
+      "type": "array",
+      "description": "The file hashes",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "location": {
+      "$ref": "#/definitions/location",
+      "description": "The file body actual location"
+    }
+  },
+  "definitions": {
+    "location": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The location type",
+          "enum": [
+            "embedded",
+            "http",
+            "s3"
+          ]
+        },
+        "objectid": {
+          "type": "string",
+          "description": "'s3' location only"
+        },
+        "region": {
+          "type": "string",
+          "description": "'s3' location only"
+        },
+        "bucket-name": {
+          "type": "string",
+          "description": "'s3' location only"
+        },
+        "provider": {
+          "type": "string",
+          "description": "'s3' location only"
+        }
+      }
+    }
+  }
+}

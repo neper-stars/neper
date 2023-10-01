@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/invitation.schema.json",
+  "$$target": "https://neper.io/messages/schemas/v1/neper/invitation.schema.json",
+  "title": "invitation",
+  "description": "invitation",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "__type__": {
+      "description": "data type",
+      "type": "string",
+      "enum": [
+        "invitation"
+      ]
+    },
+    "id": {
+      "description": "unique record id",
+      "type": "string"
+    },
+    "user_profile_id": {
+      "description": "user profile id of the invited person",
+      "type": "string"
+    },
+    "session_id": {
+      "description": "session on which the invitation is",
+      "type": "string"
+    }
+  },
+  "required": [
+    "__type__",
+    "id",
+    "user_profile_id",
+    "session_id"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session",
+        "id": "gondorID",
+        "name": "Gondor"
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session",
+        "id": "shireID",
+        "name": "The Shire"
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session",
+        "id": "isengardID",
+        "name": "Isengard"
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "merryID",
+        "nickname": "Merry",
+        "email": "merry@shire.com",
+        "api_key": "apikeyMerry",
+        "is_active": true,
+        "is_manager": false
+      }
+    }
+  ]
+}

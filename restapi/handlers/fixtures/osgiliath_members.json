@@ -1,0 +1,28 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "faramirID",
+        "nickname": "Faramir",
+        "email": "faramir@gondor.com",
+        "api_key": "apikeyFaramir",
+        "is_active": true,
+        "is_manager": false
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "princeImrahilID",
+        "nickname": "Imrahil",
+        "email": "imrahil@gondor.com",
+        "api_key": "apikeyImrahil",
+        "is_active": true,
+        "is_manager": false
+      }
+    }
+  ]
+}

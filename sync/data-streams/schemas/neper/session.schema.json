@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/session.schema.json",
+  "$$target": "https://neper.io/messages/schemas/v1/neper/session.schema.json",
+  "title": "session",
+  "description": "session",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "__type__": {
+      "description": "data type",
+      "type": "string",
+      "enum": [
+        "session"
+      ]
+    },
+    "id": {
+      "description": "unique record id",
+      "type": "string"
+    },
+    "name": {
+      "description": "name",
+      "type": "string"
+    },
+    "private": {
+      "description": "if the session is private only managers can add new members. The session will not be publicly listed.",
+      "type": "boolean"
+    },
+    "members": {
+      "description": "list of member IDs represented as a user_profile_session_rel, sessionID is optional",
+      "type": "array",
+      "items": {
+        "$ref": "https://neper.io/messages/schemas/v1/neper/user_profile_session_rel.schema.json"
+      }
+    }
+  },
+  "required": [
+    "__type__",
+    "id",
+    "name"
+  ]
+}

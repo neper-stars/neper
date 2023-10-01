@@ -1,0 +1,369 @@
+definitions:
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    example: {
+        "code": 500,
+        "message": "Internal error"
+    }
+
+  validation-errors:
+    type: array
+    items:
+      type: object
+      x-nullable: false
+      properties:
+        phase:
+          type: string
+        rule:
+          type: string
+        field:
+          type: string
+        message:
+          type: string
+
+  file:
+    type: object
+    properties:
+      type:
+        type: string
+        description: the file mimetype
+      size:
+        type: integer
+        description: the file size in bytes
+      filename:
+        type: string
+        description: the file name
+      encoding:
+        type: string
+        description: the file encoding if meaningful
+      location:
+        $ref: '#/definitions/location'
+      hash:
+        type: array
+        items:
+          type: string
+
+  session:
+    type: object
+    properties:
+      id:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"id"
+        x-nullable: false
+      name:
+        type: string
+        description: name
+        x-go-custom-tag: db:"name"
+        x-nullable: false
+      private:
+        type: boolean
+        description: if the session is private only the managers can add new members
+        x-go-custom-tag: db:"private"
+        x-nullable: false
+      members:
+        type: array
+        description: array of member ids
+        items:
+          type: string
+      managers:
+        type: array
+        description: array of manager ids
+        items:
+          type: string
+    required:
+      - name
+
+  invitation:
+    type: object
+    properties:
+      id:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"id"
+        x-nullable: false
+      session_id:
+        type: string
+        description: "the session id for which this invitation is."
+        x-go-custom-tag: db:"session_id"
+        x-nullable: false
+      user_profile_id:
+        type: string
+        description: "the user profile this invitation is addressed to."
+        x-go-custom-tag: db:"user_profile_id"
+        x-nullable: false
+
+  user_profile:
+    type: object
+    properties:
+      id:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"id"
+        x-nullable: false
+      nickname:
+        type: string
+        description: user nickname (name displayed to other users)
+        x-go-custom-tag: db:"nickname"
+        x-nullable: false
+      email:
+        type: string
+        description: user primary email
+        x-go-custom-tag: db:"email"
+        x-nullable: false
+      is_active:
+        type: boolean
+        description: "true if the profile is active, ie the user can identify itself"
+        readOnly: true
+        x-go-custom-tag: db:"is_active"
+        x-nullable: false
+      is_manager:
+        type: boolean
+        description: "true if the profile is a global manager. This field is readonly"
+        readOnly: true
+        x-go-custom-tag: db:"is_manager"
+        x-nullable: false
+
+    required:
+      - firstname
+      - lastname
+      - email
+
+  session_player_race:
+    type: object
+    description: "a binding between a player race and a session. The host can also choose the player order."
+    properties:
+      session_id:
+        type: string
+        description: "the session id on which this race will be used. This value is automatically set by the server."
+        readOnly: true
+        x-go-custom-tag: db:"session_id"
+        x-nullable: true
+      user_profile_id:
+        type: string
+        description: "the user profile is automatically set if you are a simple player. Only hosts can set this value to something different"
+        x-go-custom-tag: db:"user_profile_id"
+        x-nullable: true
+      player_order:
+        type: integer
+        description: |
+          The order number for this player. Only the host can set this value.
+          As there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15
+        x-go-custom-tag: db:"player_order"
+        x-nullable: false
+        minimum: 0
+        maximum: 15
+      race_id:
+        type: string
+        description: |
+          the race ID you will use during this session
+          For a normal player you must use the ID of a race file you previously uploaded
+          in your user profile.
+          
+          If the host is adding a bot player here is the list of race ids to chose from:
+            "0"=Random
+            "1"=Robotoids
+            "2"=Turndrones
+            "3"=Automitrons
+            "4"=Rototills
+            "5"=Cybertrons
+            "6"=Mcinti
+        x-go-custom-tag: db:"race_id"
+        x-nullable: true
+      is_bot:
+        type: boolean
+        description: |
+          if this player race should be player by a bot.
+          If this value is true then you need to provide the bot_level.
+          If this value is false any value given in the bot_level will be ignored
+      bot_level:
+        type: integer
+        minimum: 0
+        maximum: 4
+        description: |
+          if the player is a bot, the host can set a level with this field:
+            0=Random
+            1=Easy
+            2=Standard
+            3=Tough
+            4=Expert
+        x-go-custom-tag: db:"bot_level"
+        x-nullable: true
+
+  ruleset:
+    type: object
+    description: "a ruleset that will be applied during a session"
+    properties:
+      universe_size:
+        type: integer
+        minimum: 0
+        maximum: 4
+        description: |
+          0: Tiny
+          1: Small
+          2: Medium
+          3: Large
+          4: Huge
+        x-go-custom-tag: db:"universe_size"
+        x-nullable: false
+      density:
+        type: integer
+        minimum: 0
+        maximum: 3
+        description: |
+          0: Sparse
+          1: Normal
+          2: Dense
+          3: Packed
+        x-go-custom-tag: db:"density"
+        x-nullable: false
+      starting_distance:
+        type: integer
+        minimum: 0
+        maximum: 3
+        description: |
+          0: Close
+          1: Moderate
+          2: Farther
+          3: Distant
+        x-go-custom-tag: db:"starting_distance"
+        x-nullable: false
+      random_seed:
+        type: integer
+        description: |
+          The optional Random Seed number forces the universe to be created exactly the same each time, if you use the same Seed number.
+        x-go-custom-tag: db:"random_seed"
+        x-nullable: false
+      maximum_minerals:
+        type: boolean
+        x-go-custom-tag: db:"maximum_minerals"
+        description: |
+          This makes every world in the game start with maximum mineral concentrations,
+          extending the game. If players don't have to worry about running out of
+          minerals too soon, they will build their empire and remain relatively comfortable,
+          unless provoked by another player.
+          
+          Note: A lot of players DO NOT like this parameter, being that it is pretty unrealistic
+      slower_tech_advances:
+        type: boolean
+        x-go-custom-tag: db:"slower_tech_advances"
+        description: |
+          Controls the length of the game.
+          
+          This choice doubles the amount of resources necessary to achieve new technology.
+          It gives players more time to utilize their existing technology before new tech. comes along.
+          This usually means that players will build more ships of any particular class,
+          creating dilemmas when their "slots" are full (16 designs).
+          For Beginners: Due to the advanced planning of ship designs (what to build, when to build, how many),
+          a host may not want to use this if designing a game for exclusively beginning level players.
+      accelerated_bbs_play:
+        type: boolean
+        x-go-custom-tag: db:"accelerated_bbs_play"
+        description: |
+          Controls the length of the game and STRONGLY recommended.
+
+          This feature advances the game by "advancing" the start time.
+          Although the game will still start in the year 2400, all players will have built-up
+          some minerals and population with this option.
+          This speeds up the time taken to actually build your first vessels and to make
+          contact with other players.
+          Most players prefer this option.
+      no_random_events:
+        type: boolean
+        x-go-custom-tag: db:"no_random_events"
+        description: |
+          Evens the flow of the game.
+          
+          This choice eliminates hidden mineral concentrations, the Mystery Trader, meteor impacts,
+          and left-over tech. artifacts.
+          If you want all players to be on an even par throughout the game, this is the item to choose.
+          For pre-genned games: If you plan to start the game later in the timeline,
+          be warned about the possibility of a meteor hitting a player's home-world prior to game start.
+          If this happens, you should immediately re-start the game.
+      computer_players_form_alliances:
+        type: boolean
+        x-go-custom-tag: db:"computer_players_form_alliances"
+        description: |
+          For Advanced players only.
+          
+          Computer players will only attack human players, not other AIs.
+          The effectiveness of this parameter is decided by the number of computer AIs in the game.
+          If you only have one or two, this will not make much of a difference in the game.
+          However, with three or more AIs against Advanced level players, this parameter should definitely
+          be chosen, since Advanced players already know how to beat the AIs hands-down.
+      public_player_scores:
+        type: boolean
+        x-go-custom-tag: db:"public_player_scores"
+        description: |
+          Alters game strategy.
+          
+          If players know who is ahead in the game, they are more likely to immediately ally
+          in order to stop the lead player.
+          This leads to very interesting game play, revolving around alliances and back-stabbing.
+          Not having this option forces players to construct large information gathering infrastructures,
+          in order to ascertain the strengths of their opponents.
+      galaxy_clumping:
+        type: boolean
+        x-go-custom-tag: db:"galaxy_clumping"
+        description: |
+          Alters game playing strategy.
+          
+          The clumping of planets switches the focus of the game over from controlling individual worlds,
+          to controlling entire star clusters. This is more realistic.
+          However: Many players dislike the fact that planet names have a tendency to print on top of other names,
+          making it a real pain to quickly locate particular worlds.
+
+  race:
+    type: object
+    description: |
+      a race is the race file obtained by using the customize race wizard in stars.
+      It will be uploaded and stored linked to a user profile in order to be used during a session setup.
+    properties:
+      id:
+        type: string
+        description: "auto generated unique id for this race file. This is the string representation of a uuid4."
+        readOnly: true
+        x-go-custom-tag: db:"id"
+        x-nullable: false
+      user_id:
+        type: string
+        readOnly: true
+        description: "the user id this race belongs to, this is auto filled with the user profile id of the uploader"
+        x-go-custom-tag: db:"user_id"
+        x-nullable: false
+      name_singular:
+        type: string
+        readOnly: true
+        description: "the singular race name is auto extracted from the uploaded race file"
+        x-go-custom-tag: db:"name_singular"
+        x-nullable: false
+      name_plural:
+        type: string
+        readOnly: true
+        description: "the plural race name is auto extracted from the uploaded race file"
+        x-go-custom-tag: db:"name_plural"
+        x-nullable: false
+      data:
+        type: string
+        description: |
+          race file data as it was uploaded.
+          This is generally saved by the user as something like "my_race_name.r1"
+          This allows the user the re-download the file later on.
+          This is also used when a user enters a session to generate the game files.
+        x-go-custom-tag: db:"data"
+        x-nullable: false
+
+  decimal:
+    type: number
+    multipleOf: 0.01
+    x-go-type:
+      type: Decimal
+      import:
+        package: github.com/neper-stars/neper/models/types

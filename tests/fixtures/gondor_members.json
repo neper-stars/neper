@@ -1,0 +1,34 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "boromirID",
+        "nickname": "BoromirDúnedain",
+        "email": "boromir@gondor.com",
+        "api_key": "apikeyBoromir",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [
+          {"session_id":  "gondorID", "is_manager":  true}
+        ]
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "finduilasID",
+        "nickname": "FinduilasDúnedain",
+        "email": "finduilas@gondor.com",
+        "api_key": "apikeyFinduilas",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [
+          {"session_id":  "gondorID", "is_manager":  false}
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+syntax: glob
+
+# task cache files should not be versionned ever
+.task/
+
+# tools are fetched from tasks on every work station
+tools/bin
+tools/venv
+
+# build and deps are locally generated and fetched
+build
+dependencies
+
+# TEST_VARS is the local way of tweaking TEST_VARS.sample
+TEST_VARS
+
+# config file as examplified in README
+config.ini
+
+# this file is generated (?)
+tests/data.json
+
+# bindata.go is always generated during build, never versionned
+# they contain heavy assets (like the whole UI) and thus do not have
+# their rightful place in our DVCS content
+restapi/bindata.go
+restapi/docs/bindata.go
+
+docs/_build
+docs/test-cases/
+
+# special editor cruft
+.idea
+*.swp

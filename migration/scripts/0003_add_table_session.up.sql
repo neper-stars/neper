@@ -1,0 +1,5 @@
+CREATE TABLE session (
+    id VARCHAR PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    private BOOLEAN NOT NULL DEFAULT false
+)

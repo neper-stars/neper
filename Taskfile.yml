@@ -1,0 +1,165 @@
+# this is a taskfile and is used with the dev tool named task
+# you can install this tool with the following command:
+# env GO111MODULE=on go get -u github.com/go-task/task/v3/cmd/task
+# if you want to use it in a CI build script chain you can just use
+# this
+#go install github.com/go-task/task/v3/cmd/task@latest
+
+---
+
+version: '3'
+
+vars:
+  EXE: neper{{exeExt}}
+  OUTPUT: "build/{{.EXE}}"
+  GOSWAGGER_VERSION: v0.27.0
+  GOSWAGGER_BIN: tools/bin/swagger-{{.GOSWAGGER_VERSION}}
+  SWAGGER_TO_ELM_BIN: node_modules/.bin/swagger-to-elm
+  GO_ORUSAPI: dependencies/go-orusapi
+  ROOTDIR:
+    sh: realpath .
+  NODE_BIN: "{{.ROOTDIR}}/node_modules/.bin"
+  ELM: "{{.NODE_BIN}}/elm"
+  UGLIFYJS: "{{.NODE_BIN}}/uglifyjs"
+  GOLANGCI_LINT_VERSION: v1.54.2
+  GOLANGCI_LINT_BASE: tools/bin/golangci-lint
+  GOLANGCI_LINT_BIN: "{{.GOLANGCI_LINT_BASE}}-{{.GOLANGCI_LINT_VERSION}}"
+  GOLANGCI_LINT_ARGS:
+  GOOS:
+    sh: uname | tr '[:upper:]' '[:lower:]'
+
+tasks:
+  default:
+    cmds:
+      - task: build-dev
+
+  run:
+    desc: Build and run the app
+    cmds:
+      - task: build-all
+      - ./{{.OUTPUT}} -c config.ini serve -vvv
+
+  run-ui:
+    desc: run the ui in development mode
+    cmds:
+      - (cd ui && elm-live --port 1234 --dir public --pushstate -- src/Main.elm --output public/dist/elm.min.js --debug)
+
+  build:
+    desc: Build the final app
+    cmds:
+      - |
+        CGO_ENABLED=0 GOOS={{.GOOS}} GOARCH=amd64 go build \
+        -a -tags netgo \
+        -ldflags "-X 'github.com/neper-stars/neper/lib.version=${CI_COMMIT_TAG}' -X 'github.com/neper-stars/neper/lib.commitSha=$(hg id -i --debug)' -X 'github.com/neper-stars/neper/lib.buildDate=$(date)' -w -extldflags "-static"" \
+        -o {{.OUTPUT}} \
+        ./cmd/neper
+
+  build-dev:
+    desc: Build the app
+    cmds:
+      - go build -v -o {{.OUTPUT}} ./cmd/neper
+
+  build-all:
+    desc: Build the app and all its dependencies
+    deps: [generate-all]
+    cmds:
+      - task: build
+
+  test:
+    desc: Run the tests
+    deps: []
+    cmds:
+      - go test ./...
+
+  fetch-govulncheck:
+    desc: fetch govulncheck
+    cmds:
+      - go install golang.org/x/vuln/cmd/govulncheck@latest
+
+  vulncheck:
+    desc: search for known vulnerabilities in our code and our libraries
+    deps: [fetch-govulncheck]
+    cmds:
+      - "govulncheck ./..."
+
+  dl-deps:
+    run: once
+    desc: Install tools required to build this app
+    cmds:
+      - task: go-get
+        vars: {REPO: github.com/tdewolff/minify/cmd/minify}
+    status:
+      - test -x $(which minify)
+
+  go-get:
+    cmds:
+      - go get -u {{.REPO}}
+
+  go-swagger:
+    run: once
+    desc: Get go swagger
+    cmds:
+      - mkdir -p tools/bin
+      - tools/download_swagger.sh {{.GOSWAGGER_VERSION}} {{.GOSWAGGER_BIN}}
+    status:
+      - test -x {{.GOSWAGGER_BIN}}
+
+  generate-all:
+    desc: meta task to generate all things that need code generation in one command
+    deps: [generate-migration, generate-swagger, generate-models, generate-sync]
+
+  generate-migration:
+    run: once
+    desc: run go generate on the migration package
+    deps: []
+    cmds:
+      - go generate ./migration
+    sources:
+      - migration/scripts/*.sql
+    generates:
+      - migration/bindata.go
+
+  generate-models:
+    desc: run go generate on the models package to produce db helpers
+    deps: [generate-swagger]
+    cmds:
+      - go generate ./models
+    sources:
+      - models/*.go
+      - dependencies/go-orusapi/scripts/generate_db_helpers.go
+    generates:
+      - models/db_helpers.go
+
+  fetch-golangci-lint:
+    desc: fetch golangci-lint tool
+    cmds:
+      - mkdir -p tools/bin
+      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b tools/bin {{.GOLANGCI_LINT_VERSION}}
+      - mv {{.GOLANGCI_LINT_BASE}} {{.GOLANGCI_LINT_BIN}}
+    status:
+      - test -x {{.GOLANGCI_LINT_BIN}}
+    generates:
+      - "{{.GOLANGCI_LINT_BIN}}"
+
+  lint:
+    desc: lint our golang code to make sure we catch as much errors as possible
+    deps: [fetch-golangci-lint]
+    cmds:
+      - "{{.GOLANGCI_LINT_BIN}} run {{.GOLANGCI_LINT_ARGS}}"
+
+  generate-swagger:
+    desc: run the swagger tool to generate our models based on the API definition
+    deps: [go-swagger]
+    cmds:
+      - rm -rf restapi/operations
+      - ./{{.GOSWAGGER_BIN}} generate server -A Neper -P models.Principal --config-file {{.GO_ORUSAPI}}/server.yaml --spec neper-api.yaml --template-dir {{.GO_ORUSAPI}}/templates
+      - sed 's/restapi.SwaggerJSON/restapi.GetFlatSwaggerJSON()/' -i cmd/neper/cmd/serve.go
+      - sed 's/restapi.FlatSwaggerJSON/restapi.GetFlatSwaggerJSON()/' -i cmd/neper/cmd/serve.go
+      - python3 tools/fix-models.py
+
+  generate-sync:
+    desc: generate messages from json schema definitions (see sync/data-streams/schemas/neper for more info)
+    deps: []
+    cmds:
+      - (cd ./dependencies/json-schema-generate && go build -o ../../tools/bin/schema-generate ./cmd/schema-generate)
+      - go generate ./sync

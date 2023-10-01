@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/user_profile_session_rel.schema.json",
+  "$$target": "https://neper.io/messages/schemas/v1/neper/user_profile_session_rel.schema.json",
+  "title": "UserProfileSessionRel",
+  "description": "user profile session relation table",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "description": "id of the session",
+      "type": "string"
+    },
+    "user_profile_id" : {
+      "description": "id of the user",
+      "type": "string"
+    },
+    "is_manager": {
+      "description": "if the user is manager for this session",
+      "type": "boolean"
+    }
+  }
+}

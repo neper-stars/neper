@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/referential-sync.schema.json",
+  "title": "Referential Sync",
+  "description": "Referential synchronization that may aggregate multiple records of different types",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer"
+    },
+    "changes": {
+      "description": "",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "create",
+              "update",
+              "no_change"
+            ]
+          },
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "https://neper.io/messages/schemas/v1/neper/session.schema.json"
+              },
+              {
+                "$ref": "https://neper.io/messages/schemas/v1/neper/race.schema.json"
+              },
+              {
+                "$ref": "https://neper.io/messages/schemas/v1/neper/user_profile.schema.json"
+              },
+              {
+                "$ref": "https://neper.io/messages/schemas/v1/neper/invitation.schema.json"
+              }
+            ]
+          }
+        },
+        "required": [
+          "operation",
+          "data"
+        ]
+      }
+    }
+  },
+  "required": [
+    "changes"
+  ]
+}

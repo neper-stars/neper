@@ -1,0 +1,10 @@
+{
+    "changes": [{
+        "operation": "create",
+        "data": {
+            "__type__": "session",
+            "id": "1",
+            "name": "session"
+        }
+    }]
+}

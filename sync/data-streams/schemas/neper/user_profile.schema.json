@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/user_profile.schema.json",
+  "$$target": "https://neper.io/messages/schemas/v1/neper/user_profile.schema.json",
+  "title": "user_profile",
+  "description": "user profile",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "__type__": {
+      "description": "data type",
+      "type": "string",
+      "enum": [
+        "user_profile"
+      ]
+    },
+    "id": {
+      "description": "unique record id",
+      "type": "string"
+    },
+    "nickname": {
+      "description": "nickname of this user (name displayed to other users)",
+      "type": "string"
+    },
+    "email": {
+      "description": "email",
+      "type": "string"
+    },
+    "is_active": {
+      "description": "set to true if a login/password exists for this profile",
+      "type": "boolean"
+    },
+    "api_key": {
+      "description": "API Key",
+      "type": "string"
+    },
+    "is_manager": {
+      "description": "Is this user a global manager",
+      "type": "boolean"
+    },
+    "session_list": {
+      "description": "List of session ID. Defines the sessions linked to this profile. Represented as user_profile_rel, user_profile_id is optional",
+      "type": "array",
+      "items": {
+        "$ref": "https://neper.io/messages/schemas/v1/neper/user_profile_session_rel.schema.json"
+      }
+    }
+  },
+  "required": [
+    "__type__",
+    "id",
+    "email",
+    "is_active",
+    "lastname"
+  ]
+}

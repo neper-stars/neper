@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/race.schema.json",
+  "$$target": "https://neper.io/messages/schemas/v1/neper/race.schema.json",
+  "title": "race",
+  "description": "race",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "__type__": {
+      "description": "data type",
+      "type": "string",
+      "enum": [
+        "race"
+      ]
+    },
+    "id": {
+      "description": "unique record id",
+      "type": "string"
+    },
+    "name_plural": {
+      "description": "name in plural form",
+      "type": "string"
+    },
+    "name_singular": {
+      "description": "name in singular form",
+      "type": "string"
+    },
+    "user_id": {
+      "description": "user id of the race owner",
+      "type": "string"
+    },
+    "data": {
+      "description": "base64 encoded data of the race file as produced by the stars race wizard",
+      "type": "string"
+    }
+  },
+  "required": [
+    "__type__",
+    "id",
+    "name_plural",
+    "name_singular",
+    "user_id",
+    "data"
+  ]
+}

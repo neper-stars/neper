@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "gollumID",
+        "nickname": "SméagolGollum",
+        "email": "smeagol@shire.com",
+        "api_key": "apikeyGollum",
+        "is_active": false,
+        "is_manager": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "denethorID",
+        "nickname": "DenethorDúnedain",
+        "email": "denethor@gondor.com",
+        "api_key": "apikeyDenethor",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [
+          {"session_id":  "gondorID", "is_manager":  true}
+        ]
+      }
+    }
+  ]
+}

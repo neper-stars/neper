@@ -1,0 +1,44 @@
+{
+    "changes": [
+        {
+            "operation": "create",
+            "data": {
+                "__type__": "session",
+                "id": "session1ID",
+                "name": "session 1"
+            }
+        },
+        {
+            "operation": "create",
+            "data": {
+                "__type__": "session",
+                "id": "session2ID",
+                "name": "session 2"
+            }
+        },
+        {
+            "operation": "create",
+            "data": {
+                "__type__": "session",
+                "id": "session3ID",
+                "name": "session 3"
+            }
+        },
+        {
+            "operation": "create",
+            "data": {
+                "__type__": "user_profile",
+                "id": "jacklondonID",
+                "nickname": "JackLondon",
+                "email": "jack@london.com",
+                "api_key": "apikeyJackLondon",
+                "is_active": true,
+                "is_manager": true,
+                "session_list": [
+                    {"session_id":  "session1ID", "is_manager":  false},
+                    {"session_id":  "session2ID", "is_manager":  false}
+                ]
+            }
+        }
+    ]
+}
