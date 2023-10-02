@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "samID",
+        "nickname": "Sam",
+        "email": "sam@shire.com",
+        "api_key": "apikeySam",
+        "is_active": true,
+        "is_manager": false
+      }
+    }
+  ]
+}

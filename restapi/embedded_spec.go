@@ -271,8 +271,8 @@ func init() {
             "$ref": "#/responses/default"
           }
         },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "invite"
+        "x-auth-namespace": "invitations",
+        "x-auth-relation": "create"
       },
       "parameters": [
         {
@@ -1033,8 +1033,8 @@ func init() {
             }
           }
         },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "invite"
+        "x-auth-namespace": "invitations",
+        "x-auth-relation": "create"
       },
       "parameters": [
         {

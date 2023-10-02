@@ -126,6 +126,7 @@ func (d *Authorizer) Authorize(mc *middleware.Context) runtime.Authorizer {
 
 			d.logger.Debug().
 				Bool("authorized", authorized).
+				Str("namespace", nor.NameSpace).
 				Str("user", principal.NickName).
 				Str("user id", principal.Subject).
 				Msg("Authorize decision")
@@ -222,27 +223,30 @@ func (d *Authorizer) AuthorizeSessions(ctx context.Context, r *http.Request, mc 
 		return true, nil
 	}
 
-	query := database.SQ.
-		Select().
-		Columns(
-			models.UserProfileSessionRelDBUserProfileIDColumn,
-			models.UserProfileSessionRelDBSessionIDColumn,
-			models.UserProfileSessionRelDBIsManagerColumn,
-		).
-		From(models.UserProfileSessionRelDBTable).
-		Where(
-			sq.And{
-				sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject},
-				sq.Eq{models.UserProfileSessionRelDBSessionIDColumn: nor.Object},
-			},
-		)
-
 	switch nor.Relation {
-	case RelationCreate, RelationUpdate, RelationDelete:
+	case RelationCreate:
+		// anyone is allowed to create a session
+		return true, nil
+
+	case RelationUpdate, RelationDelete:
 		var authRes models.UserProfileSessionRelDB
+		query := database.SQ.
+			Select().
+			Columns(
+				models.UserProfileSessionRelDBUserProfileIDColumn,
+				models.UserProfileSessionRelDBSessionIDColumn,
+				models.UserProfileSessionRelDBIsManagerColumn,
+			).
+			From(models.UserProfileSessionRelDBTable).
+			Where(
+				sq.And{
+					sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject},
+					sq.Eq{models.UserProfileSessionRelDBSessionIDColumn: nor.Object},
+				},
+			)
 		if err := database.GetContext(ctx, d.db, &authRes, query, &d.logger); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				log.Debug().Msg("auth: no matching userprofile session relation --> reject")
+				d.logger.Debug().Msg("auth: no matching userprofile session relation --> reject")
 				return false, nil
 			}
 			return false, err
@@ -279,7 +283,7 @@ func (d *Authorizer) AuthorizeSessions(ctx context.Context, r *http.Request, mc 
 		var p SessionPrivateQueryResult
 		if err := database.GetContext(ctx, d.db, &p, query, &d.logger); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				log.Debug().Msg("auth: no matching session found --> reject")
+				d.logger.Debug().Msg("auth: no matching session found --> reject")
 				return false, nil
 			}
 			return false, err
@@ -294,7 +298,7 @@ func (d *Authorizer) AuthorizeSessions(ctx context.Context, r *http.Request, mc 
 		var authRes models.UserProfileSessionRelDB
 		if err := database.GetContext(ctx, d.db, &authRes, query, &d.logger); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				log.Debug().Msg("auth: no matching userprofile session relation for a private session --> reject")
+				d.logger.Debug().Msg("auth: no matching userprofile session relation for a private session --> reject")
 				return false, nil
 			}
 			return false, err
@@ -313,27 +317,48 @@ func (d *Authorizer) AuthorizeInvitations(ctx context.Context, r *http.Request, 
 		return true, nil
 	}
 
-	query := database.SQ.
-		Select().
-		Columns(
-			models.UserProfileSessionRelDBUserProfileIDColumn,
-			models.UserProfileSessionRelDBSessionIDColumn,
-			models.UserProfileSessionRelDBIsManagerColumn,
-		).
-		From(models.UserProfileSessionRelDBTable).
-		Where(
-			sq.And{
-				sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject},
-				sq.Eq{models.UserProfileSessionRelDBSessionIDColumn: nor.Object},
-			},
-		)
+	// d.logger.Debug().Str("nor.Object", nor.Object).Str("principal.Subject", principal.Subject).Msg("auth info")
 
 	switch nor.Relation {
 	case RelationCreate, RelationUpdate, RelationDelete:
+		route, _, _ := mc.RouteInfo(r)
+		// all params for create update or delete can fit inside create params
+		p := operations.NewSessionInviteParams()
+		params := &p
+		if err := mc.BindValidRequest(r, route, params); err != nil { // bind params
+			return false, err
+		}
+		// extract the asked session ID from the params
+		askedSessionID := p.SessionID
+		// ensure the asked session ID is the same as the posted session ID in the body
+		if nor.Relation == RelationCreate || nor.Relation == RelationUpdate {
+			if p.SessionID != p.Invitation.SessionID {
+				// this kind of trickery is Verboten
+				log.Warn().Str("path", p.SessionID).Str("body", p.Invitation.SessionID).
+					Msg("user tries to invite with different session ID in path and body")
+				return false, nil
+			}
+		}
+
+		query := database.SQ.
+			Select().
+			Columns(
+				models.UserProfileSessionRelDBUserProfileIDColumn,
+				models.UserProfileSessionRelDBSessionIDColumn,
+				models.UserProfileSessionRelDBIsManagerColumn,
+			).
+			From(models.UserProfileSessionRelDBTable).
+			Where(
+				sq.And{
+					sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject},
+					sq.Eq{models.UserProfileSessionRelDBSessionIDColumn: askedSessionID},
+				},
+			)
+
 		var authRes models.UserProfileSessionRelDB
 		if err := database.GetContext(ctx, d.db, &authRes, query, &d.logger); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				log.Debug().Msg("auth: no matching userprofile session relation --> reject")
+				d.logger.Debug().Msg("auth: no matching userprofile session relation --> reject")
 				return false, nil
 			}
 			return false, err
@@ -370,7 +395,7 @@ func (d *Authorizer) AuthorizeInvitations(ctx context.Context, r *http.Request, 
 		var p SessionPrivateQueryResult
 		if err := database.GetContext(ctx, d.db, &p, query, &d.logger); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				log.Debug().Msg("auth: no matching session found --> reject")
+				d.logger.Debug().Msg("auth: no matching session found --> reject")
 				return false, nil
 			}
 			return false, err
@@ -385,7 +410,7 @@ func (d *Authorizer) AuthorizeInvitations(ctx context.Context, r *http.Request, 
 		var authRes models.UserProfileSessionRelDB
 		if err := database.GetContext(ctx, d.db, &authRes, query, &d.logger); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				log.Debug().Msg("auth: no matching userprofile session relation for a private session --> reject")
+				d.logger.Debug().Msg("auth: no matching userprofile session relation for a private session --> reject")
 				return false, nil
 			}
 			return false, err
