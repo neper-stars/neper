@@ -137,5 +137,26 @@ func (e ErrInvalidMember) Error() string {
 
 // Is ...
 func (e ErrInvalidMember) Is(target error) bool {
-	return target == ErrInvalid
+	return errors.Is(target, ErrInvalid)
+}
+
+// ErrAlreadyExists ...
+type ErrAlreadyExists struct {
+	GivenMessage string
+}
+
+// NewErrAlreadyExists is the constructor to obtain an ErrAlreadyExists error
+func NewErrAlreadyExists(msg string) *ErrAlreadyExists {
+	return &ErrAlreadyExists{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrAlreadyExists) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrAlreadyExists) Is(target error) bool {
+	// am I an ErrInvalid ? Yes
+	return errors.Is(target, ErrInvalid)
 }

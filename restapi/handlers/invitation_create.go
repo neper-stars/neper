@@ -10,19 +10,21 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	"github.com/lib/pq"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewInvitationCreateHandler ...
-func NewInvitationCreateHandler(db *sqlx.DB) *InvitationCreateHandler {
-	return &InvitationCreateHandler{db}
+func NewInvitationCreateHandler(log *zerolog.Logger, db *sqlx.DB) *InvitationCreateHandler {
+	return &InvitationCreateHandler{db, log}
 }
 
 // InvitationCreateHandler handles /sessions
 type InvitationCreateHandler struct {
-	db *sqlx.DB
+	db  *sqlx.DB
+	log *zerolog.Logger
 }
 
 type ErrInvalidInvitation struct {
@@ -62,6 +64,14 @@ func (h *InvitationCreateHandler) handle(
 
 	_, err = sqlH.Insert(&invitationDB)
 	if err != nil {
+		pqErr, ok := err.(*pq.Error)
+		if ok {
+			// we received an error from PG
+			if pqErr.Constraint == "invitation_session_id_user_profile_id_key" {
+				// and this error is specific to a constraint we know how to interpret as: Invitation already exists
+				return nil, errs.NewErrAlreadyExists("invitation already exists for user: " + principal.Subject + "and session: " + sessionID)
+			}
+		}
 		return invitation, err
 	}
 

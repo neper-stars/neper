@@ -34,22 +34,31 @@ func (h *SessionsList) handle(
 	defer tx.RollbackIfOpened(log)
 	sql := database.NewSQLHelper(ctx, tx, log)
 
-	c := models.Schema.SessionDB.As("c")
+	s := models.Schema.SessionDB.As("s")
 
 	query := database.SQ.Select().
-		Column(c.ID.Sql()).
-		Column(c.Name.Sql()).
-		From(c.Sql()).
-		OrderBy(c.ID.Sql())
+		Column(s.ID.Sql()).
+		Column(s.Name.Sql()).
+		From(s.Sql()).
+		OrderBy(s.ID.Sql())
 
 	if !principal.IsGlobalManager {
 		// filter using the sessions membership if the user is not a global manager
-		upcr := models.Schema.UserProfileSessionRelDB.As("upcr")
-		query = query.Join(c.ID.Join(upcr.SessionID).Sql())
+		upsr := models.Schema.UserProfileSessionRelDB.As("upsr")
+		query = query.InnerJoin(s.ID.Join(upsr.SessionID).Sql())
 
 		filter := sq.Or{
-			sq.Eq{models.SessionDBPrivateColumn: false}, // session is public
-			upcr.UserProfileID.Eq(principal.Subject),    // or user is member of the session (manager or simple member)
+			sq.And{
+				sq.Eq{models.SessionDBPrivateColumn: false},
+				sq.Or{
+					upsr.UserProfileID.Eq(principal.Subject),
+					upsr.UserProfileID.Eq(nil),
+				},
+			}, // session is public, and (I am already in it or not, but not someone else)
+			sq.Or{
+				sq.Eq{models.SessionDBPrivateColumn: true},
+				upsr.UserProfileID.Eq(principal.Subject),
+			}, // session is private and I am a member
 		}
 		query = query.Where(filter)
 	}
@@ -60,9 +69,12 @@ func (h *SessionsList) handle(
 	}
 
 	var retList []*models.Session
+	var names []string
 	for i := range list {
 		retList = append(retList, &list[i].Session)
+		names = append(names, list[i].Session.Name)
 	}
+	// log.Warn().Str("list", fmt.Sprintf("%v", names)).Msg("sessions")
 	return retList, nil
 }
 
