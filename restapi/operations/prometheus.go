@@ -12,6 +12,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/auth/authenticate"] = AuthenticateInstrumentHandler(
 		o.handlers["POST"]["/v1/auth/authenticate"])
 
+	o.handlers["GET"]["/v1/invitations"] = InvitationListInstrumentHandler(
+		o.handlers["GET"]["/v1/invitations"])
+
 	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"] = RaceCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"])
 

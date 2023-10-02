@@ -113,6 +113,31 @@ func init() {
         "x-auth-relation": "read"
       }
     },
+    "/v1/invitations": {
+      "get": {
+        "operationId": "invitationList",
+        "responses": {
+          "200": {
+            "description": "the complete list of viewable invitations",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "neper-types.yaml#/definitions/invitation"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
     "/v1/sessions": {
       "get": {
         "operationId": "sessionsList",
@@ -270,9 +295,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "invitations",
-        "x-auth-relation": "create"
+        }
       },
       "parameters": [
         {
@@ -827,6 +850,40 @@ func init() {
         "x-auth-relation": "read"
       }
     },
+    "/v1/invitations": {
+      "get": {
+        "operationId": "invitationList",
+        "responses": {
+          "200": {
+            "description": "the complete list of viewable invitations",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/invitation"
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/v1/sessions": {
       "get": {
         "operationId": "sessionsList",
@@ -1032,9 +1089,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "invitations",
-        "x-auth-relation": "create"
+        }
       },
       "parameters": [
         {

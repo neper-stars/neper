@@ -10,10 +10,10 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 	"orus.io/orus-io/go-orusapi/testutils"
 
-	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/fixtures"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/restapi/operations"
 	"github.com/neper-stars/neper/sync"
 )
 
@@ -22,13 +22,12 @@ func TestSessionCreateHandler(t *testing.T) {
 	ctx := log.WithContext(context.Background())
 	testdb := database.GetTestDB(ctx, t, migration.Source)
 	defer testdb.Close()
-	authZ := auth.NewAuthorizer(log, testdb.DB)
 	syncWorker, err := sync.NewWorker(testdb.DB, log)
 	require.NoError(t, err)
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
-	handler := NewSessionCreateHandler(testdb.DB, authZ)
-	readHandler := NewSessionReadHandler(testdb.DB)
+	createHandler := NewSessionCreateHandler(testdb.DB)
+	readHandler := NewSessionReadHandler(&log, testdb.DB)
 
 	t.Run("create shire", func(t *testing.T) {
 		// here we do not test authorizations which are applied in the
@@ -39,22 +38,29 @@ func TestSessionCreateHandler(t *testing.T) {
 			Managers: []string{"merryID"}, // merry is one of our users !!
 			Name:     "The Shire",
 		}
-		p := &models.Principal{
+		merryPrincipal := &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "merryID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 			},
 			IsGlobalManager: false,
 		}
-		session, err := handler.handle(ctx, shire, p)
+		params := operations.SessionCreateParams{
+			Session: shire,
+		}
+		session, err := createHandler.handle(ctx, params, merryPrincipal)
 
 		require.NoError(t, err)
 		require.Equal(t, "The Shire", session.Name)
 		// ID is a readOnly field and will be filled with something by the API
 		require.NotEqual(t, "", session.ID)
+		require.Equal(t, []string{"merryID"}, session.Managers)
 
 		// reread from our api to see if members are correctly set
-		shireSession, err := readHandler.handle(ctx, session.ID)
+		readParams := operations.SessionReadParams{
+			SessionID: session.ID,
+		}
+		shireSession, err := readHandler.handle(ctx, readParams, merryPrincipal)
 		require.NoError(t, err)
 		require.Equal(t, session.Name, shireSession.Name)
 		require.Equal(t, 1, len(shireSession.Managers))

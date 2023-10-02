@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
@@ -17,19 +18,28 @@ import (
 )
 
 // NewSessionUpdateHandler ...
-func NewSessionUpdateHandler(db *sqlx.DB, authz *auth.Authorizer) *SessionUpdateHandler {
-	return &SessionUpdateHandler{db, authz}
+func NewSessionUpdateHandler(log *zerolog.Logger, db *sqlx.DB) *SessionUpdateHandler {
+	return &SessionUpdateHandler{db, log}
 }
 
 // SessionUpdateHandler handles /circles
 type SessionUpdateHandler struct {
-	db    *sqlx.DB
-	authz *auth.Authorizer
+	db  *sqlx.DB
+	log *zerolog.Logger
 }
 
 func (h *SessionUpdateHandler) handle(
-	ctx context.Context, session *models.Session,
+	ctx context.Context, params operations.SessionUpdateParams, principal *models.Principal,
 ) (*models.Session, error) {
+	authorized, err := h.Authorize(ctx, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
+	session := params.Session
+
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -64,14 +74,39 @@ func (h *SessionUpdateHandler) handle(
 func (h *SessionUpdateHandler) Handle(
 	params operations.SessionUpdateParams, principal *models.Principal,
 ) middleware.Responder {
-	circle, err := h.handle(params.HTTPRequest.Context(), params.Session)
+	session, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
+		case errors.Is(err, errs.ErrForbidden):
+			return operations.NewSessionUpdateForbidden().WithPayload(&models.Error{
+				Code:    http.StatusForbidden,
+				Message: &verbotten,
+			})
 		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrInvalid):
+			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
-	return operations.NewSessionUpdateOK().WithPayload(circle)
+	return operations.NewSessionUpdateOK().WithPayload(session)
+}
+
+func (h *SessionUpdateHandler) Authorize(
+	ctx context.Context, params operations.SessionUpdateParams, principal *models.Principal,
+) (bool, error) {
+	if principal.IsGlobalManager {
+		return true, nil
+	}
+	var authRes models.UserProfileSessionRelDB
+	query := userProfileSessionRelationQuery(principal.Subject, params.SessionID)
+	if err := database.GetContext(ctx, h.db, &authRes, query, h.log); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.log.Debug().Msg("auth: no matching userprofile session relation --> reject")
+			return false, nil
+		}
+		return false, err
+	}
+	return authRes.IsManager, nil
 }

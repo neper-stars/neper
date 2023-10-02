@@ -2,14 +2,20 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
+	"gopkg.in/dgrijalva/jwt-go.v3"
 	"orus.io/orus-io/go-orusapi/database"
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/fixtures"
+	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/migration"
+	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/restapi/operations"
 	"github.com/neper-stars/neper/sync"
 )
 
@@ -24,14 +30,20 @@ func TestSessionReadHandler(t *testing.T) {
 	// tested here
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
 
-	handler := NewSessionReadHandler(testdb.DB)
+	handler := NewSessionReadHandler(&log, testdb.DB)
 
 	t.Run("empty Gondor", func(t *testing.T) {
-		// here we do not test authorizations which are applied in the
-		// layer just above the handler we are testing.
-		// We can only test if the returned content is coherent with
-		// our current user
-		session, err := handler.handle(ctx, "gondorID")
+		p := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		params := operations.SessionReadParams{
+			SessionID: "gondorID",
+		}
+		session, err := handler.handle(ctx, params, p)
 
 		require.NoError(t, err)
 		require.Equal(t, "Gondor", session.Name)
@@ -42,11 +54,37 @@ func TestSessionReadHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gandalf.json")
 
 	t.Run("Gondor with Gandalf as manager", func(t *testing.T) {
-		session, err := handler.handle(ctx, "gondorID")
+		p := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		params := operations.SessionReadParams{
+			SessionID: "gondorID",
+		}
+		session, err := handler.handle(ctx, params, p)
 		require.NoError(t, err)
 		require.Equal(t, "Gondor", session.Name)
 		require.Equal(t, 0, len(session.Members))
 		require.Equal(t, 1, len(session.Managers))
 		require.Equal(t, "gandalfID", session.Managers[0])
+	})
+
+	t.Run("isengard_is_private", func(t *testing.T) {
+		p := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		params := operations.SessionReadParams{
+			SessionID: "isengardID",
+		}
+		_, err := handler.handle(ctx, params, p)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, errs.ErrForbidden))
 	})
 }

@@ -2,15 +2,17 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/m4rw3r/uuid"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/lib/pq"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -40,8 +42,19 @@ func (e *ErrInvalidInvitation) Is(target error) bool {
 }
 
 func (h *InvitationCreateHandler) handle(
-	ctx context.Context, invitation *models.Invitation, sessionID string, principal *models.Principal,
+	ctx context.Context, params operations.SessionInviteParams, principal *models.Principal,
 ) (*models.Invitation, error) {
+	authorized, err := h.Authorize(ctx, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
+
+	invitation := params.Invitation
+	sessionID := params.SessionID
+
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -57,14 +70,13 @@ func (h *InvitationCreateHandler) handle(
 	}
 	// force our ID not the one from the client
 	invitation.ID = invitationUID.String()
-	// force session ID to be the one
-	// or return an error if the ID is not the same ???
 	invitation.SessionID = sessionID
 	invitationDB.Invitation = *invitation
 
 	_, err = sqlH.Insert(&invitationDB)
 	if err != nil {
-		pqErr, ok := err.(*pq.Error)
+		// we don't want errorlint because we NEED to get the real pq.Error in order to extract the constraint
+		pqErr, ok := err.(*pq.Error) // nolint:errorlint
 		if ok {
 			// we received an error from PG
 			if pqErr.Constraint == "invitation_session_id_user_profile_id_key" {
@@ -81,13 +93,20 @@ func (h *InvitationCreateHandler) handle(
 	return &invitationDB.Invitation, nil
 }
 
+var verbotten = "verbotten"
+
 // Handle handles the request
 func (h *InvitationCreateHandler) Handle(
 	params operations.SessionInviteParams, principal *models.Principal,
 ) middleware.Responder {
-	invitation, err := h.handle(params.HTTPRequest.Context(), params.Invitation, params.SessionID, principal)
+	invitation, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
+		case errors.Is(err, errs.ErrForbidden):
+			return operations.NewSessionInviteForbidden().WithPayload(&models.Error{
+				Code:    http.StatusForbidden,
+				Message: &verbotten,
+			})
 		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):
@@ -97,4 +116,33 @@ func (h *InvitationCreateHandler) Handle(
 		}
 	}
 	return operations.NewSessionInviteCreated().WithPayload(invitation)
+}
+
+func (h *InvitationCreateHandler) Authorize(
+	ctx context.Context, params operations.SessionInviteParams, principal *models.Principal,
+) (bool, error) {
+	if principal.IsGlobalManager {
+		return true, nil
+	}
+	askedSessionID := params.SessionID
+
+	// ensure the asked session ID is the same as the posted session ID in the body
+	if params.SessionID != params.Invitation.SessionID {
+		// this kind of trickery is Verboten
+		h.log.Warn().Str("path", params.SessionID).Str("body", params.Invitation.SessionID).
+			Msg("user tries to invite with different session ID in path and body")
+		return false, nil
+	}
+
+	query := userProfileSessionRelationQuery(principal.Subject, askedSessionID)
+
+	var authRes models.UserProfileSessionRelDB
+	if err := database.GetContext(ctx, h.db, &authRes, query, h.log); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.log.Debug().Msg("auth: no matching userprofile session relation --> reject")
+			return false, nil
+		}
+		return false, err
+	}
+	return authRes.IsManager, nil
 }

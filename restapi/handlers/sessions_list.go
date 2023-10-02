@@ -69,12 +69,9 @@ func (h *SessionsList) handle(
 	}
 
 	var retList []*models.Session
-	var names []string
 	for i := range list {
 		retList = append(retList, &list[i].Session)
-		names = append(names, list[i].Session.Name)
 	}
-	// log.Warn().Str("list", fmt.Sprintf("%v", names)).Msg("sessions")
 	return retList, nil
 }
 

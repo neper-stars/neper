@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
@@ -9,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
@@ -24,8 +27,16 @@ type RacesListHandler struct {
 }
 
 func (h *RacesListHandler) handle(
-	ctx context.Context, principal *models.Principal,
+	ctx context.Context, params operations.RacesListParams, principal *models.Principal,
 ) ([]*models.Race, error) {
+	authorized, err := h.Authorize(ctx, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
+
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -40,11 +51,8 @@ func (h *RacesListHandler) handle(
 		From(models.RaceDBTable).
 		OrderBy(models.RaceDBNameSingularColumn)
 
-	// global manager sees all races, other users only see their own
-	if !principal.IsGlobalManager {
-		// only get races for the current user
-		q = q.Where(sq.Eq{models.RaceDBUserIDColumn: principal.Subject})
-	}
+	// only get races for the asked user (authorize made sure we cant read others)
+	q = q.Where(sq.Eq{models.RaceDBUserIDColumn: params.UserProfileID})
 
 	if err := sql.Select(&list, q); err != nil {
 		return nil, err
@@ -61,9 +69,29 @@ func (h *RacesListHandler) handle(
 func (h *RacesListHandler) Handle(
 	params operations.RacesListParams, principal *models.Principal,
 ) middleware.Responder {
-	sessions, err := h.handle(params.HTTPRequest.Context(), principal)
+	sessions, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
-		return operations.NewRacesListDefault(500).WithPayload(models.FromError(err))
+		switch {
+		case errors.Is(err, errs.ErrForbidden):
+			return operations.NewRacesListForbidden().WithPayload(&models.Error{
+				Code:    http.StatusForbidden,
+				Message: &verbotten,
+			})
+		default:
+			return operations.NewRacesListDefault(500).WithPayload(models.FromError(err))
+		}
 	}
 	return operations.NewRacesListOK().WithPayload(sessions)
+}
+
+func (h *RacesListHandler) Authorize(
+	ctx context.Context, params operations.RacesListParams, principal *models.Principal,
+) (bool, error) {
+	if principal.IsGlobalManager {
+		return true, nil
+	}
+	if params.UserProfileID == principal.Subject {
+		return true, nil
+	}
+	return false, nil
 }

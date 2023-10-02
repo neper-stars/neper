@@ -12,6 +12,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		authenticateHandlerInFlight,
 	)
 	reg.MustRegister(
+		invitationListHandlerDuration,
+		invitationListHandlerInFlight,
+	)
+	reg.MustRegister(
 		raceCreateHandlerDuration,
 		raceCreateHandlerInFlight,
 	)

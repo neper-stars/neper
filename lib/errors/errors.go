@@ -14,6 +14,9 @@ var ErrNotFound = errors.New("generic not found error")
 // to filter by error types
 var ErrInvalid = errors.New("generic invalid error")
 
+// ErrForbidden ...
+var ErrForbidden = errors.New("forbidden")
+
 // *********************
 // error implementations
 // *********************
@@ -97,7 +100,7 @@ func (e ErrInvalidAccessLevel) Error() string {
 
 // Is ...
 func (e ErrInvalidAccessLevel) Is(target error) bool {
-	return target == ErrInvalid
+	return errors.Is(target, ErrInvalid)
 }
 
 // ErrInvalidSession ...
@@ -117,7 +120,7 @@ func (e ErrInvalidSession) Error() string {
 
 // Is ...
 func (e ErrInvalidSession) Is(target error) bool {
-	return target == ErrInvalid
+	return errors.Is(target, ErrInvalid)
 }
 
 // ErrInvalidMember ...
@@ -158,5 +161,25 @@ func (e ErrAlreadyExists) Error() string {
 // Is ...
 func (e ErrAlreadyExists) Is(target error) bool {
 	// am I an ErrInvalid ? Yes
+	return errors.Is(target, ErrInvalid)
+}
+
+// ErrInvalidRace ...
+type ErrInvalidRace struct {
+	GivenMessage string
+}
+
+// NewErrInvalidRace ...
+func NewErrInvalidRace(msg string) *ErrInvalidRace {
+	return &ErrInvalidRace{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrInvalidRace) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrInvalidRace) Is(target error) bool {
 	return errors.Is(target, ErrInvalid)
 }

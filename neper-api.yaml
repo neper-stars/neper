@@ -80,8 +80,6 @@ paths:
   /v1/sessions:
     get:
       operationId: sessionsList
-      x-auth-namespace: sessions
-      x-auth-relation: read
       responses:
         200:
           description: the complete list of viewable sessions
@@ -97,8 +95,6 @@ paths:
           $ref: "#/responses/default"
     post:
       operationId: sessionCreate
-      x-auth-namespace: sessions
-      x-auth-relation: create
       description: |
         Creates a new session
       parameters:
@@ -126,8 +122,6 @@ paths:
         required: true
     post:
       operationId: sessionInvite
-      x-auth-namespace: invitations
-      x-auth-relation: create
       parameters:
         - name: invitation
           in: body
@@ -149,6 +143,23 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/invitations:
+    get:
+      operationId: invitationList
+      responses:
+        200:
+          description: the complete list of viewable invitations
+          schema:
+            type: array
+            items:
+              $ref: "neper-types.yaml#/definitions/invitation"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}/join:
     parameters:
       - name: session_id
@@ -157,8 +168,6 @@ paths:
         required: true
     post:
       operationId: sessionJoin
-      x-auth-namespace: sessions
-      x-auth-relation: join
       summary: "join a session, either a public one or a private one if you are invited"
       description: "join the session"
       responses:
@@ -223,8 +232,6 @@ paths:
         required: true
     get:
       operationId: sessionRead
-      x-auth-namespace: sessions
-      x-auth-relation: read
       description: |
         Return the session.
       responses:
@@ -240,8 +247,6 @@ paths:
           $ref: "#/responses/default"
     put:
       operationId: sessionUpdate
-      x-auth-namespace: sessions
-      x-auth-relation: update
       description: |
         Update the session
 

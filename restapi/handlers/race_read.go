@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
@@ -26,8 +27,17 @@ type RaceReadHandler struct {
 }
 
 func (h *RaceReadHandler) handle(
-	ctx context.Context, raceID string,
+	ctx context.Context, params operations.RaceReadParams, principal *models.Principal,
 ) (*models.Race, error) {
+	authorized, err := h.Authorize(ctx, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
+
+	raceID := params.RaceID
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -50,14 +60,33 @@ func (h *RaceReadHandler) handle(
 func (h *RaceReadHandler) Handle(
 	params operations.RaceReadParams, principal *models.Principal,
 ) middleware.Responder {
-	race, err := h.handle(params.HTTPRequest.Context(), params.UserProfileID)
+	race, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
+		case errors.Is(err, errs.ErrForbidden):
+			return operations.NewRaceReadForbidden().WithPayload(&models.Error{
+				Code:    http.StatusForbidden,
+				Message: &verbotten,
+			})
 		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrInvalid):
+			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
 	return operations.NewRaceReadOK().WithPayload(race)
+}
+
+func (h *RaceReadHandler) Authorize(
+	ctx context.Context, params operations.RaceReadParams, principal *models.Principal,
+) (bool, error) {
+	if principal.IsGlobalManager {
+		return true, nil
+	}
+	if params.UserProfileID == principal.Subject {
+		return true, nil
+	}
+	return false, nil
 }

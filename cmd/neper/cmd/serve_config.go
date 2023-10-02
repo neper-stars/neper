@@ -29,6 +29,5 @@ func setupServeConfig(config *restapi.Config) error {
 	config.BaseURL = InfoOptions.BaseURL
 	// This is where the api config can be customized at will
 	config.TokenOptions = *TokenOptions
-	config.Authorizer = auth.NewAuthorizer(config.Log, config.DB)
 	return nil
 }

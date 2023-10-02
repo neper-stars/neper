@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"net/http"
 	"slices"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -11,7 +12,6 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
@@ -19,19 +19,28 @@ import (
 )
 
 // NewSessionCreateHandler ...
-func NewSessionCreateHandler(db *sqlx.DB, authz *auth.Authorizer) *SessionCreateHandler {
-	return &SessionCreateHandler{db, authz}
+func NewSessionCreateHandler(db *sqlx.DB) *SessionCreateHandler {
+	return &SessionCreateHandler{db}
 }
 
 // SessionCreateHandler handles /sessions
 type SessionCreateHandler struct {
-	db    *sqlx.DB
-	authz *auth.Authorizer
+	db *sqlx.DB
 }
 
 func (h *SessionCreateHandler) handle(
-	ctx context.Context, session *models.Session, principal *models.Principal,
+	ctx context.Context, params operations.SessionCreateParams, principal *models.Principal,
 ) (*models.Session, error) {
+	authorized, err := h.Authorize(ctx, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
+
+	session := params.Session
+
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -92,14 +101,27 @@ func (h *SessionCreateHandler) handle(
 func (h *SessionCreateHandler) Handle(
 	params operations.SessionCreateParams, principal *models.Principal,
 ) middleware.Responder {
-	session, err := h.handle(params.HTTPRequest.Context(), params.Session, principal)
+	session, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
+		case errors.Is(err, errs.ErrForbidden):
+			return operations.NewSessionCreateForbidden().WithPayload(&models.Error{
+				Code:    http.StatusForbidden,
+				Message: &verbotten,
+			})
 		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrInvalid):
+			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
 	return operations.NewSessionCreateCreated().WithPayload(session)
+}
+func (h *SessionCreateHandler) Authorize(
+	ctx context.Context, params operations.SessionCreateParams, principal *models.Principal,
+) (bool, error) {
+	// everyone is allowed to create a new session
+	return true, nil
 }

@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net/http"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
@@ -16,18 +18,29 @@ import (
 )
 
 // NewSessionReadHandler ...
-func NewSessionReadHandler(db *sqlx.DB) *SessionReadHandler {
-	return &SessionReadHandler{db}
+func NewSessionReadHandler(log *zerolog.Logger, db *sqlx.DB) *SessionReadHandler {
+	return &SessionReadHandler{db, log}
 }
 
 // SessionReadHandler handles /session
 type SessionReadHandler struct {
-	db *sqlx.DB
+	db  *sqlx.DB
+	log *zerolog.Logger
 }
 
 func (h *SessionReadHandler) handle(
-	ctx context.Context, sessionID string,
+	ctx context.Context, params operations.SessionReadParams, principal *models.Principal,
 ) (*models.Session, error) {
+	authorized, err := h.Authorize(ctx, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
+
+	sessionID := params.SessionID
+
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -55,14 +68,71 @@ func (h *SessionReadHandler) handle(
 func (h *SessionReadHandler) Handle(
 	params operations.SessionReadParams, principal *models.Principal,
 ) middleware.Responder {
-	session, err := h.handle(params.HTTPRequest.Context(), params.SessionID)
+	session, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
+		case errors.Is(err, errs.ErrForbidden):
+			return operations.NewSessionReadForbidden().WithPayload(&models.Error{
+				Code:    http.StatusForbidden,
+				Message: &verbotten,
+			})
 		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrInvalid):
+			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
 	return operations.NewSessionReadOK().WithPayload(session)
+}
+
+type SessionPrivateQueryResult struct {
+	Private bool `db:"private"`
+}
+
+func (h *SessionReadHandler) Authorize(
+	ctx context.Context, params operations.SessionReadParams, principal *models.Principal,
+) (bool, error) {
+	if principal.IsGlobalManager {
+		return true, nil
+	}
+
+	askedSessionID := params.SessionID
+
+	query := database.SQ.
+		Select().
+		Columns(
+			models.SessionDBPrivateColumn,
+		).
+		From(models.SessionDBTable).
+		Where(sq.Eq{models.SessionDBIDColumn: askedSessionID})
+
+	var p SessionPrivateQueryResult
+	if err := database.GetContext(ctx, h.db, &p, query, h.log); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.log.Debug().Msg("auth: no matching session found --> reject")
+			return false, nil
+		}
+		return false, err
+	}
+
+	// if session is public no problem
+	if !p.Private {
+		return true, nil
+	}
+
+	// if session is private only members have access
+	var authRes models.UserProfileSessionRelDB
+	query = userProfileSessionRelationQuery(principal.Subject, askedSessionID)
+	if err := database.GetContext(ctx, h.db, &authRes, query, h.log); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.log.Debug().Msg("auth: no matching userprofile session relation for a private session --> reject")
+			return false, nil
+		}
+		return false, err
+	}
+
+	// if we are here we are at least a member of the session, so we are authorized to read the session content
+	return true, nil
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/neper-stars/neper/fixtures"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/restapi/operations"
 	"github.com/neper-stars/neper/sync"
 )
 
@@ -46,26 +47,37 @@ func TestRaceCreateHandler(t *testing.T) {
 		dst := make([]byte, base64.StdEncoding.EncodedLen(len(data)))
 		base64.StdEncoding.Encode(dst, data)
 
+		boromirID := "boromirID"
+
+		boromirPrincipal := models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   boromirID,
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+
 		race := models.Race{
-			Data: string(dst),
+			Data:   string(dst),
+			UserID: boromirID,
+		}
+
+		params := operations.RaceCreateParams{
+			UserProfileID: boromirID,
+			Race:          &race,
 		}
 
 		returnedRace, err := handler.handle(
 			ctx,
-			&race,
-			&models.Principal{
-				StandardClaims: jwt.StandardClaims{
-					Subject:   "boromirID",
-					ExpiresAt: time.Now().Add(time.Minute).Unix(),
-				},
-				IsGlobalManager: false,
-			},
+			params,
+			&boromirPrincipal,
 		)
+
 		require.NoError(t, err)
 		// Humans is a string that was set inside the race file during its creation
 		// this proves our parser can successfully read race files
 		require.Equal(t, "Humans", returnedRace.NamePlural)
 		require.Equal(t, "Human", returnedRace.NameSingular)
-		require.Equal(t, "boromirID", returnedRace.UserID)
+		require.Equal(t, boromirID, returnedRace.UserID)
 	})
 }

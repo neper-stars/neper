@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -11,8 +12,10 @@ import (
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/fixtures"
+	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/restapi/operations"
 	"github.com/neper-stars/neper/sync"
 )
 
@@ -42,42 +45,59 @@ func TestRacesListHandler(t *testing.T) {
 	// We can only test if the returned content is coherent with
 	// our current user
 	t.Run("gandalf_is_general_manager_and_sees_all", func(t *testing.T) {
-		races, err := handler.handle(ctx, &models.Principal{
+		gandalfPrincipal := models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "gandalfID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 			},
 			IsGlobalManager: true,
-		})
+		}
+
+		params := operations.RacesListParams{
+			UserProfileID: "merryID",
+		}
+
+		races, err := handler.handle(ctx, params, &gandalfPrincipal)
 		require.NoError(t, err)
-		require.Equal(t, 3, len(races), "Gandalf is general manager and should see all 3 races")
+		require.Equal(t, 2, len(races), "Gandalf is general manager and should see merry races")
+		// order by ID, so halflings are before hobbits :p
+		require.Equal(t, "Halflings", races[0].NamePlural)
+		require.Equal(t, "Hobbits", races[1].NamePlural)
 	})
 
 	t.Run("boromir_owns_only_humans", func(t *testing.T) {
-		races, err := handler.handle(ctx, &models.Principal{
+		boromirID := "boromirID"
+		boromirPrincipal := models.Principal{
 			StandardClaims: jwt.StandardClaims{
-				Subject:   "boromirID",
+				Subject:   boromirID,
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 			},
 			IsGlobalManager: false,
-		})
+		}
+		params := operations.RacesListParams{
+			UserProfileID: boromirID,
+		}
+		races, err := handler.handle(ctx, params, &boromirPrincipal)
 		require.NoError(t, err)
 		require.Equal(t, 1, len(races))
 		require.Equal(t, "Humans", races[0].NamePlural)
 	})
 
 	t.Run("merry_owns_only_hobbits_and_halflings", func(t *testing.T) {
-		races, err := handler.handle(ctx, &models.Principal{
+		merryPrincipal := models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "merryID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
 			},
 			IsGlobalManager: false,
-		})
-		require.NoError(t, err)
-		require.Equal(t, 2, len(races))
-		// order by ID, so halflings are before hobbits :p
-		require.Equal(t, "Halflings", races[0].NamePlural)
-		require.Equal(t, "Hobbits", races[1].NamePlural)
+		}
+
+		params := operations.RacesListParams{
+			UserProfileID: "boromirID", // <-- try to see a race we don't own
+		}
+
+		_, err := handler.handle(ctx, params, &merryPrincipal)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, errs.ErrForbidden))
 	})
 }

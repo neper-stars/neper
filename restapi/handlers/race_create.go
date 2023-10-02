@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
@@ -28,8 +29,17 @@ type RaceCreateHandler struct {
 }
 
 func (h *RaceCreateHandler) handle(
-	ctx context.Context, inputRace *models.Race, principal *models.Principal,
+	ctx context.Context, params operations.RaceCreateParams, principal *models.Principal,
 ) (*models.Race, error) {
+	authorized, err := h.Authorize(ctx, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
+	inputRace := params.Race
+
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -47,7 +57,7 @@ func (h *RaceCreateHandler) handle(
 	race, err := lib.NewRace(inputRace.Data)
 	if err != nil {
 		h.log.Err(err).Msg("failed to parse race data from input")
-		return nil, err
+		return nil, errs.NewErrInvalidRace("failed to parse race file:" + err.Error())
 	}
 
 	// force our ID not the one from the client
@@ -71,14 +81,33 @@ func (h *RaceCreateHandler) handle(
 func (h *RaceCreateHandler) Handle(
 	params operations.RaceCreateParams, principal *models.Principal,
 ) middleware.Responder {
-	race, err := h.handle(params.HTTPRequest.Context(), params.Race, principal)
+	race, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
+		case errors.Is(err, errs.ErrForbidden):
+			return operations.NewRaceCreateForbidden().WithPayload(&models.Error{
+				Code:    http.StatusForbidden,
+				Message: &verbotten,
+			})
 		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrInvalid):
+			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
 	return operations.NewRaceCreateCreated().WithPayload(race)
+}
+
+func (h *RaceCreateHandler) Authorize(
+	ctx context.Context, params operations.RaceCreateParams, principal *models.Principal,
+) (bool, error) {
+	if principal.IsGlobalManager {
+		return true, nil
+	}
+	if params.UserProfileID == principal.Subject && params.Race.UserID == principal.Subject {
+		return true, nil
+	}
+	return false, nil
 }

@@ -47,6 +47,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		AuthenticateHandler: AuthenticateHandlerFunc(func(params AuthenticateParams) middleware.Responder {
 			return middleware.NotImplemented("operation Authenticate has not yet been implemented")
 		}),
+		InvitationListHandler: InvitationListHandlerFunc(func(params InvitationListParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation InvitationList has not yet been implemented")
+		}),
 		RaceCreateHandler: RaceCreateHandlerFunc(func(params RaceCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RaceCreate has not yet been implemented")
 		}),
@@ -151,6 +154,8 @@ type NeperAPI struct {
 
 	// AuthenticateHandler sets the operation handler for the authenticate operation
 	AuthenticateHandler AuthenticateHandler
+	// InvitationListHandler sets the operation handler for the invitation list operation
+	InvitationListHandler InvitationListHandler
 	// RaceCreateHandler sets the operation handler for the race create operation
 	RaceCreateHandler RaceCreateHandler
 	// RaceReadHandler sets the operation handler for the race read operation
@@ -268,6 +273,9 @@ func (o *NeperAPI) Validate() error {
 
 	if o.AuthenticateHandler == nil {
 		unregistered = append(unregistered, "AuthenticateHandler")
+	}
+	if o.InvitationListHandler == nil {
+		unregistered = append(unregistered, "InvitationListHandler")
 	}
 	if o.RaceCreateHandler == nil {
 		unregistered = append(unregistered, "RaceCreateHandler")
@@ -423,6 +431,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/auth/authenticate"] = NewAuthenticate(o.context, o.AuthenticateHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/invitations"] = NewInvitationList(o.context, o.InvitationListHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

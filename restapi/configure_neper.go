@@ -34,8 +34,7 @@ type Config struct {
 
 	Now           func() time.Time
 	TokenOptions  auth.TokenOptions
-	Authenticator *auth.Auth       // Authentication
-	Authorizer    *auth.Authorizer // Authorization
+	Authenticator *auth.Auth // Authentication
 }
 
 // OnShutdown add a shutdown callback
@@ -103,17 +102,15 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.KeyAuth = apiAuth.Auth
 	config.OnShutdown(apiAuth.Close)
 
-	api.APIAuthorizer = config.Authorizer.Authorize(api.Context())
-
 	// Authenticate
 	api.AuthenticateHandler = handlers.NewAuthenticateHandler(config.DB, apiAuth)
 	api.RefreshTokenHandler = handlers.NewRefreshTokenHandler(&config.Log, config.DB, config.Authenticator)
 
 	// Sessions
 	api.SessionsListHandler = handlers.NewSessionsListHandler(config.DB)
-	api.SessionReadHandler = handlers.NewSessionReadHandler(config.DB)
-	api.SessionCreateHandler = handlers.NewSessionCreateHandler(config.DB, config.Authorizer)
-	api.SessionUpdateHandler = handlers.NewSessionUpdateHandler(config.DB, config.Authorizer)
+	api.SessionReadHandler = handlers.NewSessionReadHandler(&config.Log, config.DB)
+	api.SessionCreateHandler = handlers.NewSessionCreateHandler(config.DB)
+	api.SessionUpdateHandler = handlers.NewSessionUpdateHandler(&config.Log, config.DB)
 
 	// UserProfiles
 	api.UserProfileCreateHandler = handlers.NewUserProfileCreateHandler(config.DB)
@@ -128,6 +125,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 
 	// Invitations
 	api.SessionInviteHandler = handlers.NewInvitationCreateHandler(&config.Log, config.DB)
+	api.InvitationListHandler = handlers.NewInvitationListHandler(&config.Log, config.DB)
 
 	// for user to be able to find its own ID
 	api.UserinfoHandler = handlers.NewUserinfoHandler(config.DB)

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
 	"github.com/neper-stars/neper/models"
 )
 
@@ -73,5 +74,4 @@ func TestInvite(t *testing.T) {
 			UserProfileID: "samID",
 		}, &invite))
 	})
-
 }

@@ -123,14 +123,12 @@ func (tester *APITester) ResetDB(configUpdate ...RestAPIConfigUpdate) {
 	}
 
 	authenticator := auth.NewAuth(testTokenOptions, db.DB, testNow, tester.Logger)
-	authorizer := auth.NewAuthorizer(tester.Logger, db.DB)
 
 	config := restapi.Config{
 		Log:           tester.Logger,
 		DB:            db.DB,
 		TokenOptions:  testTokenOptions,
 		Authenticator: authenticator,
-		Authorizer:    authorizer,
 
 		Now: testNow,
 	}

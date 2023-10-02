@@ -29,6 +29,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "authenticate",
 	)(o.handlers["POST"]["/v1/auth/authenticate"])
 
+	o.handlers["GET"]["/v1/invitations"] = LogOperation(
+		"", "invitationList",
+	)(o.handlers["GET"]["/v1/invitations"])
+
 	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"] = LogOperation(
 		"", "raceCreate",
 	)(o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"])

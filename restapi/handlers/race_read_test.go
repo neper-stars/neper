@@ -3,13 +3,17 @@ package handlers
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
+	"gopkg.in/dgrijalva/jwt-go.v3"
 	"orus.io/orus-io/go-orusapi/database"
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/fixtures"
 	"github.com/neper-stars/neper/migration"
+	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/restapi/operations"
 	"github.com/neper-stars/neper/sync"
 )
 
@@ -32,9 +36,21 @@ func TestRaceReadHandler(t *testing.T) {
 	handler := NewRaceReadHandler(testdb.DB)
 
 	t.Run("humans", func(t *testing.T) {
-		// here we do not test authorizations which are applied in the
-		// layer just above the handler we are testing.
-		race, err := handler.handle(ctx, "humansID")
+		boromirID := "boromirID"
+
+		boromirPrincipal := models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   boromirID,
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		raceID := "humansID"
+		params := operations.RaceReadParams{
+			RaceID:        raceID,
+			UserProfileID: boromirID,
+		}
+		race, err := handler.handle(ctx, params, &boromirPrincipal)
 
 		require.NoError(t, err)
 		require.Equal(t, "Humans", race.NamePlural)
