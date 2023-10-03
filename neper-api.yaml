@@ -50,8 +50,6 @@ paths:
   /v1/auth/refresh_token:
     post:
       operationId: refresh-token
-      x-auth-namespace: tokens
-      x-auth-relation: refresh
       responses:
         200:
           description: A Json Web Token with a 5 minutes validity
@@ -65,8 +63,6 @@ paths:
   /v1/auth/userinfo:
     get:
       operationId: userinfo
-      x-auth-namespace: users
-      x-auth-relation: read
       responses:
         200:
           description: Returns the current user information
@@ -226,8 +222,6 @@ paths:
         required: true
     post:
       operationId: sessionPlayerRaceCreate
-      x-auth-namespace: sessionplayerrace
-      x-auth-relation: create
       summary: "set the race with which you will be competing in this session"
       description: |
         You will have to reference a previously uploaded race definition to indicate the host the race file
@@ -306,8 +300,6 @@ paths:
   /v1/sessions/{session_id}/rules:
     post:
       operationId: rulesCreate
-      x-auth-namespace: rules
-      x-auth-relation: create
       summary: "create rules for your session"
       description: "if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint."
       parameters:
@@ -336,8 +328,6 @@ paths:
   /v1/user_profiles:
     get:
       operationId: userProfileList
-      x-auth-namespace: users
-      x-auth-relation: read
       responses:
         200:
           description: the complete list of user profiles
@@ -351,8 +341,6 @@ paths:
           $ref: "#/responses/forbidden"
     post:
       operationId: userProfileCreate
-      x-auth-namespace: users
-      x-auth-relation: create
       description: |
         Creates a user profile.
       parameters:
@@ -378,8 +366,6 @@ paths:
         required: true
     get:
       operationId: userProfileRead
-      x-auth-namespace: users
-      x-auth-relation: read
       description: |
         Return the user_profile.
       responses:
@@ -393,8 +379,6 @@ paths:
           $ref: "#/responses/forbidden"
     put:
       operationId: userProfileUpdate
-      x-auth-namespace: users
-      x-auth-relation: update
       description: |
         Update the user_profile.
       parameters:
@@ -415,8 +399,6 @@ paths:
   /v1/user_profiles/{user_profile_id}/races:
     get:
       operationId: racesList
-      x-auth-namespace: races
-      x-auth-relation: read
       parameters:
         - name: "user_profile_id"
           in: "path"
@@ -437,8 +419,6 @@ paths:
           $ref: "#/responses/default"
     post:
       operationId: raceCreate
-      x-auth-namespace: races
-      x-auth-relation: create
       summary: "upload your race file for future use in a session"
       description: "Each player will need to upload at least one race file using this endpoint. Alternatively the player can choose to use a standard race during session setup."
       parameters:
@@ -467,8 +447,6 @@ paths:
   /v1/user_profiles/{user_profile_id}/races/{race_id}:
     get:
       operationId: raceRead
-      x-auth-namespace: races
-      x-auth-relation: read
       description: |
         Return the asked race from your profile.
       parameters:

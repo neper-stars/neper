@@ -87,9 +87,7 @@ func init() {
               "$ref": "neper-types.yaml#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "tokens",
-        "x-auth-relation": "refresh"
+        }
       }
     },
     "/v1/auth/userinfo": {
@@ -108,9 +106,7 @@ func init() {
               "$ref": "neper-types.yaml#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "read"
+        }
       }
     },
     "/v1/invitations": {
@@ -412,9 +408,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "sessionplayerrace",
-        "x-auth-relation": "create"
+        }
       },
       "parameters": [
         {
@@ -464,9 +458,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "rules",
-        "x-auth-relation": "create"
+        }
       }
     },
     "/v1/user_profiles": {
@@ -488,9 +480,7 @@ func init() {
           "403": {
             "$ref": "#/responses/forbidden"
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "read"
+        }
       },
       "post": {
         "description": "Creates a user profile.\n",
@@ -517,9 +507,7 @@ func init() {
           "403": {
             "$ref": "#/responses/forbidden"
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "create"
+        }
       }
     },
     "/v1/user_profiles/{user_profile_id}": {
@@ -539,9 +527,7 @@ func init() {
           "403": {
             "$ref": "#/responses/forbidden"
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "read"
+        }
       },
       "put": {
         "description": "Update the user_profile.\n",
@@ -568,9 +554,7 @@ func init() {
           "403": {
             "$ref": "#/responses/forbidden"
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "update"
+        }
       },
       "parameters": [
         {
@@ -611,9 +595,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "races",
-        "x-auth-relation": "read"
+        }
       },
       "post": {
         "description": "Each player will need to upload at least one race file using this endpoint. Alternatively the player can choose to use a standard race during session setup.",
@@ -653,9 +635,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "races",
-        "x-auth-relation": "create"
+        }
       }
     },
     "/v1/user_profiles/{user_profile_id}/races/{race_id}": {
@@ -689,9 +669,7 @@ func init() {
           "403": {
             "$ref": "#/responses/forbidden"
           }
-        },
-        "x-auth-namespace": "races",
-        "x-auth-relation": "read"
+        }
       }
     }
   },
@@ -860,9 +838,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "tokens",
-        "x-auth-relation": "refresh"
+        }
       }
     },
     "/v1/auth/userinfo": {
@@ -881,9 +857,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "read"
+        }
       }
     },
     "/v1/invitations": {
@@ -1284,9 +1258,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "sessionplayerrace",
-        "x-auth-relation": "create"
+        }
       },
       "parameters": [
         {
@@ -1348,9 +1320,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "rules",
-        "x-auth-relation": "create"
+        }
       }
     },
     "/v1/user_profiles": {
@@ -1378,9 +1348,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "read"
+        }
       },
       "post": {
         "description": "Creates a user profile.\n",
@@ -1413,9 +1381,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "create"
+        }
       }
     },
     "/v1/user_profiles/{user_profile_id}": {
@@ -1441,9 +1407,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "read"
+        }
       },
       "put": {
         "description": "Update the user_profile.\n",
@@ -1476,9 +1440,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "users",
-        "x-auth-relation": "update"
+        }
       },
       "parameters": [
         {
@@ -1528,9 +1490,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "races",
-        "x-auth-relation": "read"
+        }
       },
       "post": {
         "description": "Each player will need to upload at least one race file using this endpoint. Alternatively the player can choose to use a standard race during session setup.",
@@ -1582,9 +1542,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "races",
-        "x-auth-relation": "create"
+        }
       }
     },
     "/v1/user_profiles/{user_profile_id}/races/{race_id}": {
@@ -1624,9 +1582,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "races",
-        "x-auth-relation": "read"
+        }
       }
     }
   },
