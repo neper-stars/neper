@@ -17,8 +17,7 @@ TEST_VARS
 # config file as examplified in README
 config.ini
 
-# this file is generated (?)
-tests/data.json
+tests-coverage.*
 
 # bindata.go is always generated during build, never versionned
 # they contain heavy assets (like the whole UI) and thus do not have

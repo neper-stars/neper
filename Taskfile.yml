@@ -71,10 +71,27 @@ tasks:
     cmds:
       - go test ./...
 
+  cover:
+    desc: Run the tests with coverage
+    deps: [fetch-cover-cobertura]
+    cmds:
+      - go test ./tests -cover -coverprofile tests-coverage.out -coverpkg $(go list ./restapi ./restapi/handlers/... ./models/... ./lib/... ./auth/... | xargs | sed 's/ /,/g')
+      - gocover-cobertura < tests-coverage.out > tests-coverage.xml
+      - go tool cover -html=tests-coverage.out -o tests-coverage.html
+
   fetch-govulncheck:
     desc: fetch govulncheck
     cmds:
       - go install golang.org/x/vuln/cmd/govulncheck@latest
+
+  fetch-cover-cobertura:
+    run: once
+    desc: Install cover tools
+    cmds:
+      - task: go-install
+        vars: {REPO: github.com/t-yuki/gocover-cobertura@latest}
+    status:
+      - test -x $(which gocover-cobertura)
 
   vulncheck:
     desc: search for known vulnerabilities in our code and our libraries
@@ -86,14 +103,14 @@ tasks:
     run: once
     desc: Install tools required to build this app
     cmds:
-      - task: go-get
-        vars: {REPO: github.com/tdewolff/minify/cmd/minify}
+      - task: go-install
+        vars: {REPO: github.com/tdewolff/minify/cmd/minify@latest}
     status:
       - test -x $(which minify)
 
-  go-get:
+  go-install:
     cmds:
-      - go get -u {{.REPO}}
+      - go install {{.REPO}}
 
   go-swagger:
     run: once
