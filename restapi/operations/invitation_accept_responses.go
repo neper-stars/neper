@@ -145,6 +145,94 @@ func (o *InvitationAcceptForbidden) WriteResponse(rw http.ResponseWriter, produc
 	}
 }
 
+// InvitationAcceptNotFoundCode is the HTTP code returned for type InvitationAcceptNotFound
+const InvitationAcceptNotFoundCode int = 404
+
+/*InvitationAcceptNotFound Resource not found
+
+swagger:response invitationAcceptNotFound
+*/
+type InvitationAcceptNotFound struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewInvitationAcceptNotFound creates InvitationAcceptNotFound with default headers values
+func NewInvitationAcceptNotFound() *InvitationAcceptNotFound {
+
+	return &InvitationAcceptNotFound{}
+}
+
+// WithPayload adds the payload to the invitation accept not found response
+func (o *InvitationAcceptNotFound) WithPayload(payload *models.Error) *InvitationAcceptNotFound {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the invitation accept not found response
+func (o *InvitationAcceptNotFound) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *InvitationAcceptNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(404)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// InvitationAcceptConflictCode is the HTTP code returned for type InvitationAcceptConflict
+const InvitationAcceptConflictCode int = 409
+
+/*InvitationAcceptConflict Resource already exists
+
+swagger:response invitationAcceptConflict
+*/
+type InvitationAcceptConflict struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewInvitationAcceptConflict creates InvitationAcceptConflict with default headers values
+func NewInvitationAcceptConflict() *InvitationAcceptConflict {
+
+	return &InvitationAcceptConflict{}
+}
+
+// WithPayload adds the payload to the invitation accept conflict response
+func (o *InvitationAcceptConflict) WithPayload(payload *models.Error) *InvitationAcceptConflict {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the invitation accept conflict response
+func (o *InvitationAcceptConflict) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *InvitationAcceptConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(409)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*InvitationAcceptDefault Generic error response
 
 swagger:response invitationAcceptDefault

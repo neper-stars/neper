@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	"github.com/lib/pq"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -57,8 +58,10 @@ func (h *InvitationAcceptHandler) handle(
 	var sessionDB models.SessionDB
 	sessionID := invitationDB.SessionID
 	if err := sqlH.GetByPKey(&sessionDB, sessionID); err != nil {
-		// either session has gone missing or the sql server is misbehaving
-		// in all cases this is a 500 error
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errs.ErrSessionNotFound{GivenMessage: "session not found"}
+		}
+		// the sql server is misbehaving / we have a code problem this is a 500 error
 		return nil, err
 	}
 
@@ -70,6 +73,14 @@ func (h *InvitationAcceptHandler) handle(
 	}
 	_, err = sqlH.Insert(&relation)
 	if err != nil {
+		pqErr, ok := err.(*pq.Error) // nolint:errorlint
+		if ok {
+			// we received an error from PG
+			if pqErr.Constraint == "user_profile_session_rel_user_profile_id_session_id_key" {
+				// and this error is specific to a constraint we know how to interpret as: session membership already exists
+				return nil, errs.NewErrAlreadyExists("session membership already exists for user: " + principal.Subject + "and session: " + sessionID)
+			}
+		}
 		log.Err(err).Msg("failed to insert relation upon invitation accept")
 		return nil, err
 	}
@@ -93,10 +104,11 @@ func (h *InvitationAcceptHandler) Handle(
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrForbidden):
-			return operations.NewInvitationAcceptForbidden().WithPayload(&models.Error{
-				Code:    http.StatusForbidden,
-				Message: &verbotten,
-			})
+			return operations.NewInvitationAcceptForbidden().
+				WithPayload(models.NewError(http.StatusForbidden, verbotten))
+		case errors.Is(err, errs.ErrConflict):
+			return operations.NewInvitationAcceptConflict().
+				WithPayload(models.NewError(http.StatusConflict, err.Error()))
 		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):

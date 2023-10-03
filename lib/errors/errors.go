@@ -17,6 +17,9 @@ var ErrInvalid = errors.New("generic invalid error")
 // ErrForbidden ...
 var ErrForbidden = errors.New("forbidden")
 
+// ErrConflict (409)
+var ErrConflict = errors.New("conflict")
+
 // *********************
 // error implementations
 // *********************
@@ -160,8 +163,8 @@ func (e ErrAlreadyExists) Error() string {
 
 // Is ...
 func (e ErrAlreadyExists) Is(target error) bool {
-	// am I an ErrInvalid ? Yes
-	return errors.Is(target, ErrInvalid)
+	// am I an ErrConflict ? Yes
+	return errors.Is(target, ErrConflict)
 }
 
 // ErrInvalidRace ...

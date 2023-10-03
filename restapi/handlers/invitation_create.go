@@ -93,8 +93,6 @@ func (h *InvitationCreateHandler) handle(
 	return &invitationDB.Invitation, nil
 }
 
-var verbotten = "verbotten"
-
 // Handle handles the request
 func (h *InvitationCreateHandler) Handle(
 	params operations.InvitationCreateParams, principal *models.Principal,
@@ -103,10 +101,11 @@ func (h *InvitationCreateHandler) Handle(
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrForbidden):
-			return operations.NewInvitationCreateForbidden().WithPayload(&models.Error{
-				Code:    http.StatusForbidden,
-				Message: &verbotten,
-			})
+			return operations.NewInvitationCreateForbidden().
+				WithPayload(models.NewError(http.StatusForbidden, verbotten))
+		case errors.Is(err, errs.ErrConflict):
+			return operations.NewInvitationCreateConflict().
+				WithPayload(models.NewError(http.StatusConflict, err.Error()))
 		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):

@@ -155,6 +155,12 @@ func init() {
           "403": {
             "$ref": "#/responses/forbidden"
           },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "409": {
+            "$ref": "#/responses/conflict"
+          },
           "default": {
             "$ref": "#/responses/default"
           }
@@ -314,6 +320,9 @@ func init() {
           },
           "403": {
             "$ref": "#/responses/forbidden"
+          },
+          "409": {
+            "$ref": "#/responses/conflict"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -728,6 +737,12 @@ func init() {
     }
   },
   "responses": {
+    "conflict": {
+      "description": "Resource already exists",
+      "schema": {
+        "$ref": "neper-types.yaml#/definitions/error"
+      }
+    },
     "default": {
       "description": "Generic error response",
       "schema": {
@@ -924,6 +939,18 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "409": {
+            "description": "Resource already exists",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -1132,6 +1159,12 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "409": {
+            "description": "Resource already exists",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -1918,6 +1951,12 @@ func init() {
     }
   },
   "responses": {
+    "conflict": {
+      "description": "Resource already exists",
+      "schema": {
+        "$ref": "#/definitions/error"
+      }
+    },
     "default": {
       "description": "Generic error response",
       "schema": {

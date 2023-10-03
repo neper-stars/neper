@@ -189,6 +189,50 @@ func (o *InvitationCreateForbidden) WriteResponse(rw http.ResponseWriter, produc
 	}
 }
 
+// InvitationCreateConflictCode is the HTTP code returned for type InvitationCreateConflict
+const InvitationCreateConflictCode int = 409
+
+/*InvitationCreateConflict Resource already exists
+
+swagger:response invitationCreateConflict
+*/
+type InvitationCreateConflict struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewInvitationCreateConflict creates InvitationCreateConflict with default headers values
+func NewInvitationCreateConflict() *InvitationCreateConflict {
+
+	return &InvitationCreateConflict{}
+}
+
+// WithPayload adds the payload to the invitation create conflict response
+func (o *InvitationCreateConflict) WithPayload(payload *models.Error) *InvitationCreateConflict {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the invitation create conflict response
+func (o *InvitationCreateConflict) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *InvitationCreateConflict) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(409)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*InvitationCreateDefault Generic error response
 
 swagger:response invitationCreateDefault
