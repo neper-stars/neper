@@ -44,7 +44,7 @@ func TestInvitationCreateHandler(t *testing.T) {
 			UserProfileID: "merryID",
 		}
 
-		params := operations.SessionInviteParams{
+		params := operations.InvitationCreateParams{
 			Invitation: &invitation,
 			SessionID:  sessionID,
 		}
@@ -89,7 +89,7 @@ func TestInvitationCreateHandler(t *testing.T) {
 			UserProfileID: "merryID",
 		}
 
-		params := operations.SessionInviteParams{
+		params := operations.InvitationCreateParams{
 			Invitation: &invitation,
 			SessionID:  sessionID,
 		}
@@ -116,7 +116,7 @@ func TestInvitationCreateHandler(t *testing.T) {
 			UserProfileID: "merryID",
 		}
 
-		params := operations.SessionInviteParams{
+		params := operations.InvitationCreateParams{
 			Invitation: &invitation,
 			SessionID:  sessionID, // <-- in the path we use a session we are allowed
 		}

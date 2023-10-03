@@ -12,6 +12,12 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/auth/authenticate"] = AuthenticateInstrumentHandler(
 		o.handlers["POST"]["/v1/auth/authenticate"])
 
+	o.handlers["PUT"]["/v1/invitations/{invitation_id}"] = InvitationAcceptInstrumentHandler(
+		o.handlers["PUT"]["/v1/invitations/{invitation_id}"])
+
+	o.handlers["POST"]["/v1/sessions/{session_id}/invite"] = InvitationCreateInstrumentHandler(
+		o.handlers["POST"]["/v1/sessions/{session_id}/invite"])
+
 	o.handlers["GET"]["/v1/invitations"] = InvitationListInstrumentHandler(
 		o.handlers["GET"]["/v1/invitations"])
 
@@ -32,9 +38,6 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 
 	o.handlers["POST"]["/v1/sessions"] = SessionCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions"])
-
-	o.handlers["POST"]["/v1/sessions/{session_id}/invite"] = SessionInviteInstrumentHandler(
-		o.handlers["POST"]["/v1/sessions/{session_id}/invite"])
 
 	o.handlers["POST"]["/v1/sessions/{session_id}/join"] = SessionJoinInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/join"])

@@ -138,6 +138,37 @@ func init() {
         }
       }
     },
+    "/v1/invitations/{invitation_id}": {
+      "put": {
+        "description": "Join a session by accepting the invitation.\nYou will become member of the session that is referenced in\nthe invitation.\nYou can only accept an invitation that was addressed to you,\notherwise you will receive a 403 response.\nIn case of success you will receive the session details of the session\nyou just accepted to join.\n",
+        "operationId": "invitationAccept",
+        "responses": {
+          "200": {
+            "description": "the session you just joined",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/session"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "invitation_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions": {
       "get": {
         "operationId": "sessionsList",
@@ -160,9 +191,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "read"
+        }
       },
       "post": {
         "description": "Creates a new session\n",
@@ -192,9 +221,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "create"
+        }
       }
     },
     "/v1/sessions/{session_id}": {
@@ -217,9 +244,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "read"
+        }
       },
       "put": {
         "description": "Update the session\n\nThis is restricted to global managers or\nmanagers of the specific session\n",
@@ -249,9 +274,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "update"
+        }
       },
       "parameters": [
         {
@@ -266,7 +289,7 @@ func init() {
       "post": {
         "description": "invite a player to the session",
         "summary": "invite a player to a session. You can do this if you are the manager of this session.",
-        "operationId": "sessionInvite",
+        "operationId": "invitationCreate",
         "parameters": [
           {
             "name": "invitation",
@@ -330,9 +353,7 @@ func init() {
           "default": {
             "$ref": "#/responses/default"
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "join"
+        }
       },
       "parameters": [
         {
@@ -884,6 +905,46 @@ func init() {
         }
       }
     },
+    "/v1/invitations/{invitation_id}": {
+      "put": {
+        "description": "Join a session by accepting the invitation.\nYou will become member of the session that is referenced in\nthe invitation.\nYou can only accept an invitation that was addressed to you,\notherwise you will receive a 403 response.\nIn case of success you will receive the session details of the session\nyou just accepted to join.\n",
+        "operationId": "invitationAccept",
+        "responses": {
+          "200": {
+            "description": "the session you just joined",
+            "schema": {
+              "$ref": "#/definitions/session"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "invitation_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions": {
       "get": {
         "operationId": "sessionsList",
@@ -915,9 +976,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "read"
+        }
       },
       "post": {
         "description": "Creates a new session\n",
@@ -956,9 +1015,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "create"
+        }
       }
     },
     "/v1/sessions/{session_id}": {
@@ -990,9 +1047,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "read"
+        }
       },
       "put": {
         "description": "Update the session\n\nThis is restricted to global managers or\nmanagers of the specific session\n",
@@ -1031,9 +1086,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "update"
+        }
       },
       "parameters": [
         {
@@ -1048,7 +1101,7 @@ func init() {
       "post": {
         "description": "invite a player to the session",
         "summary": "invite a player to a session. You can do this if you are the manager of this session.",
-        "operationId": "sessionInvite",
+        "operationId": "invitationCreate",
         "parameters": [
           {
             "name": "invitation",
@@ -1136,9 +1189,7 @@ func init() {
               "$ref": "#/definitions/error"
             }
           }
-        },
-        "x-auth-namespace": "sessions",
-        "x-auth-relation": "join"
+        }
       },
       "parameters": [
         {

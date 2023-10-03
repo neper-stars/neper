@@ -12,32 +12,32 @@ import (
 )
 
 var (
-	sessionInviteHandlerDuration = prometheus.NewSummaryVec(
+	invitationCreateHandlerDuration = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Name:       "orus_api_handler",
 			Help:       "The handlers duration and count.",
 			Objectives: map[float64]float64{0.9: 0.01, 0.95: 0.01, 0.99: 0.001},
 			ConstLabels: map[string]string{
-				"service": "sessionInvite",
+				"service": "invitationCreate",
 			},
 		},
 		[]string{"code"},
 	)
 
-	sessionInviteHandlerInFlight = prometheus.NewGauge(
+	invitationCreateHandlerInFlight = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "orus_api_handler_in_flight",
 			Help: "The number of handlers currently running.",
 			ConstLabels: map[string]string{
-				"service": "sessionInvite",
+				"service": "invitationCreate",
 			},
 		},
 	)
 )
 
-func SessionInviteInstrumentHandler(handler http.Handler) http.Handler {
-	return promhttp.InstrumentHandlerInFlight(sessionInviteHandlerInFlight,
-		promhttp.InstrumentHandlerDuration(sessionInviteHandlerDuration,
+func InvitationCreateInstrumentHandler(handler http.Handler) http.Handler {
+	return promhttp.InstrumentHandlerInFlight(invitationCreateHandlerInFlight,
+		promhttp.InstrumentHandlerDuration(invitationCreateHandlerDuration,
 			handler,
 		),
 	)

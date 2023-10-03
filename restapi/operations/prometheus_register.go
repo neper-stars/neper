@@ -12,6 +12,14 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		authenticateHandlerInFlight,
 	)
 	reg.MustRegister(
+		invitationAcceptHandlerDuration,
+		invitationAcceptHandlerInFlight,
+	)
+	reg.MustRegister(
+		invitationCreateHandlerDuration,
+		invitationCreateHandlerInFlight,
+	)
+	reg.MustRegister(
 		invitationListHandlerDuration,
 		invitationListHandlerInFlight,
 	)
@@ -38,10 +46,6 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 	reg.MustRegister(
 		sessionCreateHandlerDuration,
 		sessionCreateHandlerInFlight,
-	)
-	reg.MustRegister(
-		sessionInviteHandlerDuration,
-		sessionInviteHandlerInFlight,
 	)
 	reg.MustRegister(
 		sessionJoinHandlerDuration,

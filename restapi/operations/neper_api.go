@@ -47,6 +47,12 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		AuthenticateHandler: AuthenticateHandlerFunc(func(params AuthenticateParams) middleware.Responder {
 			return middleware.NotImplemented("operation Authenticate has not yet been implemented")
 		}),
+		InvitationAcceptHandler: InvitationAcceptHandlerFunc(func(params InvitationAcceptParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation InvitationAccept has not yet been implemented")
+		}),
+		InvitationCreateHandler: InvitationCreateHandlerFunc(func(params InvitationCreateParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation InvitationCreate has not yet been implemented")
+		}),
 		InvitationListHandler: InvitationListHandlerFunc(func(params InvitationListParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation InvitationList has not yet been implemented")
 		}),
@@ -67,9 +73,6 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		}),
 		SessionCreateHandler: SessionCreateHandlerFunc(func(params SessionCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionCreate has not yet been implemented")
-		}),
-		SessionInviteHandler: SessionInviteHandlerFunc(func(params SessionInviteParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation SessionInvite has not yet been implemented")
 		}),
 		SessionJoinHandler: SessionJoinHandlerFunc(func(params SessionJoinParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionJoin has not yet been implemented")
@@ -154,6 +157,10 @@ type NeperAPI struct {
 
 	// AuthenticateHandler sets the operation handler for the authenticate operation
 	AuthenticateHandler AuthenticateHandler
+	// InvitationAcceptHandler sets the operation handler for the invitation accept operation
+	InvitationAcceptHandler InvitationAcceptHandler
+	// InvitationCreateHandler sets the operation handler for the invitation create operation
+	InvitationCreateHandler InvitationCreateHandler
 	// InvitationListHandler sets the operation handler for the invitation list operation
 	InvitationListHandler InvitationListHandler
 	// RaceCreateHandler sets the operation handler for the race create operation
@@ -168,8 +175,6 @@ type NeperAPI struct {
 	RulesCreateHandler RulesCreateHandler
 	// SessionCreateHandler sets the operation handler for the session create operation
 	SessionCreateHandler SessionCreateHandler
-	// SessionInviteHandler sets the operation handler for the session invite operation
-	SessionInviteHandler SessionInviteHandler
 	// SessionJoinHandler sets the operation handler for the session join operation
 	SessionJoinHandler SessionJoinHandler
 	// SessionPlayerRaceCreateHandler sets the operation handler for the session player race create operation
@@ -274,6 +279,12 @@ func (o *NeperAPI) Validate() error {
 	if o.AuthenticateHandler == nil {
 		unregistered = append(unregistered, "AuthenticateHandler")
 	}
+	if o.InvitationAcceptHandler == nil {
+		unregistered = append(unregistered, "InvitationAcceptHandler")
+	}
+	if o.InvitationCreateHandler == nil {
+		unregistered = append(unregistered, "InvitationCreateHandler")
+	}
 	if o.InvitationListHandler == nil {
 		unregistered = append(unregistered, "InvitationListHandler")
 	}
@@ -294,9 +305,6 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.SessionCreateHandler == nil {
 		unregistered = append(unregistered, "SessionCreateHandler")
-	}
-	if o.SessionInviteHandler == nil {
-		unregistered = append(unregistered, "SessionInviteHandler")
 	}
 	if o.SessionJoinHandler == nil {
 		unregistered = append(unregistered, "SessionJoinHandler")
@@ -431,6 +439,14 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/auth/authenticate"] = NewAuthenticate(o.context, o.AuthenticateHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/v1/invitations/{invitation_id}"] = NewInvitationAccept(o.context, o.InvitationAcceptHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/v1/sessions/{session_id}/invite"] = NewInvitationCreate(o.context, o.InvitationCreateHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -459,10 +475,6 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions"] = NewSessionCreate(o.context, o.SessionCreateHandler)
-	if o.handlers["POST"] == nil {
-		o.handlers["POST"] = make(map[string]http.Handler)
-	}
-	o.handlers["POST"]["/v1/sessions/{session_id}/invite"] = NewSessionInvite(o.context, o.SessionInviteHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

@@ -32,7 +32,7 @@ func (h *SessionsList) handle(
 		return nil, err
 	}
 	defer tx.RollbackIfOpened(log)
-	sql := database.NewSQLHelper(ctx, tx, log)
+	sqlH := database.NewSQLHelper(ctx, tx, log)
 
 	s := models.Schema.SessionDB.As("s")
 
@@ -64,12 +64,16 @@ func (h *SessionsList) handle(
 	}
 
 	var list []*models.SessionDB
-	if err := sql.Select(&list, query); err != nil {
+	if err := sqlH.Select(&list, query); err != nil {
 		return nil, err
 	}
 
 	var retList []*models.Session
 	for i := range list {
+		// load all related tables to populate session
+		if err := list[i].FromDB(&sqlH); err != nil {
+			return nil, err
+		}
 		retList = append(retList, &list[i].Session)
 	}
 	return retList, nil

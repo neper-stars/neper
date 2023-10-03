@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-// SessionInviteURL generates an URL for the session invite operation
-type SessionInviteURL struct {
+// InvitationCreateURL generates an URL for the invitation create operation
+type InvitationCreateURL struct {
 	SessionID string
 
 	_basePath string
@@ -24,7 +24,7 @@ type SessionInviteURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *SessionInviteURL) WithBasePath(bp string) *SessionInviteURL {
+func (o *InvitationCreateURL) WithBasePath(bp string) *InvitationCreateURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -32,12 +32,12 @@ func (o *SessionInviteURL) WithBasePath(bp string) *SessionInviteURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *SessionInviteURL) SetBasePath(bp string) {
+func (o *InvitationCreateURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *SessionInviteURL) Build() (*url.URL, error) {
+func (o *InvitationCreateURL) Build() (*url.URL, error) {
 	var _result url.URL
 
 	var _path = "/v1/sessions/{session_id}/invite"
@@ -46,7 +46,7 @@ func (o *SessionInviteURL) Build() (*url.URL, error) {
 	if sessionID != "" {
 		_path = strings.Replace(_path, "{session_id}", sessionID, -1)
 	} else {
-		return nil, errors.New("sessionId is required on SessionInviteURL")
+		return nil, errors.New("sessionId is required on InvitationCreateURL")
 	}
 
 	_basePath := o._basePath
@@ -59,7 +59,7 @@ func (o *SessionInviteURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *SessionInviteURL) Must(u *url.URL, err error) *url.URL {
+func (o *InvitationCreateURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -70,17 +70,17 @@ func (o *SessionInviteURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *SessionInviteURL) String() string {
+func (o *InvitationCreateURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *SessionInviteURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *InvitationCreateURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on SessionInviteURL")
+		return nil, errors.New("scheme is required for a full url on InvitationCreateURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on SessionInviteURL")
+		return nil, errors.New("host is required for a full url on InvitationCreateURL")
 	}
 
 	base, err := o.Build()
@@ -94,6 +94,6 @@ func (o *SessionInviteURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *SessionInviteURL) StringFull(scheme, host string) string {
+func (o *InvitationCreateURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

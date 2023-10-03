@@ -124,8 +124,9 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.RaceReadHandler = handlers.NewRaceReadHandler(config.DB)
 
 	// Invitations
-	api.SessionInviteHandler = handlers.NewInvitationCreateHandler(&config.Log, config.DB)
+	api.InvitationCreateHandler = handlers.NewInvitationCreateHandler(&config.Log, config.DB)
 	api.InvitationListHandler = handlers.NewInvitationListHandler(&config.Log, config.DB)
+	api.InvitationAcceptHandler = handlers.NewInvitationAcceptHandler(&config.Log, config.DB)
 
 	// for user to be able to find its own ID
 	api.UserinfoHandler = handlers.NewUserinfoHandler(config.DB)

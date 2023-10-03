@@ -42,7 +42,7 @@ func (e *ErrInvalidInvitation) Is(target error) bool {
 }
 
 func (h *InvitationCreateHandler) handle(
-	ctx context.Context, params operations.SessionInviteParams, principal *models.Principal,
+	ctx context.Context, params operations.InvitationCreateParams, principal *models.Principal,
 ) (*models.Invitation, error) {
 	authorized, err := h.Authorize(ctx, params, principal)
 	if err != nil {
@@ -97,13 +97,13 @@ var verbotten = "verbotten"
 
 // Handle handles the request
 func (h *InvitationCreateHandler) Handle(
-	params operations.SessionInviteParams, principal *models.Principal,
+	params operations.InvitationCreateParams, principal *models.Principal,
 ) middleware.Responder {
 	invitation, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrForbidden):
-			return operations.NewSessionInviteForbidden().WithPayload(&models.Error{
+			return operations.NewInvitationCreateForbidden().WithPayload(&models.Error{
 				Code:    http.StatusForbidden,
 				Message: &verbotten,
 			})
@@ -115,11 +115,11 @@ func (h *InvitationCreateHandler) Handle(
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
-	return operations.NewSessionInviteCreated().WithPayload(invitation)
+	return operations.NewInvitationCreateCreated().WithPayload(invitation)
 }
 
 func (h *InvitationCreateHandler) Authorize(
-	ctx context.Context, params operations.SessionInviteParams, principal *models.Principal,
+	ctx context.Context, params operations.InvitationCreateParams, principal *models.Principal,
 ) (bool, error) {
 	if principal.IsGlobalManager {
 		return true, nil

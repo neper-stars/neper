@@ -23,3 +23,16 @@ func userProfileSessionRelationQuery(userProfileID, sessionID string) sq.SelectB
 			},
 		)
 }
+
+func invitationQuery(userProfileID, invitationID string) sq.SelectBuilder {
+	return database.SQ.
+		Select().
+		Columns(models.InvitationDBColumns...).
+		From(models.InvitationDBTable).
+		Where(
+			sq.And{
+				sq.Eq{models.InvitationDBIDColumn: invitationID},
+				sq.Eq{models.InvitationDBUserProfileIDColumn: userProfileID},
+			},
+		)
+}

@@ -121,7 +121,7 @@ paths:
         type: string
         required: true
     post:
-      operationId: sessionInvite
+      operationId: invitationCreate
       parameters:
         - name: invitation
           in: body
@@ -153,6 +153,34 @@ paths:
             type: array
             items:
               $ref: "neper-types.yaml#/definitions/invitation"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
+
+  /v1/invitations/{invitation_id}:
+    parameters:
+      - name: invitation_id
+        in: path
+        type: string
+        required: true
+    put:
+      operationId: invitationAccept
+      description: |
+        Join a session by accepting the invitation.
+        You will become member of the session that is referenced in
+        the invitation.
+        You can only accept an invitation that was addressed to you,
+        otherwise you will receive a 403 response.
+        In case of success you will receive the session details of the session
+        you just accepted to join.
+      responses:
+        200:
+          description: the session you just joined
+          schema:
+            $ref: "neper-types.yaml#/definitions/session"
         401:
           $ref: "#/responses/unauthorized"
         403:

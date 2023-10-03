@@ -16,43 +16,48 @@ import (
 	"github.com/neper-stars/neper/models"
 )
 
-// SessionInviteHandlerFunc turns a function with the right signature into a session invite handler
-type SessionInviteHandlerFunc func(SessionInviteParams, *models.Principal) middleware.Responder
+// InvitationAcceptHandlerFunc turns a function with the right signature into a invitation accept handler
+type InvitationAcceptHandlerFunc func(InvitationAcceptParams, *models.Principal) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn SessionInviteHandlerFunc) Handle(params SessionInviteParams, principal *models.Principal) middleware.Responder {
+func (fn InvitationAcceptHandlerFunc) Handle(params InvitationAcceptParams, principal *models.Principal) middleware.Responder {
 	return fn(params, principal)
 }
 
-// SessionInviteHandler interface for that can handle valid session invite params
-type SessionInviteHandler interface {
-	Handle(SessionInviteParams, *models.Principal) middleware.Responder
+// InvitationAcceptHandler interface for that can handle valid invitation accept params
+type InvitationAcceptHandler interface {
+	Handle(InvitationAcceptParams, *models.Principal) middleware.Responder
 }
 
-// NewSessionInvite creates a new http.Handler for the session invite operation
-func NewSessionInvite(ctx *middleware.Context, handler SessionInviteHandler) *SessionInvite {
-	return &SessionInvite{Context: ctx, Handler: handler}
+// NewInvitationAccept creates a new http.Handler for the invitation accept operation
+func NewInvitationAccept(ctx *middleware.Context, handler InvitationAcceptHandler) *InvitationAccept {
+	return &InvitationAccept{Context: ctx, Handler: handler}
 }
 
-/* SessionInvite swagger:route POST /v1/sessions/{session_id}/invite sessionInvite
+/* InvitationAccept swagger:route PUT /v1/invitations/{invitation_id} invitationAccept
 
-invite a player to a session. You can do this if you are the manager of this session.
+Join a session by accepting the invitation.
+You will become member of the session that is referenced in
+the invitation.
+You can only accept an invitation that was addressed to you,
+otherwise you will receive a 403 response.
+In case of success you will receive the session details of the session
+you just accepted to join.
 
-invite a player to the session
 
 */
-type SessionInvite struct {
+type InvitationAccept struct {
 	Context *middleware.Context
-	Handler SessionInviteHandler
+	Handler InvitationAcceptHandler
 }
 
-func (o *SessionInvite) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *InvitationAccept) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		*r = *rCtx
 	}
 
-	var Params = NewSessionInviteParams()
+	var Params = NewInvitationAcceptParams()
 	var bodyExists bool
 	var body []byte
 	if r.Body != nil {

@@ -18,19 +18,19 @@ import (
 	"github.com/neper-stars/neper/models"
 )
 
-// NewSessionInviteParams creates a new SessionInviteParams object
+// NewInvitationCreateParams creates a new InvitationCreateParams object
 //
 // There are no default values defined in the spec.
-func NewSessionInviteParams() SessionInviteParams {
+func NewInvitationCreateParams() InvitationCreateParams {
 
-	return SessionInviteParams{}
+	return InvitationCreateParams{}
 }
 
-// SessionInviteParams contains all the bound params for the session invite operation
+// InvitationCreateParams contains all the bound params for the invitation create operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters sessionInvite
-type SessionInviteParams struct {
+// swagger:parameters invitationCreate
+type InvitationCreateParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -49,8 +49,8 @@ type SessionInviteParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewSessionInviteParams() beforehand.
-func (o *SessionInviteParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewInvitationCreateParams() beforehand.
+func (o *InvitationCreateParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r
@@ -88,7 +88,7 @@ func (o *SessionInviteParams) BindRequest(r *http.Request, route *middleware.Mat
 }
 
 // bindSessionID binds and validates parameter SessionID from path.
-func (o *SessionInviteParams) bindSessionID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *InvitationCreateParams) bindSessionID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
