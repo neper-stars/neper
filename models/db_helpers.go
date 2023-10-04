@@ -254,7 +254,7 @@ const (
 	SessionPlayerRaceUserProfileIDColumn = "user_profile_id"
 
 	// SessionPlayerRaceDBTable is the name of the table where SessionPlayerRaceDB are stored
-	SessionPlayerRaceDBTable = "session_user_profile_race"
+	SessionPlayerRaceDBTable = "session_player_race"
 
 	// SessionPlayerRaceDBPKeyColumn is the name of the primary key
 	SessionPlayerRaceDBPKeyColumn = SessionPlayerRaceDBIDColumn

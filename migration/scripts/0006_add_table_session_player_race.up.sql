@@ -1,4 +1,4 @@
-CREATE TABLE session_user_profile_race (
+CREATE TABLE session_player_race (
     id VARCHAR PRIMARY KEY,
     session_id VARCHAR NOT NULL,
     user_profile_id VARCHAR NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE session_user_profile_race (
     FOREIGN KEY (session_id) REFERENCES session (id) ON DELETE CASCADE,
     FOREIGN KEY (race_id) REFERENCES race (id) ON DELETE CASCADE,
     CONSTRAINT bot_level_should_be_lower_or_equal_to_4
-      check (session_user_profile_race.bot_level <= 4),
+      check (session_player_race.bot_level <= 4),
     CONSTRAINT player_order_should_be_lower_or_equal_to_15
-      check (session_user_profile_race.player_order <= 15)
+      check (session_player_race.player_order <= 15)
 );

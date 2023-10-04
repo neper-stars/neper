@@ -7,7 +7,7 @@
 // scripts/0003_add_table_session.up.sql
 // scripts/0004_add_table_user_profile_session_rel.up.sql
 // scripts/0005_add_table_race.up.sql
-// scripts/0006_add_table_session_user_profile_race.up.sql
+// scripts/0006_add_table_session_player_race.up.sql
 // scripts/0007_add_table_invitation.up.sql
 package migration
 
@@ -185,22 +185,22 @@ func _0005_add_table_raceUpSql() (*asset, error) {
 	return a, nil
 }
 
-var __0006_add_table_session_user_profile_raceUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\x52\xcd\x6e\xf2\x40\x0c\xbc\xf3\x14\x3e\x12\xe9\xd3\x27\x21\xc1\xa9\x70\x58\x82\xd3\xa2\x6e\x37\xd5\x66\xa9\xc4\xc9\xe2\xc7\x2d\x51\x57\x2c\xdd\x0d\xad\xfa\xf6\x15\x09\x34\x04\x0a\xe2\xea\x19\xcf\xd8\x63\xc7\x1a\x85\x41\x30\x62\x28\x11\x02\x87\x90\xbb\x35\x6d\x03\x7b\xda\x78\xf7\x9a\x5b\x26\x3f\x5b\x30\xb4\x5b\x00\x00\xf9\x12\x5e\x84\x8e\x1f\x84\x86\x67\x3d\x7e\x12\x7a\x0a\x8f\x38\xfd\x57\x62\x87\xde\x23\x8e\x4a\x0d\xa8\x89\x94\x15\xa1\x21\x7a\x91\xb5\x73\xbb\x8c\xe6\x81\xe6\xae\x80\x61\x9a\x4a\x14\xea\x17\x84\x11\x26\x62\x22\x0d\x24\x42\x66\x58\x51\xe7\xae\x20\xcb\x9f\x6c\x21\x5f\x17\xfc\xc6\xbe\x2a\x6f\xec\xec\x9b\x3d\x39\xbf\x64\x7f\x40\x4e\x4c\x92\x54\xe3\xf8\x5e\xed\x56\x83\xf6\xc9\xd4\x11\x68\x4c\x50\xa3\x8a\x31\x6b\x6c\x04\xed\x1d\x98\x2a\x18\xa1\x44\x83\x10\x8b\x2c\x16\x23\xfc\x43\xb1\x0e\xaa\x21\xb6\x2f\xdf\xae\xb3\x4f\xaa\x21\x52\xdd\xea\x8a\x42\x9c\xaa\xcc\x68\x31\x56\xa6\x0e\x88\xc2\xca\x6d\xed\x92\xe6\x4c\xd6\x7d\x95\xe1\x10\x7f\x6c\x67\x96\x0a\x47\xdd\xb2\x0d\x60\xb1\xe2\xc5\x7b\x3d\xfc\xd9\x87\xfc\xaf\xf3\xee\x0f\xa0\x1b\x9d\xd9\x1d\x07\x7f\xd5\xb1\xd3\xbb\xd5\xb2\x71\xcb\xfe\x00\x3a\xbd\xa8\x15\xdd\xb5\x7e\x02\x00\x00\xff\xff\x19\x92\x98\x14\xd3\x02\x00\x00")
+var __0006_add_table_session_player_raceUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\x52\x4d\x4f\x02\x31\x10\xbd\xf3\x2b\xe6\xc8\x26\xc6\x84\x04\x4e\xc2\xa1\x94\x59\x25\xd6\xd6\x74\x8b\x09\xa7\x86\x8f\x51\x36\x36\x14\xdb\x45\xe3\xbf\x37\xb0\xe0\xee\xa2\xa0\xd7\xbe\x37\xef\xcd\x7b\x53\xae\x91\x19\x04\xc3\x86\x02\x21\x52\x8c\xb9\x5f\xdb\x8d\x9b\x7d\x52\xb0\x61\xb6\x20\x68\xb7\x00\x00\xf2\x25\x3c\x31\xcd\xef\x98\x86\x47\x3d\x7e\x60\x7a\x0a\xf7\x38\xbd\xda\x63\xc7\xa9\x1a\x47\x2a\x03\x72\x22\x44\x49\xd8\x46\x0a\x76\x13\xfc\x73\xee\xe8\x3c\x6b\xe7\x76\x1e\xcd\xa3\x9d\xfb\x02\x86\x4a\x09\x64\xf2\x1b\x84\x11\xa6\x6c\x22\x0c\xa4\x4c\x64\x58\x52\xe7\xbe\xb0\x8e\xde\xc9\x41\xbe\x2e\xe8\x85\x42\xf9\x7c\x08\xe5\xc3\x92\xc2\x11\x39\x31\x49\x95\xc6\xf1\xad\xdc\x45\x83\xf6\xc9\xd6\x09\x68\x4c\x51\xa3\xe4\x98\x35\x12\x41\x7b\x07\x2a\x09\x23\x14\x68\x10\x38\xcb\x38\x1b\xe1\x2f\x8a\x55\x51\x0d\xb1\xc3\xf3\xff\x75\x0e\x4d\x35\x44\xca\x5b\x5d\x50\xe0\x4a\x66\x46\xb3\xb1\x34\x55\x41\x36\xae\xfc\xd6\x2d\xed\x9c\xac\xf3\x1f\xfb\x72\x2c\xbd\x6d\x67\xce\x16\xde\x76\xf7\x63\x00\x8b\x15\x2d\x5e\xab\xe5\x6b\x7f\xe3\xba\x6a\xba\x3f\x80\x6e\xf2\xc3\xa8\x5e\xf9\x45\xaf\x4e\xef\x6f\xb3\xc6\xfd\xfa\x03\xe8\xf4\x92\x56\x72\xd3\xfa\x0a\x00\x00\xff\xff\xc3\xa7\xb5\x36\xc1\x02\x00\x00")
 
-func _0006_add_table_session_user_profile_raceUpSqlBytes() ([]byte, error) {
+func _0006_add_table_session_player_raceUpSqlBytes() ([]byte, error) {
 	return bindataRead(
-		__0006_add_table_session_user_profile_raceUpSql,
-		"0006_add_table_session_user_profile_race.up.sql",
+		__0006_add_table_session_player_raceUpSql,
+		"0006_add_table_session_player_race.up.sql",
 	)
 }
 
-func _0006_add_table_session_user_profile_raceUpSql() (*asset, error) {
-	bytes, err := _0006_add_table_session_user_profile_raceUpSqlBytes()
+func _0006_add_table_session_player_raceUpSql() (*asset, error) {
+	bytes, err := _0006_add_table_session_player_raceUpSqlBytes()
 	if err != nil {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "0006_add_table_session_user_profile_race.up.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	info := bindataFileInfo{name: "0006_add_table_session_player_race.up.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -277,13 +277,13 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"0001_init.up.sql":                                _0001_initUpSql,
-	"0002_add_table_user_profile.up.sql":              _0002_add_table_user_profileUpSql,
-	"0003_add_table_session.up.sql":                   _0003_add_table_sessionUpSql,
-	"0004_add_table_user_profile_session_rel.up.sql":  _0004_add_table_user_profile_session_relUpSql,
-	"0005_add_table_race.up.sql":                      _0005_add_table_raceUpSql,
-	"0006_add_table_session_user_profile_race.up.sql": _0006_add_table_session_user_profile_raceUpSql,
-	"0007_add_table_invitation.up.sql":                _0007_add_table_invitationUpSql,
+	"0001_init.up.sql":                               _0001_initUpSql,
+	"0002_add_table_user_profile.up.sql":             _0002_add_table_user_profileUpSql,
+	"0003_add_table_session.up.sql":                  _0003_add_table_sessionUpSql,
+	"0004_add_table_user_profile_session_rel.up.sql": _0004_add_table_user_profile_session_relUpSql,
+	"0005_add_table_race.up.sql":                     _0005_add_table_raceUpSql,
+	"0006_add_table_session_player_race.up.sql":      _0006_add_table_session_player_raceUpSql,
+	"0007_add_table_invitation.up.sql":               _0007_add_table_invitationUpSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -327,13 +327,13 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"0001_init.up.sql":                                &bintree{_0001_initUpSql, map[string]*bintree{}},
-	"0002_add_table_user_profile.up.sql":              &bintree{_0002_add_table_user_profileUpSql, map[string]*bintree{}},
-	"0003_add_table_session.up.sql":                   &bintree{_0003_add_table_sessionUpSql, map[string]*bintree{}},
-	"0004_add_table_user_profile_session_rel.up.sql":  &bintree{_0004_add_table_user_profile_session_relUpSql, map[string]*bintree{}},
-	"0005_add_table_race.up.sql":                      &bintree{_0005_add_table_raceUpSql, map[string]*bintree{}},
-	"0006_add_table_session_user_profile_race.up.sql": &bintree{_0006_add_table_session_user_profile_raceUpSql, map[string]*bintree{}},
-	"0007_add_table_invitation.up.sql":                &bintree{_0007_add_table_invitationUpSql, map[string]*bintree{}},
+	"0001_init.up.sql":                               &bintree{_0001_initUpSql, map[string]*bintree{}},
+	"0002_add_table_user_profile.up.sql":             &bintree{_0002_add_table_user_profileUpSql, map[string]*bintree{}},
+	"0003_add_table_session.up.sql":                  &bintree{_0003_add_table_sessionUpSql, map[string]*bintree{}},
+	"0004_add_table_user_profile_session_rel.up.sql": &bintree{_0004_add_table_user_profile_session_relUpSql, map[string]*bintree{}},
+	"0005_add_table_race.up.sql":                     &bintree{_0005_add_table_raceUpSql, map[string]*bintree{}},
+	"0006_add_table_session_player_race.up.sql":      &bintree{_0006_add_table_session_player_raceUpSql, map[string]*bintree{}},
+	"0007_add_table_invitation.up.sql":               &bintree{_0007_add_table_invitationUpSql, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
