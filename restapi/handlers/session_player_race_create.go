@@ -2,18 +2,17 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/m4rw3r/uuid"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"database/sql"
-
-	sq "github.com/Masterminds/squirrel"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"

@@ -8,10 +8,10 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/lib/pq"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
