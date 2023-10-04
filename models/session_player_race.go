@@ -30,6 +30,10 @@ type SessionPlayerRace struct {
 	// Minimum: 0
 	BotLevel *int64 `json:"bot_level,omitempty" db:"bot_level"`
 
+	// id of this mapping
+	// Read Only: true
+	ID string `json:"id,omitempty" db:"id"`
+
 	// if this player race should be player by a bot.
 	// If this value is true then you need to provide the bot_level.
 	// If this value is false any value given in the bot_level will be ignored
@@ -56,14 +60,15 @@ type SessionPlayerRace struct {
 	//   "5"=Cybertrons
 	//   "6"=Mcinti
 	//
-	RaceID *string `json:"race_id,omitempty" db:"race_id"`
+	RaceID string `json:"race_id,omitempty" db:"race_id"`
 
 	// the session id on which this race will be used. This value is automatically set by the server.
 	// Read Only: true
-	SessionID *string `json:"session_id,omitempty" db:"session_id"`
+	SessionID string `json:"session_id,omitempty" db:"session_id"`
 
 	// the user profile is automatically set if you are a simple player. Only hosts can set this value to something different
-	UserProfileID *string `json:"user_profile_id,omitempty" db:"user_profile_id"`
+	// Read Only: true
+	UserProfileID string `json:"user_profile_id,omitempty" db:"user_profile_id"`
 }
 
 // Validate validates this session player race
@@ -120,7 +125,15 @@ func (m *SessionPlayerRace) validatePlayerOrder(formats strfmt.Registry) error {
 func (m *SessionPlayerRace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateSessionID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUserProfileID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -130,9 +143,27 @@ func (m *SessionPlayerRace) ContextValidate(ctx context.Context, formats strfmt.
 	return nil
 }
 
+func (m *SessionPlayerRace) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *SessionPlayerRace) contextValidateSessionID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "session_id", "body", m.SessionID); err != nil {
+	if err := validate.ReadOnly(ctx, "session_id", "body", string(m.SessionID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *SessionPlayerRace) contextValidateUserProfileID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "user_profile_id", "body", string(m.UserProfileID)); err != nil {
 		return err
 	}
 

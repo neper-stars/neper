@@ -32,6 +32,8 @@ func guessDataType(data []byte) (datatype DataTypeEnum, err error) {
 			datatype = DataTypeEnumUserProfile
 		case "invitation":
 			datatype = DataTypeEnumInvitation
+		case "session_player_race":
+			datatype = DataTypeEnumSessionPlayerRace
 		default:
 			iter.ReportError("guessDataType", "unknown __type__: "+value)
 			return false
@@ -136,6 +138,12 @@ func (w *Worker) handleNeperReferentialBroadcast(ctx context.Context, data io.Re
 							return err
 						}
 						return w.syncUserProfile(ctx, sql, op, &data)
+					case DataTypeEnumSessionPlayerRace:
+						var data SessionPlayerRace
+						if err := data.UnmarshalJSON(buf); err != nil {
+							return err
+						}
+						return w.syncSessionPlayerRace(ctx, sql, op, &data)
 					default:
 						return fmt.Errorf("unknown data type: %d", datatype)
 					}

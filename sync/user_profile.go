@@ -5,7 +5,7 @@ import (
 
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/neper-stars/neper/lib"
+	neper "github.com/neper-stars/neper/lib"
 	"github.com/neper-stars/neper/models"
 )
 
@@ -46,7 +46,7 @@ func (w *Worker) syncUserProfile(ctx context.Context, sql database.SQLHelper, op
 			})
 		}
 
-		if err := lib.InitUserProfile(ctx, sql, &userProfileDB, relations); err != nil {
+		if err := neper.InitUserProfile(ctx, sql, &userProfileDB, relations); err != nil {
 			return err
 		}
 	}

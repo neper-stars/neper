@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/session_player_race.schema.json",
+  "$$target": "https://neper.io/messages/schemas/v1/neper/session_player_race.schema.json",
+  "title": "SessionPlayerRace",
+  "description": "setup for a session of a player and its race",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "__type__": {
+      "description": "data type",
+      "type": "string",
+      "enum": [
+        "session_player_race"
+      ]
+    },
+    "id": {
+      "description": "id",
+      "type": "string"
+    },
+    "session_id": {
+      "description": "id of the session",
+      "type": "string"
+    },
+    "user_profile_id" : {
+      "description": "id of the user",
+      "type": "string"
+    },
+    "is_bot": {
+      "description": "if true the player is a bot. In this case the user ID must be 'system'",
+      "type": "boolean"
+    },
+    "race_id" : {
+      "description": "id of the race. If is bot, the race_id should be between 0 and 6",
+      "type": "string"
+    },
+    "bot_level" : {
+      "description": "if is_bot is true, we need a level between 0 and 4",
+      "type": "integer"
+    },
+    "player_order" : {
+      "description": "in which slot the player is. ranges from 0 to 15",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "__type__",
+    "id",
+    "session_id",
+    "user_profile_id",
+    "race_id",
+    "is_bot",
+    "bot_level",
+    "player_order"
+  ]
+}

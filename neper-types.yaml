@@ -140,17 +140,24 @@ definitions:
     type: object
     description: "a binding between a player race and a session. The host can also choose the player order."
     properties:
+      id:
+        type: string
+        description: "id of this mapping"
+        readOnly: true
+        x-go-custom-tag: db:"id"
+        x-nullable: false
       session_id:
         type: string
         description: "the session id on which this race will be used. This value is automatically set by the server."
         readOnly: true
         x-go-custom-tag: db:"session_id"
-        x-nullable: true
+        x-nullable: false
       user_profile_id:
         type: string
+        readOnly: true
         description: "the user profile is automatically set if you are a simple player. Only hosts can set this value to something different"
         x-go-custom-tag: db:"user_profile_id"
-        x-nullable: true
+        x-nullable: false
       player_order:
         type: integer
         description: |
@@ -176,7 +183,7 @@ definitions:
             "5"=Cybertrons
             "6"=Mcinti
         x-go-custom-tag: db:"race_id"
-        x-nullable: true
+        x-nullable: false
       is_bot:
         type: boolean
         description: |

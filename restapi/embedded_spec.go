@@ -1805,6 +1805,13 @@ func init() {
           "x-go-custom-tag": "db:\"bot_level\"",
           "x-nullable": true
         },
+        "id": {
+          "description": "id of this mapping",
+          "type": "string",
+          "x-go-custom-tag": "db:\"id\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
         "is_bot": {
           "description": "if this player race should be player by a bot.\nIf this value is true then you need to provide the bot_level.\nIf this value is false any value given in the bot_level will be ignored\n",
           "type": "boolean"
@@ -1821,20 +1828,21 @@ func init() {
           "description": "the race ID you will use during this session\nFor a normal player you must use the ID of a race file you previously uploaded\nin your user profile.\n\nIf the host is adding a bot player here is the list of race ids to chose from:\n  \"0\"=Random\n  \"1\"=Robotoids\n  \"2\"=Turndrones\n  \"3\"=Automitrons\n  \"4\"=Rototills\n  \"5\"=Cybertrons\n  \"6\"=Mcinti\n",
           "type": "string",
           "x-go-custom-tag": "db:\"race_id\"",
-          "x-nullable": true
+          "x-nullable": false
         },
         "session_id": {
           "description": "the session id on which this race will be used. This value is automatically set by the server.",
           "type": "string",
           "x-go-custom-tag": "db:\"session_id\"",
-          "x-nullable": true,
+          "x-nullable": false,
           "readOnly": true
         },
         "user_profile_id": {
           "description": "the user profile is automatically set if you are a simple player. Only hosts can set this value to something different",
           "type": "string",
           "x-go-custom-tag": "db:\"user_profile_id\"",
-          "x-nullable": true
+          "x-nullable": false,
+          "readOnly": true
         }
       }
     },

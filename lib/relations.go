@@ -1,4 +1,4 @@
-package lib
+package neper
 
 import (
 	"github.com/Masterminds/squirrel"

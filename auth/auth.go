@@ -20,6 +20,7 @@ import (
 	"gopkg.in/dgrijalva/jwt-go.v3"
 	"orus.io/orus-io/go-orusapi/database"
 
+	neper "github.com/neper-stars/neper/lib"
 	"github.com/neper-stars/neper/models"
 )
 
@@ -214,7 +215,7 @@ func (auth *Auth) Authenticate(
 	ctx context.Context, credentials *models.Credentials,
 ) (*models.Principal, error) {
 	log := zerolog.Ctx(ctx)
-	if credentials == nil {
+	if credentials == nil || credentials.Apikey == "" || credentials.Nickname == "" || credentials.Nickname == neper.SystemUserNickName {
 		return nil, ErrInvalidCredentials
 	}
 	query := database.SQ.
@@ -227,6 +228,7 @@ func (auth *Auth) Authenticate(
 		From(models.UserProfileDBTable).
 		Where(
 			sq.And{
+				sq.Eq{models.UserProfileDBIsActiveColumn: true},
 				sq.Eq{models.UserProfileDBAPIKeyColumn: credentials.Apikey},
 				sq.Eq{models.UserProfileDBNicknameColumn: credentials.Nickname},
 			},

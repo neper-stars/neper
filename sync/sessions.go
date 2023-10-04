@@ -5,7 +5,7 @@ import (
 
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/neper-stars/neper/lib"
+	neper "github.com/neper-stars/neper/lib"
 	"github.com/neper-stars/neper/models"
 )
 
@@ -31,7 +31,7 @@ func (w *Worker) syncSession(ctx context.Context, sql database.SQLHelper, op Ope
 			})
 		}
 
-		if err := lib.InitSession(ctx, sql, &sessionDB, relations); err != nil {
+		if err := neper.InitSession(ctx, sql, &sessionDB, relations); err != nil {
 			return err
 		}
 	}

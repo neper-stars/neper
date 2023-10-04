@@ -238,6 +238,9 @@ const (
 	// SessionPlayerRaceBotLevelColumn is the name of the column containing field "BotLevel" data
 	SessionPlayerRaceBotLevelColumn = "bot_level"
 
+	// SessionPlayerRaceIDColumn is the name of the column containing field "ID" data
+	SessionPlayerRaceIDColumn = "id"
+
 	// SessionPlayerRacePlayerOrderColumn is the name of the column containing field "PlayerOrder" data
 	SessionPlayerRacePlayerOrderColumn = "player_order"
 
@@ -249,6 +252,30 @@ const (
 
 	// SessionPlayerRaceUserProfileIDColumn is the name of the column containing field "UserProfileID" data
 	SessionPlayerRaceUserProfileIDColumn = "user_profile_id"
+
+	// SessionPlayerRaceDBTable is the name of the table where SessionPlayerRaceDB are stored
+	SessionPlayerRaceDBTable = "session_user_profile_race"
+
+	// SessionPlayerRaceDBPKeyColumn is the name of the primary key
+	SessionPlayerRaceDBPKeyColumn = SessionPlayerRaceDBIDColumn
+
+	// SessionPlayerRaceDBBotLevelColumn is the name of the column containing field "BotLevel" data
+	SessionPlayerRaceDBBotLevelColumn = "bot_level"
+
+	// SessionPlayerRaceDBIDColumn is the name of the column containing field "ID" data
+	SessionPlayerRaceDBIDColumn = "id"
+
+	// SessionPlayerRaceDBPlayerOrderColumn is the name of the column containing field "PlayerOrder" data
+	SessionPlayerRaceDBPlayerOrderColumn = "player_order"
+
+	// SessionPlayerRaceDBRaceIDColumn is the name of the column containing field "RaceID" data
+	SessionPlayerRaceDBRaceIDColumn = "race_id"
+
+	// SessionPlayerRaceDBSessionIDColumn is the name of the column containing field "SessionID" data
+	SessionPlayerRaceDBSessionIDColumn = "session_id"
+
+	// SessionPlayerRaceDBUserProfileIDColumn is the name of the column containing field "UserProfileID" data
+	SessionPlayerRaceDBUserProfileIDColumn = "user_profile_id"
 
 	// UserIDColumn is the name of the column containing field "ID" data
 	UserIDColumn = "id"
@@ -317,6 +344,7 @@ var (
 		InvitationDBTable,
 		RaceDBTable,
 		SessionDBTable,
+		SessionPlayerRaceDBTable,
 		UserProfileDBTable,
 		UserProfileSessionRelDBTable,
 	}
@@ -392,11 +420,26 @@ var (
 	// SessionPlayerRaceColumns is the list of the columns for the SessionPlayerRace structure
 	SessionPlayerRaceColumns = []string{
 		SessionPlayerRaceBotLevelColumn,
+		SessionPlayerRaceIDColumn,
 		SessionPlayerRacePlayerOrderColumn,
 		SessionPlayerRaceRaceIDColumn,
 		SessionPlayerRaceSessionIDColumn,
 		SessionPlayerRaceUserProfileIDColumn,
 	}
+	// SessionPlayerRaceDBDataColumns is the list of the columns for the SessionPlayerRaceDB structure, expect its primary key
+	SessionPlayerRaceDBDataColumns = []string{
+		SessionPlayerRaceDBBotLevelColumn,
+		SessionPlayerRaceDBPlayerOrderColumn,
+		SessionPlayerRaceDBRaceIDColumn,
+		SessionPlayerRaceDBSessionIDColumn,
+		SessionPlayerRaceDBUserProfileIDColumn,
+	}
+
+	// SessionPlayerRaceDBColumns is the list of the columns for the SessionPlayerRaceDB structure
+	SessionPlayerRaceDBColumns = append(
+		[]string{ SessionPlayerRaceDBIDColumn },
+		SessionPlayerRaceDBDataColumns...,
+	)
 	// UserColumns is the list of the columns for the User structure
 	UserColumns = []string{
 		UserIDColumn,
@@ -1023,6 +1066,8 @@ func (s SessionPlayerRace) Values(columns ...string) []interface{} {
 		switch column {
 		case "bot_level":
 			values[i] = s.BotLevel
+		case "id":
+			values[i] = s.ID
 		case "player_order":
 			values[i] = s.PlayerOrder
 		case "race_id":
@@ -1044,6 +1089,8 @@ func (s SessionPlayerRace) ValuesMap(columns ...string) map[string]interface{} {
 		switch column {
 		case "bot_level":
 			values["bot_level"] = s.BotLevel
+		case "id":
+			values["id"] = s.ID
 		case "player_order":
 			values["player_order"] = s.PlayerOrder
 		case "race_id":
@@ -1055,6 +1102,148 @@ func (s SessionPlayerRace) ValuesMap(columns ...string) map[string]interface{} {
 		}
 	}
 	return values
+}
+
+// Table returns the database table name
+func (s SessionPlayerRaceDB) Table() string {
+	return SessionPlayerRaceDBTable
+}
+
+// PKeyColumn returns the database table primary key column name
+func (s SessionPlayerRaceDB) PKeyColumn() string {
+	return SessionPlayerRaceDBPKeyColumn
+}
+
+// Columns returns the database table column names
+func (s SessionPlayerRaceDB) Columns(withPKey bool) []string {
+	if withPKey {
+		return SessionPlayerRaceDBColumns
+	}
+	return SessionPlayerRaceDBDataColumns
+}
+
+// Values returns the values for a list of columns. If a column does not exits,
+// the corresponding value is left empty
+func (s SessionPlayerRaceDB) Values(columns ...string) []interface{} {
+	values := make([]interface{}, len(columns))
+	for i, column := range columns {
+		switch column {
+		case "bot_level":
+			values[i] = s.BotLevel
+		case "id":
+			values[i] = s.ID
+		case "player_order":
+			values[i] = s.PlayerOrder
+		case "race_id":
+			values[i] = s.RaceID
+		case "session_id":
+			values[i] = s.SessionID
+		case "user_profile_id":
+			values[i] = s.UserProfileID
+		}
+	}
+	return values
+}
+
+// ValuesMap returns the values map for a list of columns. If a column does not
+// exits, the corresponding value is left empty
+func (s SessionPlayerRaceDB) ValuesMap(columns ...string) map[string]interface{} {
+	values := make(map[string]interface{})
+	for _, column := range columns {
+		switch column {
+		case "bot_level":
+			values["bot_level"] = s.BotLevel
+		case "id":
+			values["id"] = s.ID
+		case "player_order":
+			values["player_order"] = s.PlayerOrder
+		case "race_id":
+			values["race_id"] = s.RaceID
+		case "session_id":
+			values["session_id"] = s.SessionID
+		case "user_profile_id":
+			values["user_profile_id"] = s.UserProfileID
+		}
+	}
+	return values
+}
+
+func NewSessionPlayerRaceDBTableSchema() *SessionPlayerRaceDBTableSchema {
+	t := SessionPlayerRaceDBTableSchema{}
+	t.BotLevel = NewColumn(&t, "bot_level")
+	t.ID = NewColumn(&t, "id")
+	t.PlayerOrder = NewColumn(&t, "player_order")
+	t.RaceID = NewColumn(&t, "race_id")
+	t.SessionID = NewColumn(&t, "session_id")
+	t.UserProfileID = NewColumn(&t, "user_profile_id")
+	return &t
+}
+
+type SessionPlayerRaceDBTableSchema struct {
+	alias string
+	BotLevel Column
+	ID Column
+	PlayerOrder Column
+	RaceID Column
+	SessionID Column
+	UserProfileID Column
+}
+
+// Columns returns the database table column names
+func (t SessionPlayerRaceDBTableSchema) Columns(withPKey bool) []string {
+	if withPKey {
+		return SessionPlayerRaceDBColumns
+	}
+	return SessionPlayerRaceDBDataColumns
+}
+
+// FQColumns returns the database table column names prefixed with the table alias
+func (t SessionPlayerRaceDBTableSchema) FQColumns(withPKey bool) []string {
+	var colList []string
+    colList = SessionPlayerRaceDBDataColumns
+
+	if withPKey {
+		colList = SessionPlayerRaceDBColumns	
+	}
+
+    var cols []string
+	for _, col := range colList {
+			cols = append(cols, t.GetName()+"."+col)
+	}
+	return cols
+}
+
+func (t SessionPlayerRaceDBTableSchema) As(name string) *SessionPlayerRaceDBTableSchema {
+	t.alias = name
+	t.BotLevel = NewColumn(&t, "bot_level")
+	t.ID = NewColumn(&t, "id")
+	t.PlayerOrder = NewColumn(&t, "player_order")
+	t.RaceID = NewColumn(&t, "race_id")
+	t.SessionID = NewColumn(&t, "session_id")
+	t.UserProfileID = NewColumn(&t, "user_profile_id")
+	return &t
+}
+
+func (t SessionPlayerRaceDBTableSchema) GetName() string {
+	if t.alias == "" {
+		return SessionPlayerRaceDBTable
+	}
+	return t.alias
+}
+
+func (t SessionPlayerRaceDBTableSchema) Sql() string {
+	if t.alias == "" {
+		return SessionPlayerRaceDBTable
+	}
+	return SessionPlayerRaceDBTable + " AS " + t.alias
+}
+
+func (t SessionPlayerRaceDBTableSchema) ToSql() (string, []interface{}, error) {
+	return t.Sql(), nil, nil
+}
+
+func (t SessionPlayerRaceDBTableSchema) Select() squirrel.SelectBuilder {
+	return squirrel.Select(t.Columns(true)...).From(t.Sql())
 }
 
 // Columns returns the database table column names
@@ -1407,6 +1596,7 @@ func NewDBSchema() *DBSchema {
 		InvitationDB: NewInvitationDBTableSchema(),
 		RaceDB: NewRaceDBTableSchema(),
 		SessionDB: NewSessionDBTableSchema(),
+		SessionPlayerRaceDB: NewSessionPlayerRaceDBTableSchema(),
 		UserProfileDB: NewUserProfileDBTableSchema(),
 		UserProfileSessionRelDB: NewUserProfileSessionRelDBTableSchema(),
 	}
@@ -1416,6 +1606,7 @@ type DBSchema struct {
 	InvitationDB *InvitationDBTableSchema
 	RaceDB *RaceDBTableSchema
 	SessionDB *SessionDBTableSchema
+	SessionPlayerRaceDB *SessionPlayerRaceDBTableSchema
 	UserProfileDB *UserProfileDBTableSchema
 	UserProfileSessionRelDB *UserProfileSessionRelDBTableSchema
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/neper-stars/neper/lib"
+	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -54,7 +54,7 @@ func (h *RaceCreateHandler) handle(
 		return nil, err
 	}
 
-	race, err := lib.NewRace(inputRace.Data)
+	race, err := neper.NewRace(inputRace.Data)
 	if err != nil {
 		h.log.Err(err).Msg("failed to parse race data from input")
 		return nil, errs.NewErrInvalidRace("failed to parse race file:" + err.Error())

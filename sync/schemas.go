@@ -527,6 +527,7 @@ const (
 	DataTypeEnumRace
 	DataTypeEnumUserProfile
 	DataTypeEnumInvitation
+	DataTypeEnumSessionPlayerRace
 )
 
 type DataType struct {
@@ -587,6 +588,18 @@ func (o *DataType) SetInvitation(v *Invitation) {
 	o.Type = DataTypeEnumInvitation
 }
 
+func (o DataType) IsSessionPlayerRace() bool {
+	return o.Type == DataTypeEnumSessionPlayerRace
+}
+func (o DataType) SessionPlayerRace() *SessionPlayerRace {
+	return o.value.(*SessionPlayerRace)
+}
+
+func (o *DataType) SetSessionPlayerRace(v *SessionPlayerRace) {
+	o.value = v
+	o.Type = DataTypeEnumSessionPlayerRace
+}
+
 func (o DataType) MarshalJSON() ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	stream := jsoniter.ConfigDefault.BorrowStream(buf)
@@ -608,6 +621,8 @@ func (o DataType) MarshalJSONStream(stream *jsoniter.Stream) {
 	case DataTypeEnumUserProfile:
 		stream.WriteVal(o.value)
 	case DataTypeEnumInvitation:
+		stream.WriteVal(o.value)
+	case DataTypeEnumSessionPlayerRace:
 		stream.WriteVal(o.value)
 	}
 }
@@ -674,6 +689,18 @@ func (o *DataType) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			jsoniter.ConfigDefault.ReturnIterator(subIter)
 			if lastError == nil {
 				o.SetInvitation(&value)
+				return
+			}
+		}
+
+		{ // attempt to read a *SessionPlayerRace
+			subIter := jsoniter.ConfigDefault.BorrowIterator(buf)
+			var value SessionPlayerRace
+			subIter.ReadVal(&value)
+			lastError = subIter.Error
+			jsoniter.ConfigDefault.ReturnIterator(subIter)
+			if lastError == nil {
+				o.SetSessionPlayerRace(&value)
 				return
 			}
 		}
@@ -794,6 +821,33 @@ type Session struct {
 
 	// Type data type
 	Type string `json:"__type__"`
+}
+
+// SessionPlayerRace setup for a session of a player and its race
+type SessionPlayerRace struct {
+	// BotLevel if is_bot is true, we need a level between 0 and 4
+	BotLevel int `json:"bot_level"`
+
+	// Id id
+	Id string `json:"id"`
+
+	// IsBot if true the player is a bot. In this case the user ID must be 'system'
+	IsBot bool `json:"is_bot"`
+
+	// PlayerOrder in which slot the player is. ranges from 0 to 15
+	PlayerOrder int `json:"player_order"`
+
+	// RaceId id of the race. If is bot, the race_id should be between 0 and 6
+	RaceId string `json:"race_id"`
+
+	// SessionId id of the session
+	SessionId string `json:"session_id"`
+
+	// Type data type
+	Type string `json:"__type__"`
+
+	// UserProfileId id of the user
+	UserProfileId string `json:"user_profile_id"`
 }
 
 // UserProfile user profile
@@ -1483,6 +1537,238 @@ func (s *Session) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 
 	if !TypeReceived {
 		iter.ReportError("validating Session", "\"__type__\" is required but was not present")
+	}
+}
+
+// MarshalJSON serializes to JSON
+func (s *SessionPlayerRace) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer(nil)
+	stream := jsoniter.ConfigDefault.BorrowStream(buf)
+	s.MarshalJSONStream(stream)
+	stream.Flush()
+	err := stream.Error
+	jsoniter.ConfigDefault.ReturnStream(stream)
+
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (s SessionPlayerRace) MarshalJSONStream(stream *jsoniter.Stream) {
+	stream.WriteObjectStart()
+	ct := commaTracker{stream: stream}
+
+	// Marshal the BotLevel field
+	ct.More()
+	stream.WriteObjectField("bot_level")
+	stream.WriteVal(s.BotLevel)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the Id field
+	ct.More()
+	stream.WriteObjectField("id")
+	stream.WriteString(s.Id)
+
+	// Marshal the IsBot field
+	ct.More()
+	stream.WriteObjectField("is_bot")
+	stream.WriteVal(s.IsBot)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the PlayerOrder field
+	ct.More()
+	stream.WriteObjectField("player_order")
+	stream.WriteVal(s.PlayerOrder)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the RaceId field
+	ct.More()
+	stream.WriteObjectField("race_id")
+	stream.WriteString(s.RaceId)
+
+	// Marshal the SessionId field
+	ct.More()
+	stream.WriteObjectField("session_id")
+	stream.WriteString(s.SessionId)
+
+	// Marshal the Type field
+	ct.More()
+	stream.WriteObjectField("__type__")
+	stream.WriteString(s.Type)
+
+	// Marshal the UserProfileId field
+	ct.More()
+	stream.WriteObjectField("user_profile_id")
+	stream.WriteString(s.UserProfileId)
+	stream.WriteObjectEnd()
+}
+
+func (s *SessionPlayerRace) UnmarshalJSON(data []byte) error {
+	iter := jsoniter.ConfigDefault.BorrowIterator(data)
+	s.UnmarshalJSONIterator(iter)
+	err := iter.Error
+	jsoniter.ConfigDefault.ReturnIterator(iter)
+	return err
+}
+
+func (s *SessionPlayerRace) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
+	BotLevelReceived := false
+	IdReceived := false
+	IsBotReceived := false
+	PlayerOrderReceived := false
+	RaceIdReceived := false
+	SessionIdReceived := false
+	TypeReceived := false
+	UserProfileIdReceived := false
+
+	for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+		switch field {
+		case "bot_level":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field bot_level", "bot_level is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.BotLevel)
+			if iter.Error != nil {
+				return
+			}
+			BotLevelReceived = true
+		case "id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field id", "id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.Id = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			IdReceived = true
+		case "is_bot":
+			s.IsBot = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			IsBotReceived = true
+		case "player_order":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field player_order", "player_order is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.PlayerOrder)
+			if iter.Error != nil {
+				return
+			}
+			PlayerOrderReceived = true
+		case "race_id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field race_id", "race_id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.RaceId = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			RaceIdReceived = true
+		case "session_id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field session_id", "session_id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.SessionId = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			SessionIdReceived = true
+		case "__type__":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field __type__", "__type__ is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.Type = iter.ReadString()
+			if s.Type != "session_player_race" {
+				iter.ReportError(
+					"__type__",
+					fmt.Sprintf("Expected %s, got \"%s\"", "session_player_race", s.Type),
+				)
+			}
+			if iter.Error != nil {
+				return
+			}
+			TypeReceived = true
+		case "user_profile_id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field user_profile_id", "user_profile_id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.UserProfileId = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			UserProfileIdReceived = true
+		default:
+			// Ignore the additional property
+			iter.Skip()
+		}
+	}
+
+	if !BotLevelReceived {
+		iter.ReportError("validating SessionPlayerRace", "\"bot_level\" is required but was not present")
+	}
+
+	if !IdReceived {
+		iter.ReportError("validating SessionPlayerRace", "\"id\" is required but was not present")
+	}
+
+	if !IsBotReceived {
+		iter.ReportError("validating SessionPlayerRace", "\"is_bot\" is required but was not present")
+	}
+
+	if !PlayerOrderReceived {
+		iter.ReportError("validating SessionPlayerRace", "\"player_order\" is required but was not present")
+	}
+
+	if !RaceIdReceived {
+		iter.ReportError("validating SessionPlayerRace", "\"race_id\" is required but was not present")
+	}
+
+	if !SessionIdReceived {
+		iter.ReportError("validating SessionPlayerRace", "\"session_id\" is required but was not present")
+	}
+
+	if !TypeReceived {
+		iter.ReportError("validating SessionPlayerRace", "\"__type__\" is required but was not present")
+	}
+
+	if !UserProfileIdReceived {
+		iter.ReportError("validating SessionPlayerRace", "\"user_profile_id\" is required but was not present")
 	}
 }
 

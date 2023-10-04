@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/neper-stars/neper/lib"
+	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -84,7 +84,7 @@ func (h *SessionCreateHandler) handle(
 	}
 
 	// make sure the session sets its members/managers in database
-	if err := lib.InitSession(
+	if err := neper.InitSession(
 		ctx, sqlH,
 		&sessionDB, models.ToUserProfileSessionRelDB(session.ID, session.Members, session.Managers),
 	); err != nil {
