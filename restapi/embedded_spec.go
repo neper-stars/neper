@@ -419,6 +419,52 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/reorder_players": {
+      "put": {
+        "description": "Update the session player order\n\nThis is restricted to global managers or\nmanagers of the specific session\n",
+        "operationId": "reorderPlayers",
+        "parameters": [
+          {
+            "name": "players",
+            "in": "body",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "neper-types.yaml#/definitions/player_order"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the updated player order",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "neper-types.yaml#/definitions/player_order"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/rules": {
       "post": {
         "description": "if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint.",
@@ -1269,6 +1315,61 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/reorder_players": {
+      "put": {
+        "description": "Update the session player order\n\nThis is restricted to global managers or\nmanagers of the specific session\n",
+        "operationId": "reorderPlayers",
+        "parameters": [
+          {
+            "name": "players",
+            "in": "body",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/playerOrder"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the updated player order",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/playerOrder"
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/rules": {
       "post": {
         "description": "if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint.",
@@ -1642,6 +1743,23 @@ func init() {
         }
       }
     },
+    "playerOrder": {
+      "description": "the order of a player in a game session",
+      "type": "object",
+      "properties": {
+        "player_order": {
+          "description": "The order number for this player. Only the host can set this value.\nAs there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15\n",
+          "type": "integer",
+          "maximum": 15,
+          "minimum": 0,
+          "x-nullable": false
+        },
+        "user_profile_id": {
+          "description": "the user profile id you want to set the order",
+          "type": "string"
+        }
+      }
+    },
     "race": {
       "description": "a race is the race file obtained by using the customize race wizard in stars.\nIt will be uploaded and stored linked to a user profile in order to be used during a session setup.\n",
       "type": "object",
@@ -1784,6 +1902,14 @@ func init() {
           "type": "string",
           "x-go-custom-tag": "db:\"name\"",
           "x-nullable": false
+        },
+        "players": {
+          "description": "Array of player ids, sorted by player order.\nThis is read-only.\nIn this array this is normal to not always find all members+managers.\nYou will find in this list only people who have already set the race\nwith which they want to play.\n",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "readOnly": true
         },
         "private": {
           "description": "if the session is private only the managers can add new members",

@@ -50,7 +50,6 @@
     "user_profile_id",
     "race_id",
     "is_bot",
-    "bot_level",
     "player_order"
   ]
 }

@@ -68,6 +68,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		RefreshTokenHandler: RefreshTokenHandlerFunc(func(params RefreshTokenParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RefreshToken has not yet been implemented")
 		}),
+		ReorderPlayersHandler: ReorderPlayersHandlerFunc(func(params ReorderPlayersParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation ReorderPlayers has not yet been implemented")
+		}),
 		RulesCreateHandler: RulesCreateHandlerFunc(func(params RulesCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RulesCreate has not yet been implemented")
 		}),
@@ -171,6 +174,8 @@ type NeperAPI struct {
 	RacesListHandler RacesListHandler
 	// RefreshTokenHandler sets the operation handler for the refresh token operation
 	RefreshTokenHandler RefreshTokenHandler
+	// ReorderPlayersHandler sets the operation handler for the reorder players operation
+	ReorderPlayersHandler ReorderPlayersHandler
 	// RulesCreateHandler sets the operation handler for the rules create operation
 	RulesCreateHandler RulesCreateHandler
 	// SessionCreateHandler sets the operation handler for the session create operation
@@ -299,6 +304,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.RefreshTokenHandler == nil {
 		unregistered = append(unregistered, "RefreshTokenHandler")
+	}
+	if o.ReorderPlayersHandler == nil {
+		unregistered = append(unregistered, "ReorderPlayersHandler")
 	}
 	if o.RulesCreateHandler == nil {
 		unregistered = append(unregistered, "RulesCreateHandler")
@@ -467,6 +475,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/auth/refresh_token"] = NewRefreshToken(o.context, o.RefreshTokenHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/v1/sessions/{session_id}/reorder_players"] = NewReorderPlayers(o.context, o.ReorderPlayersHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

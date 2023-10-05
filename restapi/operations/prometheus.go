@@ -33,6 +33,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/auth/refresh_token"] = RefreshTokenInstrumentHandler(
 		o.handlers["POST"]["/v1/auth/refresh_token"])
 
+	o.handlers["PUT"]["/v1/sessions/{session_id}/reorder_players"] = ReorderPlayersInstrumentHandler(
+		o.handlers["PUT"]["/v1/sessions/{session_id}/reorder_players"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/rules"] = RulesCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/rules"])
 

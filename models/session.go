@@ -33,6 +33,15 @@ type Session struct {
 	// Required: true
 	Name string `json:"name" db:"name"`
 
+	// Array of player ids, sorted by player order.
+	// This is read-only.
+	// In this array this is normal to not always find all members+managers.
+	// You will find in this list only people who have already set the race
+	// with which they want to play.
+	//
+	// Read Only: true
+	Players []string `json:"players"`
+
 	// if the session is private only the managers can add new members
 	Private bool `json:"private,omitempty" db:"private"`
 }
@@ -68,6 +77,10 @@ func (m *Session) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePlayers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -77,6 +90,15 @@ func (m *Session) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 func (m *Session) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Session) contextValidatePlayers(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "players", "body", []string(m.Players)); err != nil {
 		return err
 	}
 

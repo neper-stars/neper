@@ -1,0 +1,88 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session",
+        "id": "merryvsgollumID",
+        "name": "MerryVSGollum"
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "merryID",
+        "nickname": "merry",
+        "email": "merry@shire.com",
+        "api_key": "apikeyMerry",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [
+          {"session_id":  "merryvsgollumID", "is_manager":  true}
+        ]
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "gollumID",
+        "nickname": "gollum",
+        "email": "gollum@shire.com",
+        "api_key": "apikeyGollum",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [
+          {"session_id":  "merryvsgollumID", "is_manager":  false}
+        ]
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "race",
+        "id": "hobbitsID",
+        "name_plural": "Hobbits",
+        "name_singular": "Hobbit",
+        "user_id": "merryID",
+        "data": "ECBKM0ozAAAAAGAqBwDfCwUAfRgGLO8a9nahWBLxzu8K0QX+OMP4/pYC5ncbrRrG9trmHvDENliQuqXS3k3S6NcQq+/POOf6/StvJRbLWqr+zDYJP0Wwq/YFhwzys5Pu3sqIsIP4YDLuWMJrGJ50UUTArj69j3zdXaBIROjkkR2hKefZm3mHrcRV97WEknON4AIAnIw="
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "race",
+        "id": "halflingsID",
+        "name_plural": "Halflings",
+        "name_singular": "Halfling",
+        "user_id": "gollumID",
+        "data": "ECBKM0ozAAAAAGAqAAD/AQUAfhgyZ63tcyzDHFWkoiKz1eM1oL9ZJK/kHmgXR/cJ+GkM9Y1QD/P+OiWphl6wXZgdRN48HDO2TOUr8jxgqeaS/rMmn/Ru5X21wRegrnEFH38TZEm5/fbjiE1IwZGK/JP/hgalgwmUpvxHPJMVfebX/Gj+U0no2MaJuLIb/75DBVsCADhD"
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session_player_race",
+        "id": "spr1",
+        "session_id": "merryvsgollumID",
+        "user_profile_id": "merryID",
+        "is_bot": false,
+        "race_id": "hobbitsID",
+        "player_order": 0
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session_player_race",
+        "id": "spr2",
+        "session_id": "merryvsgollumID",
+        "user_profile_id": "gollumID",
+        "is_bot": false,
+        "race_id": "halflingsID",
+        "player_order": 1
+      }
+    }
+  ]
+}

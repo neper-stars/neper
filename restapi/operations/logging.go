@@ -57,6 +57,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "refresh-token",
 	)(o.handlers["POST"]["/v1/auth/refresh_token"])
 
+	o.handlers["PUT"]["/v1/sessions/{session_id}/reorder_players"] = LogOperation(
+		"", "reorderPlayers",
+	)(o.handlers["PUT"]["/v1/sessions/{session_id}/reorder_players"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/rules"] = LogOperation(
 		"", "rulesCreate",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/rules"])

@@ -826,7 +826,7 @@ type Session struct {
 // SessionPlayerRace setup for a session of a player and its race
 type SessionPlayerRace struct {
 	// BotLevel if is_bot is true, we need a level between 0 and 4
-	BotLevel int `json:"bot_level"`
+	BotLevel int `json:"bot_level,omitempty"`
 
 	// Id id
 	Id string `json:"id"`
@@ -1560,11 +1560,13 @@ func (s SessionPlayerRace) MarshalJSONStream(stream *jsoniter.Stream) {
 	ct := commaTracker{stream: stream}
 
 	// Marshal the BotLevel field
-	ct.More()
-	stream.WriteObjectField("bot_level")
-	stream.WriteVal(s.BotLevel)
-	if stream.Error != nil {
-		return
+	if !IsEmpty(s.BotLevel) {
+		ct.More()
+		stream.WriteObjectField("bot_level")
+		stream.WriteVal(s.BotLevel)
+		if stream.Error != nil {
+			return
+		}
 	}
 
 	// Marshal the Id field
@@ -1619,7 +1621,6 @@ func (s *SessionPlayerRace) UnmarshalJSON(data []byte) error {
 }
 
 func (s *SessionPlayerRace) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
-	BotLevelReceived := false
 	IdReceived := false
 	IsBotReceived := false
 	PlayerOrderReceived := false
@@ -1642,7 +1643,6 @@ func (s *SessionPlayerRace) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			if iter.Error != nil {
 				return
 			}
-			BotLevelReceived = true
 		case "id":
 			if iter.WhatIsNext() == jsoniter.BoolValue {
 				if iter.ReadBool() {
@@ -1737,10 +1737,6 @@ func (s *SessionPlayerRace) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			// Ignore the additional property
 			iter.Skip()
 		}
-	}
-
-	if !BotLevelReceived {
-		iter.ReportError("validating SessionPlayerRace", "\"bot_level\" is required but was not present")
 	}
 
 	if !IdReceived {

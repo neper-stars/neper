@@ -252,6 +252,40 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/reorder_players:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+    put:
+      operationId: reorderPlayers
+      description: |
+        Update the session player order
+
+        This is restricted to global managers or
+        managers of the specific session
+      parameters:
+        - name: players
+          in: body
+          schema:
+            type: array
+            items:
+              $ref: "neper-types.yaml#/definitions/player_order"
+      responses:
+        200:
+          description: the updated player order
+          schema:
+            type: array
+            items:
+              $ref: "neper-types.yaml#/definitions/player_order"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}:
     parameters:
       - name: session_id

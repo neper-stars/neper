@@ -40,6 +40,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		refreshTokenHandlerInFlight,
 	)
 	reg.MustRegister(
+		reorderPlayersHandlerDuration,
+		reorderPlayersHandlerInFlight,
+	)
+	reg.MustRegister(
 		rulesCreateHandlerDuration,
 		rulesCreateHandlerInFlight,
 	)
