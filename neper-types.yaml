@@ -28,6 +28,20 @@ definitions:
         message:
           type: string
 
+  location:
+    type: object
+    properties:
+      bucket_name:
+        type: string
+      object_id:
+        type: string
+      provider:
+        type: string
+      region:
+        type: string
+      type:
+        type: string
+
   file:
     type: object
     properties:
