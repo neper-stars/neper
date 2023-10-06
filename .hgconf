@@ -3,7 +3,7 @@ track = 3d6ab554fac1
 [go-orusapi]
 pulluri = https://orus.io/orus-io/go-orusapi
 layout = dependencies/go-orusapi
-track = c148f2977de6
+track = b2fc3277e708
 
 [json-schema-generate]
 pulluri = git+https://github.com/orus-io/json-schema-generate.git

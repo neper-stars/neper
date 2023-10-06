@@ -6,9 +6,6 @@ package operations
 // Editing this file might prove futile when you re-run the generate command
 
 import (
-	"bytes"
-	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -50,20 +47,7 @@ func (o *SessionCreate) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if rCtx != nil {
 		*r = *rCtx
 	}
-
 	var Params = NewSessionCreateParams()
-	var bodyExists bool
-	var body []byte
-	if r.Body != nil {
-		var err error
-		bodyExists = true
-		body, err = io.ReadAll(r.Body)
-		if err != nil {
-			o.Context.Respond(rw, r, route.Produces, route, err)
-			return
-		}
-		r.Body = ioutil.NopCloser(bytes.NewReader(body))
-	}
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -71,10 +55,6 @@ func (o *SessionCreate) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	if aCtx != nil {
 		*r = *aCtx
-	}
-	if bodyExists {
-		// restore body
-		r.Body = ioutil.NopCloser(bytes.NewReader(body))
 	}
 	var principal *models.Principal
 	if uprinc != nil {
