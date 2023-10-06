@@ -211,6 +211,51 @@ const (
 	// RulesetUniverseSizeColumn is the name of the column containing field "UniverseSize" data
 	RulesetUniverseSizeColumn = "universe_size"
 
+	// RulesetDBTable is the name of the table where RulesetDB are stored
+	RulesetDBTable = "ruleset"
+
+	// RulesetDBPKeyColumn is the name of the primary key
+	RulesetDBPKeyColumn = RulesetDBIDColumn
+
+	// RulesetDBAcceleratedBbsPlayColumn is the name of the column containing field "AcceleratedBbsPlay" data
+	RulesetDBAcceleratedBbsPlayColumn = "accelerated_bbs_play"
+
+	// RulesetDBComputerPlayersFormAlliancesColumn is the name of the column containing field "ComputerPlayersFormAlliances" data
+	RulesetDBComputerPlayersFormAlliancesColumn = "computer_players_form_alliances"
+
+	// RulesetDBDensityColumn is the name of the column containing field "Density" data
+	RulesetDBDensityColumn = "density"
+
+	// RulesetDBGalaxyClumpingColumn is the name of the column containing field "GalaxyClumping" data
+	RulesetDBGalaxyClumpingColumn = "galaxy_clumping"
+
+	// RulesetDBMaximumMineralsColumn is the name of the column containing field "MaximumMinerals" data
+	RulesetDBMaximumMineralsColumn = "maximum_minerals"
+
+	// RulesetDBNoRandomEventsColumn is the name of the column containing field "NoRandomEvents" data
+	RulesetDBNoRandomEventsColumn = "no_random_events"
+
+	// RulesetDBPublicPlayerScoresColumn is the name of the column containing field "PublicPlayerScores" data
+	RulesetDBPublicPlayerScoresColumn = "public_player_scores"
+
+	// RulesetDBRandomSeedColumn is the name of the column containing field "RandomSeed" data
+	RulesetDBRandomSeedColumn = "random_seed"
+
+	// RulesetDBSlowerTechAdvancesColumn is the name of the column containing field "SlowerTechAdvances" data
+	RulesetDBSlowerTechAdvancesColumn = "slower_tech_advances"
+
+	// RulesetDBStartingDistanceColumn is the name of the column containing field "StartingDistance" data
+	RulesetDBStartingDistanceColumn = "starting_distance"
+
+	// RulesetDBUniverseSizeColumn is the name of the column containing field "UniverseSize" data
+	RulesetDBUniverseSizeColumn = "universe_size"
+
+	// RulesetDBIDColumn is the name of the column containing field "ID" data
+	RulesetDBIDColumn = "id"
+
+	// RulesetDBSessionIDColumn is the name of the column containing field "SessionID" data
+	RulesetDBSessionIDColumn = "session_id"
+
 	// SessionIDColumn is the name of the column containing field "ID" data
 	SessionIDColumn = "id"
 
@@ -343,6 +388,7 @@ var (
 	DBAllTables = []string{
 		InvitationDBTable,
 		RaceDBTable,
+		RulesetDBTable,
 		SessionDBTable,
 		SessionPlayerRaceDBTable,
 		UserProfileDBTable,
@@ -400,6 +446,27 @@ var (
 		RulesetStartingDistanceColumn,
 		RulesetUniverseSizeColumn,
 	}
+	// RulesetDBDataColumns is the list of the columns for the RulesetDB structure, expect its primary key
+	RulesetDBDataColumns = []string{
+		RulesetDBAcceleratedBbsPlayColumn,
+		RulesetDBComputerPlayersFormAlliancesColumn,
+		RulesetDBDensityColumn,
+		RulesetDBGalaxyClumpingColumn,
+		RulesetDBMaximumMineralsColumn,
+		RulesetDBNoRandomEventsColumn,
+		RulesetDBPublicPlayerScoresColumn,
+		RulesetDBRandomSeedColumn,
+		RulesetDBSlowerTechAdvancesColumn,
+		RulesetDBStartingDistanceColumn,
+		RulesetDBUniverseSizeColumn,
+		RulesetDBSessionIDColumn,
+	}
+
+	// RulesetDBColumns is the list of the columns for the RulesetDB structure
+	RulesetDBColumns = append(
+		[]string{ RulesetDBIDColumn },
+		RulesetDBDataColumns...,
+	)
 	// SessionColumns is the list of the columns for the Session structure
 	SessionColumns = []string{
 		SessionIDColumn,
@@ -891,6 +958,197 @@ func (s Ruleset) ValuesMap(columns ...string) map[string]interface{} {
 		}
 	}
 	return values
+}
+
+// Table returns the database table name
+func (s RulesetDB) Table() string {
+	return RulesetDBTable
+}
+
+// PKeyColumn returns the database table primary key column name
+func (s RulesetDB) PKeyColumn() string {
+	return RulesetDBPKeyColumn
+}
+
+// Columns returns the database table column names
+func (s RulesetDB) Columns(withPKey bool) []string {
+	if withPKey {
+		return RulesetDBColumns
+	}
+	return RulesetDBDataColumns
+}
+
+// Values returns the values for a list of columns. If a column does not exits,
+// the corresponding value is left empty
+func (s RulesetDB) Values(columns ...string) []interface{} {
+	values := make([]interface{}, len(columns))
+	for i, column := range columns {
+		switch column {
+		case "accelerated_bbs_play":
+			values[i] = s.AcceleratedBbsPlay
+		case "computer_players_form_alliances":
+			values[i] = s.ComputerPlayersFormAlliances
+		case "density":
+			values[i] = s.Density
+		case "galaxy_clumping":
+			values[i] = s.GalaxyClumping
+		case "maximum_minerals":
+			values[i] = s.MaximumMinerals
+		case "no_random_events":
+			values[i] = s.NoRandomEvents
+		case "public_player_scores":
+			values[i] = s.PublicPlayerScores
+		case "random_seed":
+			values[i] = s.RandomSeed
+		case "slower_tech_advances":
+			values[i] = s.SlowerTechAdvances
+		case "starting_distance":
+			values[i] = s.StartingDistance
+		case "universe_size":
+			values[i] = s.UniverseSize
+		case "id":
+			values[i] = s.ID
+		case "session_id":
+			values[i] = s.SessionID
+		}
+	}
+	return values
+}
+
+// ValuesMap returns the values map for a list of columns. If a column does not
+// exits, the corresponding value is left empty
+func (s RulesetDB) ValuesMap(columns ...string) map[string]interface{} {
+	values := make(map[string]interface{})
+	for _, column := range columns {
+		switch column {
+		case "accelerated_bbs_play":
+			values["accelerated_bbs_play"] = s.AcceleratedBbsPlay
+		case "computer_players_form_alliances":
+			values["computer_players_form_alliances"] = s.ComputerPlayersFormAlliances
+		case "density":
+			values["density"] = s.Density
+		case "galaxy_clumping":
+			values["galaxy_clumping"] = s.GalaxyClumping
+		case "maximum_minerals":
+			values["maximum_minerals"] = s.MaximumMinerals
+		case "no_random_events":
+			values["no_random_events"] = s.NoRandomEvents
+		case "public_player_scores":
+			values["public_player_scores"] = s.PublicPlayerScores
+		case "random_seed":
+			values["random_seed"] = s.RandomSeed
+		case "slower_tech_advances":
+			values["slower_tech_advances"] = s.SlowerTechAdvances
+		case "starting_distance":
+			values["starting_distance"] = s.StartingDistance
+		case "universe_size":
+			values["universe_size"] = s.UniverseSize
+		case "id":
+			values["id"] = s.ID
+		case "session_id":
+			values["session_id"] = s.SessionID
+		}
+	}
+	return values
+}
+
+func NewRulesetDBTableSchema() *RulesetDBTableSchema {
+	t := RulesetDBTableSchema{}
+	t.AcceleratedBbsPlay = NewColumn(&t, "accelerated_bbs_play")
+	t.ComputerPlayersFormAlliances = NewColumn(&t, "computer_players_form_alliances")
+	t.Density = NewColumn(&t, "density")
+	t.GalaxyClumping = NewColumn(&t, "galaxy_clumping")
+	t.MaximumMinerals = NewColumn(&t, "maximum_minerals")
+	t.NoRandomEvents = NewColumn(&t, "no_random_events")
+	t.PublicPlayerScores = NewColumn(&t, "public_player_scores")
+	t.RandomSeed = NewColumn(&t, "random_seed")
+	t.SlowerTechAdvances = NewColumn(&t, "slower_tech_advances")
+	t.StartingDistance = NewColumn(&t, "starting_distance")
+	t.UniverseSize = NewColumn(&t, "universe_size")
+	t.ID = NewColumn(&t, "id")
+	t.SessionID = NewColumn(&t, "session_id")
+	return &t
+}
+
+type RulesetDBTableSchema struct {
+	alias string
+	AcceleratedBbsPlay Column
+	ComputerPlayersFormAlliances Column
+	Density Column
+	GalaxyClumping Column
+	MaximumMinerals Column
+	NoRandomEvents Column
+	PublicPlayerScores Column
+	RandomSeed Column
+	SlowerTechAdvances Column
+	StartingDistance Column
+	UniverseSize Column
+	ID Column
+	SessionID Column
+}
+
+// Columns returns the database table column names
+func (t RulesetDBTableSchema) Columns(withPKey bool) []string {
+	if withPKey {
+		return RulesetDBColumns
+	}
+	return RulesetDBDataColumns
+}
+
+// FQColumns returns the database table column names prefixed with the table alias
+func (t RulesetDBTableSchema) FQColumns(withPKey bool) []string {
+	var colList []string
+    colList = RulesetDBDataColumns
+
+	if withPKey {
+		colList = RulesetDBColumns	
+	}
+
+    var cols []string
+	for _, col := range colList {
+			cols = append(cols, t.GetName()+"."+col)
+	}
+	return cols
+}
+
+func (t RulesetDBTableSchema) As(name string) *RulesetDBTableSchema {
+	t.alias = name
+	t.AcceleratedBbsPlay = NewColumn(&t, "accelerated_bbs_play")
+	t.ComputerPlayersFormAlliances = NewColumn(&t, "computer_players_form_alliances")
+	t.Density = NewColumn(&t, "density")
+	t.GalaxyClumping = NewColumn(&t, "galaxy_clumping")
+	t.MaximumMinerals = NewColumn(&t, "maximum_minerals")
+	t.NoRandomEvents = NewColumn(&t, "no_random_events")
+	t.PublicPlayerScores = NewColumn(&t, "public_player_scores")
+	t.RandomSeed = NewColumn(&t, "random_seed")
+	t.SlowerTechAdvances = NewColumn(&t, "slower_tech_advances")
+	t.StartingDistance = NewColumn(&t, "starting_distance")
+	t.UniverseSize = NewColumn(&t, "universe_size")
+	t.ID = NewColumn(&t, "id")
+	t.SessionID = NewColumn(&t, "session_id")
+	return &t
+}
+
+func (t RulesetDBTableSchema) GetName() string {
+	if t.alias == "" {
+		return RulesetDBTable
+	}
+	return t.alias
+}
+
+func (t RulesetDBTableSchema) Sql() string {
+	if t.alias == "" {
+		return RulesetDBTable
+	}
+	return RulesetDBTable + " AS " + t.alias
+}
+
+func (t RulesetDBTableSchema) ToSql() (string, []interface{}, error) {
+	return t.Sql(), nil, nil
+}
+
+func (t RulesetDBTableSchema) Select() squirrel.SelectBuilder {
+	return squirrel.Select(t.Columns(true)...).From(t.Sql())
 }
 
 // Columns returns the database table column names
@@ -1595,6 +1853,7 @@ func NewDBSchema() *DBSchema {
 	return &DBSchema{
 		InvitationDB: NewInvitationDBTableSchema(),
 		RaceDB: NewRaceDBTableSchema(),
+		RulesetDB: NewRulesetDBTableSchema(),
 		SessionDB: NewSessionDBTableSchema(),
 		SessionPlayerRaceDB: NewSessionPlayerRaceDBTableSchema(),
 		UserProfileDB: NewUserProfileDBTableSchema(),
@@ -1605,6 +1864,7 @@ func NewDBSchema() *DBSchema {
 type DBSchema struct {
 	InvitationDB *InvitationDBTableSchema
 	RaceDB *RaceDBTableSchema
+	RulesetDB *RulesetDBTableSchema
 	SessionDB *SessionDBTableSchema
 	SessionPlayerRaceDB *SessionPlayerRaceDBTableSchema
 	UserProfileDB *UserProfileDBTableSchema

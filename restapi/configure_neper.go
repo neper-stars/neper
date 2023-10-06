@@ -132,6 +132,8 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.SessionPlayerRaceCreateHandler = handlers.NewSessionPlayerRaceCreateHandler(&config.Log, config.DB)
 	// player order on a session
 	api.ReorderPlayersHandler = handlers.NewReorderPlayersHandler(&config.Log, config.DB)
+	// ruleset
+	api.RulesCreateHandler = handlers.NewRulesCreateHandler(&config.Log, config.DB)
 
 	// for user to be able to find its own ID
 	api.UserinfoHandler = handlers.NewUserinfoHandler(config.DB)

@@ -72,7 +72,7 @@ func TestSessionReadHandler(t *testing.T) {
 		require.Equal(t, "gandalfID", session.Managers[0])
 	})
 
-	t.Run("isengard_is_private", func(t *testing.T) {
+	t.Run("isengard_is_private_and_merry_is_not_a_member", func(t *testing.T) {
 		p := &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "merryID",

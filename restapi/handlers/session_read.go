@@ -31,13 +31,6 @@ type SessionReadHandler struct {
 func (h *SessionReadHandler) handle(
 	ctx context.Context, params operations.SessionReadParams, principal *models.Principal,
 ) (*models.Session, error) {
-	authorized, err := h.Authorize(ctx, params, principal)
-	if err != nil {
-		return nil, err
-	}
-	if !authorized {
-		return nil, errs.ErrForbidden
-	}
 
 	sessionID := params.SessionID
 
@@ -48,6 +41,15 @@ func (h *SessionReadHandler) handle(
 	}
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
+
+	// ** Authorization **
+	authorized, err := h.Authorize(sqlH, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
 
 	var sessionDB models.SessionDB
 	if err := sqlH.GetByPKey(&sessionDB, sessionID); err != nil {
@@ -92,7 +94,7 @@ type SessionPrivateQueryResult struct {
 }
 
 func (h *SessionReadHandler) Authorize(
-	ctx context.Context, params operations.SessionReadParams, principal *models.Principal,
+	sqlH database.SQLHelper, params operations.SessionReadParams, principal *models.Principal,
 ) (bool, error) {
 	if principal.IsGlobalManager {
 		return true, nil
@@ -109,7 +111,7 @@ func (h *SessionReadHandler) Authorize(
 		Where(sq.Eq{models.SessionDBIDColumn: askedSessionID})
 
 	var p SessionPrivateQueryResult
-	if err := database.GetContext(ctx, h.db, &p, query, h.log); err != nil {
+	if err := sqlH.Get(&p, query); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.log.Debug().Msg("auth: no matching session found --> reject")
 			return false, nil
@@ -123,16 +125,5 @@ func (h *SessionReadHandler) Authorize(
 	}
 
 	// if session is private only members have access
-	var authRes models.UserProfileSessionRelDB
-	query = userProfileSessionRelationQuery(principal.Subject, askedSessionID)
-	if err := database.GetContext(ctx, h.db, &authRes, query, h.log); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			h.log.Debug().Msg("auth: no matching userprofile session relation for a private session --> reject")
-			return false, nil
-		}
-		return false, err
-	}
-
-	// if we are here we are at least a member of the session, so we are authorized to read the session content
-	return true, nil
+	return IsSessionMember(sqlH, principal.Subject, askedSessionID)
 }

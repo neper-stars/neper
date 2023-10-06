@@ -108,22 +108,17 @@ func (h *SessionPlayerRaceCreateHandler) Authorize(
 	sessionID := params.SessionID
 	raceID := params.SessionPlayerRace.RaceID
 
-	var sessionRel models.UserProfileSessionRelDB
-	filter := sq.And{
-		sq.Eq{models.UserProfileSessionRelDBSessionIDColumn: sessionID},
-		sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject},
-	}
-	if err := sqlH.GetWhere(&sessionRel, filter); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			// session has no relation for the given user... --> refuse without error
-			return false, nil
-		}
+	member, err := IsSessionMember(sqlH, principal.Subject, sessionID)
+	if err != nil {
 		return false, err
+	}
+	if !member {
+		return false, nil
 	}
 
 	// TODO: we could optimize to load only the userID and not the whole dataset
 	var raceDB models.RaceDB
-	filter = sq.And{
+	filter := sq.And{
 		sq.Eq{models.RaceDBIDColumn: raceID},
 		sq.Eq{models.RaceDBUserIDColumn: principal.Subject},
 	}
