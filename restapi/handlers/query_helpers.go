@@ -11,6 +11,9 @@ import (
 	"github.com/neper-stars/neper/models"
 )
 
+// IsSessionMember returns true if the given userProfileID is member of the given sessionID
+// sql.ErrNoRows errors are caught and returned as false
+// all other sql errors will return as normal errors (ie: can be treated as 500)
 func IsSessionMember(sqlH database.SQLHelper, userProfileID, sessionID string) (bool, error) {
 	var sessionRel models.UserProfileSessionRelDB
 	if err := sqlH.GetWhere(&sessionRel, sessionMembersFilter(userProfileID, sessionID)); err != nil {
@@ -23,6 +26,9 @@ func IsSessionMember(sqlH database.SQLHelper, userProfileID, sessionID string) (
 	return true, nil
 }
 
+// IsSessionManager returns true if the given userProfileID is manager of the given sessionID
+// sql.ErrNoRows errors are caught and returned as false
+// all other sql errors will return as normal errors (ie: can be treated as 500)
 func IsSessionManager(sqlH database.SQLHelper, userProfileID, sessionID string) (bool, error) {
 	var sessionRel models.UserProfileSessionRelDB
 	if err := sqlH.GetWhere(&sessionRel, sessionMembersFilter(userProfileID, sessionID)); err != nil {
