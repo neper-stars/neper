@@ -528,6 +528,7 @@ const (
 	DataTypeEnumUserProfile
 	DataTypeEnumInvitation
 	DataTypeEnumSessionPlayerRace
+	DataTypeEnumRuleset
 )
 
 type DataType struct {
@@ -600,6 +601,18 @@ func (o *DataType) SetSessionPlayerRace(v *SessionPlayerRace) {
 	o.Type = DataTypeEnumSessionPlayerRace
 }
 
+func (o DataType) IsRuleset() bool {
+	return o.Type == DataTypeEnumRuleset
+}
+func (o DataType) Ruleset() *Ruleset {
+	return o.value.(*Ruleset)
+}
+
+func (o *DataType) SetRuleset(v *Ruleset) {
+	o.value = v
+	o.Type = DataTypeEnumRuleset
+}
+
 func (o DataType) MarshalJSON() ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	stream := jsoniter.ConfigDefault.BorrowStream(buf)
@@ -623,6 +636,8 @@ func (o DataType) MarshalJSONStream(stream *jsoniter.Stream) {
 	case DataTypeEnumInvitation:
 		stream.WriteVal(o.value)
 	case DataTypeEnumSessionPlayerRace:
+		stream.WriteVal(o.value)
+	case DataTypeEnumRuleset:
 		stream.WriteVal(o.value)
 	}
 }
@@ -701,6 +716,18 @@ func (o *DataType) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			jsoniter.ConfigDefault.ReturnIterator(subIter)
 			if lastError == nil {
 				o.SetSessionPlayerRace(&value)
+				return
+			}
+		}
+
+		{ // attempt to read a *Ruleset
+			subIter := jsoniter.ConfigDefault.BorrowIterator(buf)
+			var value Ruleset
+			subIter.ReadVal(&value)
+			lastError = subIter.Error
+			jsoniter.ConfigDefault.ReturnIterator(subIter)
+			if lastError == nil {
+				o.SetRuleset(&value)
 				return
 			}
 		}
@@ -803,6 +830,102 @@ type ReferentialSync struct {
 
 	// Version
 	Version int `json:"version,omitempty"`
+}
+
+// Ruleset ruleset
+type Ruleset struct {
+	// AcceleratedBbsPlay
+	AcceleratedBbsPlay bool `json:"accelerated_bbs_play"`
+
+	// ComputerPlayersFormAlliances
+	ComputerPlayersFormAlliances bool `json:"computer_players_form_alliances"`
+
+	// Density
+	Density int `json:"density"`
+
+	// GalaxyClumping
+	GalaxyClumping bool `json:"galaxy_clumping"`
+
+	// Id unique record id
+	Id string `json:"id"`
+
+	// MaximumMinerals
+	MaximumMinerals bool `json:"maximum_minerals"`
+
+	// NoRandomEvents
+	NoRandomEvents bool `json:"no_random_events"`
+
+	// PublicPlayerScores
+	PublicPlayerScores bool `json:"public_player_scores"`
+
+	// RandomSeed
+	RandomSeed int `json:"random_seed,omitempty"`
+
+	// SessionId unique id of the related session
+	SessionId string `json:"session_id,omitempty"`
+
+	// SlowerTechAdvances
+	SlowerTechAdvances bool `json:"slower_tech_advances"`
+
+	// StartingDistance
+	StartingDistance int `json:"starting_distance"`
+
+	// Type data type
+	Type string `json:"__type__"`
+
+	// UniverseSize
+	UniverseSize int `json:"universe_size"`
+
+	// VcAtLeastXYearsMustPassBeforeAWinnerIsDeclared
+	VcAtLeastXYearsMustPassBeforeAWinnerIsDeclared int `json:"vc_at_least_x_years_must_pass_before_a_winner_is_declared"`
+
+	// VcAttainTechXInYField
+	VcAttainTechXInYField bool `json:"vc_attain_tech_X_in_Y_field"`
+
+	// VcAttainTechXInYFieldFieldsValue
+	VcAttainTechXInYFieldFieldsValue int `json:"vc_attain_tech_X_in_Y_field_fields_value"`
+
+	// VcAttainTechXInYFieldTechValue
+	VcAttainTechXInYFieldTechValue int `json:"vc_attain_tech_X_in_Y_field_tech_value"`
+
+	// VcExceedNextPlayerScoreByX
+	VcExceedNextPlayerScoreByX bool `json:"vc_exceed_next_player_score_by_x"`
+
+	// VcExceedNextPlayerScoreByXValue percentage of excess score from 2nd player
+	VcExceedNextPlayerScoreByXValue int `json:"vc_exceed_next_player_score_by_x_value,omitempty"`
+
+	// VcExceedScoreOfX
+	VcExceedScoreOfX bool `json:"vc_exceed_score_of_x,omitempty"`
+
+	// VcExceedScoreOfXValue
+	VcExceedScoreOfXValue int `json:"vc_exceed_score_of_x_value,omitempty"`
+
+	// VcHasProductionCapacityOfXThousand
+	VcHasProductionCapacityOfXThousand bool `json:"vc_has_production_capacity_of_x_thousand"`
+
+	// VcHasProductionCapacityOfXThousandValue expressed in 1000 (k)
+	VcHasProductionCapacityOfXThousandValue int `json:"vc_has_production_capacity_of_x_thousand_value,omitempty"`
+
+	// VcHaveHighestScoreAfterXYears
+	VcHaveHighestScoreAfterXYears bool `json:"vc_have_highest_score_after_x_years"`
+
+	// VcHaveHighestScoreAfterXYearsValue expressed in years
+	VcHaveHighestScoreAfterXYearsValue int `json:"vc_have_highest_score_after_x_years_value,omitempty"`
+
+	// VcOwnsXCapitalShips
+	VcOwnsXCapitalShips bool `json:"vc_owns_x_capital_ships"`
+
+	// VcOwnsXCapitalShipsValue
+	VcOwnsXCapitalShipsValue int `json:"vc_owns_x_capital_ships_value,omitempty"`
+
+	// VcOwnsXPercentOfPlanets
+	VcOwnsXPercentOfPlanets bool `json:"vc_owns_x_percent_of_planets"`
+
+	// VcOwnsXPercentOfPlanetsValue expressed in percent
+	VcOwnsXPercentOfPlanetsValue int `json:"vc_owns_x_percent_of_planets_value,omitempty"`
+
+	// VcWinnerMustMeetXOfTheAbove
+	VcWinnerMustMeetXOfTheAbove int `json:"vc_winner_must_meet_x_of_the_above"`
 }
 
 // Session session
@@ -1385,6 +1508,715 @@ func (s *ReferentialSync) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 
 	if !ChangesReceived {
 		iter.ReportError("validating ReferentialSync", "\"changes\" is required but was not present")
+	}
+}
+
+// MarshalJSON serializes to JSON
+func (s *Ruleset) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer(nil)
+	stream := jsoniter.ConfigDefault.BorrowStream(buf)
+	s.MarshalJSONStream(stream)
+	stream.Flush()
+	err := stream.Error
+	jsoniter.ConfigDefault.ReturnStream(stream)
+
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (s Ruleset) MarshalJSONStream(stream *jsoniter.Stream) {
+	stream.WriteObjectStart()
+	ct := commaTracker{stream: stream}
+
+	// Marshal the AcceleratedBbsPlay field
+	ct.More()
+	stream.WriteObjectField("accelerated_bbs_play")
+	stream.WriteVal(s.AcceleratedBbsPlay)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the ComputerPlayersFormAlliances field
+	ct.More()
+	stream.WriteObjectField("computer_players_form_alliances")
+	stream.WriteVal(s.ComputerPlayersFormAlliances)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the Density field
+	ct.More()
+	stream.WriteObjectField("density")
+	stream.WriteVal(s.Density)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the GalaxyClumping field
+	ct.More()
+	stream.WriteObjectField("galaxy_clumping")
+	stream.WriteVal(s.GalaxyClumping)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the Id field
+	ct.More()
+	stream.WriteObjectField("id")
+	stream.WriteString(s.Id)
+
+	// Marshal the MaximumMinerals field
+	ct.More()
+	stream.WriteObjectField("maximum_minerals")
+	stream.WriteVal(s.MaximumMinerals)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the NoRandomEvents field
+	ct.More()
+	stream.WriteObjectField("no_random_events")
+	stream.WriteVal(s.NoRandomEvents)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the PublicPlayerScores field
+	ct.More()
+	stream.WriteObjectField("public_player_scores")
+	stream.WriteVal(s.PublicPlayerScores)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the RandomSeed field
+	if !IsEmpty(s.RandomSeed) {
+		ct.More()
+		stream.WriteObjectField("random_seed")
+		stream.WriteVal(s.RandomSeed)
+		if stream.Error != nil {
+			return
+		}
+	}
+
+	// Marshal the SessionId field
+	if !IsEmpty(s.SessionId) {
+		ct.More()
+		stream.WriteObjectField("session_id")
+		stream.WriteString(s.SessionId)
+	}
+
+	// Marshal the SlowerTechAdvances field
+	ct.More()
+	stream.WriteObjectField("slower_tech_advances")
+	stream.WriteVal(s.SlowerTechAdvances)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the StartingDistance field
+	ct.More()
+	stream.WriteObjectField("starting_distance")
+	stream.WriteVal(s.StartingDistance)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the Type field
+	ct.More()
+	stream.WriteObjectField("__type__")
+	stream.WriteString(s.Type)
+
+	// Marshal the UniverseSize field
+	ct.More()
+	stream.WriteObjectField("universe_size")
+	stream.WriteVal(s.UniverseSize)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcAtLeastXYearsMustPassBeforeAWinnerIsDeclared field
+	ct.More()
+	stream.WriteObjectField("vc_at_least_x_years_must_pass_before_a_winner_is_declared")
+	stream.WriteVal(s.VcAtLeastXYearsMustPassBeforeAWinnerIsDeclared)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcAttainTechXInYField field
+	ct.More()
+	stream.WriteObjectField("vc_attain_tech_X_in_Y_field")
+	stream.WriteVal(s.VcAttainTechXInYField)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcAttainTechXInYFieldFieldsValue field
+	ct.More()
+	stream.WriteObjectField("vc_attain_tech_X_in_Y_field_fields_value")
+	stream.WriteVal(s.VcAttainTechXInYFieldFieldsValue)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcAttainTechXInYFieldTechValue field
+	ct.More()
+	stream.WriteObjectField("vc_attain_tech_X_in_Y_field_tech_value")
+	stream.WriteVal(s.VcAttainTechXInYFieldTechValue)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcExceedNextPlayerScoreByX field
+	ct.More()
+	stream.WriteObjectField("vc_exceed_next_player_score_by_x")
+	stream.WriteVal(s.VcExceedNextPlayerScoreByX)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcExceedNextPlayerScoreByXValue field
+	if !IsEmpty(s.VcExceedNextPlayerScoreByXValue) {
+		ct.More()
+		stream.WriteObjectField("vc_exceed_next_player_score_by_x_value")
+		stream.WriteVal(s.VcExceedNextPlayerScoreByXValue)
+		if stream.Error != nil {
+			return
+		}
+	}
+
+	// Marshal the VcExceedScoreOfX field
+	if !IsEmpty(s.VcExceedScoreOfX) {
+		ct.More()
+		stream.WriteObjectField("vc_exceed_score_of_x")
+		stream.WriteVal(s.VcExceedScoreOfX)
+		if stream.Error != nil {
+			return
+		}
+	}
+
+	// Marshal the VcExceedScoreOfXValue field
+	if !IsEmpty(s.VcExceedScoreOfXValue) {
+		ct.More()
+		stream.WriteObjectField("vc_exceed_score_of_x_value")
+		stream.WriteVal(s.VcExceedScoreOfXValue)
+		if stream.Error != nil {
+			return
+		}
+	}
+
+	// Marshal the VcHasProductionCapacityOfXThousand field
+	ct.More()
+	stream.WriteObjectField("vc_has_production_capacity_of_x_thousand")
+	stream.WriteVal(s.VcHasProductionCapacityOfXThousand)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcHasProductionCapacityOfXThousandValue field
+	if !IsEmpty(s.VcHasProductionCapacityOfXThousandValue) {
+		ct.More()
+		stream.WriteObjectField("vc_has_production_capacity_of_x_thousand_value")
+		stream.WriteVal(s.VcHasProductionCapacityOfXThousandValue)
+		if stream.Error != nil {
+			return
+		}
+	}
+
+	// Marshal the VcHaveHighestScoreAfterXYears field
+	ct.More()
+	stream.WriteObjectField("vc_have_highest_score_after_x_years")
+	stream.WriteVal(s.VcHaveHighestScoreAfterXYears)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcHaveHighestScoreAfterXYearsValue field
+	if !IsEmpty(s.VcHaveHighestScoreAfterXYearsValue) {
+		ct.More()
+		stream.WriteObjectField("vc_have_highest_score_after_x_years_value")
+		stream.WriteVal(s.VcHaveHighestScoreAfterXYearsValue)
+		if stream.Error != nil {
+			return
+		}
+	}
+
+	// Marshal the VcOwnsXCapitalShips field
+	ct.More()
+	stream.WriteObjectField("vc_owns_x_capital_ships")
+	stream.WriteVal(s.VcOwnsXCapitalShips)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcOwnsXCapitalShipsValue field
+	if !IsEmpty(s.VcOwnsXCapitalShipsValue) {
+		ct.More()
+		stream.WriteObjectField("vc_owns_x_capital_ships_value")
+		stream.WriteVal(s.VcOwnsXCapitalShipsValue)
+		if stream.Error != nil {
+			return
+		}
+	}
+
+	// Marshal the VcOwnsXPercentOfPlanets field
+	ct.More()
+	stream.WriteObjectField("vc_owns_x_percent_of_planets")
+	stream.WriteVal(s.VcOwnsXPercentOfPlanets)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the VcOwnsXPercentOfPlanetsValue field
+	if !IsEmpty(s.VcOwnsXPercentOfPlanetsValue) {
+		ct.More()
+		stream.WriteObjectField("vc_owns_x_percent_of_planets_value")
+		stream.WriteVal(s.VcOwnsXPercentOfPlanetsValue)
+		if stream.Error != nil {
+			return
+		}
+	}
+
+	// Marshal the VcWinnerMustMeetXOfTheAbove field
+	ct.More()
+	stream.WriteObjectField("vc_winner_must_meet_x_of_the_above")
+	stream.WriteVal(s.VcWinnerMustMeetXOfTheAbove)
+	if stream.Error != nil {
+		return
+	}
+	stream.WriteObjectEnd()
+}
+
+func (s *Ruleset) UnmarshalJSON(data []byte) error {
+	iter := jsoniter.ConfigDefault.BorrowIterator(data)
+	s.UnmarshalJSONIterator(iter)
+	err := iter.Error
+	jsoniter.ConfigDefault.ReturnIterator(iter)
+	return err
+}
+
+func (s *Ruleset) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
+	AcceleratedBbsPlayReceived := false
+	ComputerPlayersFormAlliancesReceived := false
+	DensityReceived := false
+	GalaxyClumpingReceived := false
+	IdReceived := false
+	MaximumMineralsReceived := false
+	NoRandomEventsReceived := false
+	PublicPlayerScoresReceived := false
+	SlowerTechAdvancesReceived := false
+	StartingDistanceReceived := false
+	TypeReceived := false
+	UniverseSizeReceived := false
+	VcAtLeastXYearsMustPassBeforeAWinnerIsDeclaredReceived := false
+	VcAttainTechXInYFieldReceived := false
+	VcAttainTechXInYFieldFieldsValueReceived := false
+	VcAttainTechXInYFieldTechValueReceived := false
+	VcExceedNextPlayerScoreByXReceived := false
+	VcHasProductionCapacityOfXThousandReceived := false
+	VcHaveHighestScoreAfterXYearsReceived := false
+	VcOwnsXCapitalShipsReceived := false
+	VcOwnsXPercentOfPlanetsReceived := false
+	VcWinnerMustMeetXOfTheAboveReceived := false
+
+	for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+		switch field {
+		case "accelerated_bbs_play":
+			s.AcceleratedBbsPlay = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			AcceleratedBbsPlayReceived = true
+		case "computer_players_form_alliances":
+			s.ComputerPlayersFormAlliances = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			ComputerPlayersFormAlliancesReceived = true
+		case "density":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field density", "density is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.Density)
+			if iter.Error != nil {
+				return
+			}
+			DensityReceived = true
+		case "galaxy_clumping":
+			s.GalaxyClumping = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			GalaxyClumpingReceived = true
+		case "id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field id", "id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.Id = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			IdReceived = true
+		case "maximum_minerals":
+			s.MaximumMinerals = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			MaximumMineralsReceived = true
+		case "no_random_events":
+			s.NoRandomEvents = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			NoRandomEventsReceived = true
+		case "public_player_scores":
+			s.PublicPlayerScores = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			PublicPlayerScoresReceived = true
+		case "random_seed":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field random_seed", "random_seed is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.RandomSeed)
+			if iter.Error != nil {
+				return
+			}
+		case "session_id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field session_id", "session_id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.SessionId = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+		case "slower_tech_advances":
+			s.SlowerTechAdvances = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			SlowerTechAdvancesReceived = true
+		case "starting_distance":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field starting_distance", "starting_distance is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.StartingDistance)
+			if iter.Error != nil {
+				return
+			}
+			StartingDistanceReceived = true
+		case "__type__":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field __type__", "__type__ is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.Type = iter.ReadString()
+			if s.Type != "ruleset" {
+				iter.ReportError(
+					"__type__",
+					fmt.Sprintf("Expected %s, got \"%s\"", "ruleset", s.Type),
+				)
+			}
+			if iter.Error != nil {
+				return
+			}
+			TypeReceived = true
+		case "universe_size":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field universe_size", "universe_size is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.UniverseSize)
+			if iter.Error != nil {
+				return
+			}
+			UniverseSizeReceived = true
+		case "vc_at_least_x_years_must_pass_before_a_winner_is_declared":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_at_least_x_years_must_pass_before_a_winner_is_declared", "vc_at_least_x_years_must_pass_before_a_winner_is_declared is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcAtLeastXYearsMustPassBeforeAWinnerIsDeclared)
+			if iter.Error != nil {
+				return
+			}
+			VcAtLeastXYearsMustPassBeforeAWinnerIsDeclaredReceived = true
+		case "vc_attain_tech_X_in_Y_field":
+			s.VcAttainTechXInYField = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			VcAttainTechXInYFieldReceived = true
+		case "vc_attain_tech_X_in_Y_field_fields_value":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_attain_tech_X_in_Y_field_fields_value", "vc_attain_tech_X_in_Y_field_fields_value is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcAttainTechXInYFieldFieldsValue)
+			if iter.Error != nil {
+				return
+			}
+			VcAttainTechXInYFieldFieldsValueReceived = true
+		case "vc_attain_tech_X_in_Y_field_tech_value":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_attain_tech_X_in_Y_field_tech_value", "vc_attain_tech_X_in_Y_field_tech_value is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcAttainTechXInYFieldTechValue)
+			if iter.Error != nil {
+				return
+			}
+			VcAttainTechXInYFieldTechValueReceived = true
+		case "vc_exceed_next_player_score_by_x":
+			s.VcExceedNextPlayerScoreByX = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			VcExceedNextPlayerScoreByXReceived = true
+		case "vc_exceed_next_player_score_by_x_value":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_exceed_next_player_score_by_x_value", "vc_exceed_next_player_score_by_x_value is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcExceedNextPlayerScoreByXValue)
+			if iter.Error != nil {
+				return
+			}
+		case "vc_exceed_score_of_x":
+			s.VcExceedScoreOfX = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+		case "vc_exceed_score_of_x_value":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_exceed_score_of_x_value", "vc_exceed_score_of_x_value is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcExceedScoreOfXValue)
+			if iter.Error != nil {
+				return
+			}
+		case "vc_has_production_capacity_of_x_thousand":
+			s.VcHasProductionCapacityOfXThousand = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			VcHasProductionCapacityOfXThousandReceived = true
+		case "vc_has_production_capacity_of_x_thousand_value":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_has_production_capacity_of_x_thousand_value", "vc_has_production_capacity_of_x_thousand_value is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcHasProductionCapacityOfXThousandValue)
+			if iter.Error != nil {
+				return
+			}
+		case "vc_have_highest_score_after_x_years":
+			s.VcHaveHighestScoreAfterXYears = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			VcHaveHighestScoreAfterXYearsReceived = true
+		case "vc_have_highest_score_after_x_years_value":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_have_highest_score_after_x_years_value", "vc_have_highest_score_after_x_years_value is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcHaveHighestScoreAfterXYearsValue)
+			if iter.Error != nil {
+				return
+			}
+		case "vc_owns_x_capital_ships":
+			s.VcOwnsXCapitalShips = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			VcOwnsXCapitalShipsReceived = true
+		case "vc_owns_x_capital_ships_value":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_owns_x_capital_ships_value", "vc_owns_x_capital_ships_value is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcOwnsXCapitalShipsValue)
+			if iter.Error != nil {
+				return
+			}
+		case "vc_owns_x_percent_of_planets":
+			s.VcOwnsXPercentOfPlanets = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+			VcOwnsXPercentOfPlanetsReceived = true
+		case "vc_owns_x_percent_of_planets_value":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_owns_x_percent_of_planets_value", "vc_owns_x_percent_of_planets_value is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcOwnsXPercentOfPlanetsValue)
+			if iter.Error != nil {
+				return
+			}
+		case "vc_winner_must_meet_x_of_the_above":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field vc_winner_must_meet_x_of_the_above", "vc_winner_must_meet_x_of_the_above is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.VcWinnerMustMeetXOfTheAbove)
+			if iter.Error != nil {
+				return
+			}
+			VcWinnerMustMeetXOfTheAboveReceived = true
+		default:
+			// Ignore the additional property
+			iter.Skip()
+		}
+	}
+
+	if !AcceleratedBbsPlayReceived {
+		iter.ReportError("validating Ruleset", "\"accelerated_bbs_play\" is required but was not present")
+	}
+
+	if !ComputerPlayersFormAlliancesReceived {
+		iter.ReportError("validating Ruleset", "\"computer_players_form_alliances\" is required but was not present")
+	}
+
+	if !DensityReceived {
+		iter.ReportError("validating Ruleset", "\"density\" is required but was not present")
+	}
+
+	if !GalaxyClumpingReceived {
+		iter.ReportError("validating Ruleset", "\"galaxy_clumping\" is required but was not present")
+	}
+
+	if !IdReceived {
+		iter.ReportError("validating Ruleset", "\"id\" is required but was not present")
+	}
+
+	if !MaximumMineralsReceived {
+		iter.ReportError("validating Ruleset", "\"maximum_minerals\" is required but was not present")
+	}
+
+	if !NoRandomEventsReceived {
+		iter.ReportError("validating Ruleset", "\"no_random_events\" is required but was not present")
+	}
+
+	if !PublicPlayerScoresReceived {
+		iter.ReportError("validating Ruleset", "\"public_player_scores\" is required but was not present")
+	}
+
+	if !SlowerTechAdvancesReceived {
+		iter.ReportError("validating Ruleset", "\"slower_tech_advances\" is required but was not present")
+	}
+
+	if !StartingDistanceReceived {
+		iter.ReportError("validating Ruleset", "\"starting_distance\" is required but was not present")
+	}
+
+	if !TypeReceived {
+		iter.ReportError("validating Ruleset", "\"__type__\" is required but was not present")
+	}
+
+	if !UniverseSizeReceived {
+		iter.ReportError("validating Ruleset", "\"universe_size\" is required but was not present")
+	}
+
+	if !VcAtLeastXYearsMustPassBeforeAWinnerIsDeclaredReceived {
+		iter.ReportError("validating Ruleset", "\"vc_at_least_x_years_must_pass_before_a_winner_is_declared\" is required but was not present")
+	}
+
+	if !VcAttainTechXInYFieldReceived {
+		iter.ReportError("validating Ruleset", "\"vc_attain_tech_X_in_Y_field\" is required but was not present")
+	}
+
+	if !VcAttainTechXInYFieldFieldsValueReceived {
+		iter.ReportError("validating Ruleset", "\"vc_attain_tech_X_in_Y_field_fields_value\" is required but was not present")
+	}
+
+	if !VcAttainTechXInYFieldTechValueReceived {
+		iter.ReportError("validating Ruleset", "\"vc_attain_tech_X_in_Y_field_tech_value\" is required but was not present")
+	}
+
+	if !VcExceedNextPlayerScoreByXReceived {
+		iter.ReportError("validating Ruleset", "\"vc_exceed_next_player_score_by_x\" is required but was not present")
+	}
+
+	if !VcHasProductionCapacityOfXThousandReceived {
+		iter.ReportError("validating Ruleset", "\"vc_has_production_capacity_of_x_thousand\" is required but was not present")
+	}
+
+	if !VcHaveHighestScoreAfterXYearsReceived {
+		iter.ReportError("validating Ruleset", "\"vc_have_highest_score_after_x_years\" is required but was not present")
+	}
+
+	if !VcOwnsXCapitalShipsReceived {
+		iter.ReportError("validating Ruleset", "\"vc_owns_x_capital_ships\" is required but was not present")
+	}
+
+	if !VcOwnsXPercentOfPlanetsReceived {
+		iter.ReportError("validating Ruleset", "\"vc_owns_x_percent_of_planets\" is required but was not present")
+	}
+
+	if !VcWinnerMustMeetXOfTheAboveReceived {
+		iter.ReportError("validating Ruleset", "\"vc_winner_must_meet_x_of_the_above\" is required but was not present")
 	}
 }
 

@@ -121,6 +121,145 @@ type Ruleset struct {
 	// Maximum: 4
 	// Minimum: 0
 	UniverseSize int64 `json:"universe_size,omitempty" db:"universe_size"`
+
+	// At least "X" years must pass before a winner is declared
+	// Simply put, how long do you want the game to go?
+	// Remember, one year in the game is usually equivalent to one turn played per day.
+	// Selecting 500 years means that the game will last at least 500 days of real time (more likely two full years).
+	//
+	// Since you are the one running the game and doing all the work,
+	// be sure to choose a time frame that you can live with.
+	//
+	// Maximum: 500
+	// Minimum: 30
+	VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared int64 `json:"vc_at_least_x_years_must_pass_before_a_winner_is_declared,omitempty" db:"vc_at_least_x_years_must_pass_before_a_winner_is_declared"`
+
+	// Attain Tech "X" in "Y" fields (Balanced strategy)
+	// Because tech-level acquisition goes hand in hand with resources,
+	// players desiring to meet this condition will angle their race towards more efficient tech production,
+	// as well as be encouraged to increase their size in order to harness more resources.
+	//
+	VcAttainTechXInYField bool `json:"vc_attain_tech_X_in_Y_field,omitempty" db:"vc_attain_tech_x_in_y_field"`
+
+	// number of fields to attain
+	// Maximum: 6
+	// Minimum: 2
+	VcAttainTechXInYFieldFieldsValue int64 `json:"vc_attain_tech_X_in_Y_field_fields_value,omitempty" db:"vc_attain_tech_x_in_y_field_fields_value"`
+
+	// tech value to attain
+	// Maximum: 26
+	// Minimum: 8
+	VcAttainTechXInYFieldTechValue int64 `json:"vc_attain_tech_X_in_Y_field_tech_value,omitempty" db:"vc_attain_tech_x_in_y_field_tech_value"`
+
+	// Exceed the next player's score by "X"% (Offensive strategy)
+	// This is perhaps the most popular victory condition, as it forces players to eliminate any opposition.
+	// This will create many alliances and politic-ing as lesser empires try to get an edge and
+	// chop down the leading players.
+	//
+	VcExceedNextPlayerScoreByx bool `json:"vc_exceed_next_player_score_by_x,omitempty" db:"vc_exceed_next_player_score_by_x"`
+
+	// Percentage of score you need to have above the next player to score this victory condition.
+	// Maximum: 300
+	// Minimum: 20
+	VcExceedNextPlayerScoreByxValue int64 `json:"vc_exceed_next_player_score_by_x_value,omitempty" db:"vc_exceed_next_player_score_by_x_value"`
+
+	// Exceed a score of "X" (Balanced strategy)
+	// Once again, resources are the deciding factor here,
+	// forcing a combination of good production efficiency and territory acquisition out of the players.
+	//
+	// "Hyper-producing" races may run amok in a game like this, scaring the hell out of other players,
+	// and causing an early war or two.
+	//
+	// Players could also win via this condition by manipulating other factors which can effect score,
+	// unlike the other victory condition two listings down.
+	// Additionally, as with any "total" type requirement, a host should be careful not to place unreal
+	// goals on a game that can not fulfil them.
+	// Having a higher score as a requirement to win in a small universe may be unattainable altogether.
+	//
+	VcExceedScoreOfx bool `json:"vc_exceed_score_of_x,omitempty" db:"vc_exceed_score_of_x"`
+
+	// score value to exceed to validate this victory condition.
+	// Maximum: 20000
+	// Minimum: 1000
+	VcExceedScoreOfxValue int64 `json:"vc_exceed_score_of_x_value,omitempty" db:"vc_exceed_score_of_x_value"`
+
+	// Has a production capacity of "X" thousand (Balanced strategy)
+	// This is very similar to the score requirement above,
+	// but it relies totally on the production of resources.
+	// Players will shoot for high production efficiency and conquest of worlds.
+	//
+	VcHasProductionCapacityOfxThousand bool `json:"vc_has_production_capacity_of_x_thousand,omitempty" db:"vc_has_production_capacity_of_x_thousand"`
+
+	// production value needed to score this victory condition
+	// Maximum: 500
+	// Minimum: 10
+	VcHasProductionCapacityOfxThousandValue int64 `json:"vc_has_production_capacity_of_x_thousand_value,omitempty" db:"vc_has_production_capacity_of_x_thousand_value"`
+
+	// Have the highest score after "X" years
+	// Consider this carefully.
+	// This is a bonus category which a player can score if they have the highest score any time
+	// after the year specified.
+	// This parameter should not be used in conjunction with the "Exceed next highest score by "X"%",
+	// since it already indicates that the player holding this category is ahead in the game.
+	//
+	// Because this is a relatively easy category to win, be sure to give other players a chance to win
+	// after one player wins this category.
+	// It should be used as an incentive to build quickly, but it should not decide the entire chances of victory.
+	//
+	VcHaveHighestScoreAfterxYears bool `json:"vc_have_highest_score_after_x_years,omitempty" db:"vc_have_highest_score_after_x_years"`
+
+	// Number of years after which this victory condition can be achieved.
+	// Maximum: 900
+	// Minimum: 30
+	VcHaveHighestScoreAfterxYearsValue int64 `json:"vc_have_highest_score_after_x_years_value,omitempty" db:"vc_have_highest_score_after_x_years_value"`
+
+	// Owns "X" capital ships (Defensive startegy)
+	// This really lends itself to keeping out of trouble for the player.
+	// Even though one can build capital ships, it is another thing to keep them intact in order to win the game.
+	// Also, because of the long time necessary in order to achieve the technology to build these ships,
+	// games will run a long time.
+	//
+	VcOwnsxCapitalShips bool `json:"vc_owns_x_capital_ships,omitempty" db:"vc_owns_x_capital_ships"`
+
+	// number of capital ships necessary to validate this victory condition
+	// Maximum: 300
+	// Minimum: 10
+	VcOwnsxCapitalShipsValue int64 `json:"vc_owns_x_capital_ships_value,omitempty" db:"vc_owns_x_capital_ships_value"`
+
+	// Enables the victory condition based on number of planets.
+	// If true, you will need to fill the vc_percent_of_planets field
+	// with the required percentage for this condition to be true.
+	//
+	// Owns "X"% of planets (Offensive strategy) -
+	// Be carefull how high you put this. Players with restricted habitability ranges will,
+	// generally, not be able to own more than 50% of all possible worlds.
+	// For the HE: Hyper-expansion will always have the advantage in a game with this victory condition.
+	// Perhaps this is one reason why HE is banned from most games.
+	//
+	VcOwnsxPercentOfPlanets bool `json:"vc_owns_x_percent_of_planets,omitempty" db:"vc_owns_x_percent_of_planets"`
+
+	// required percentage
+	// Maximum: 100
+	// Minimum: 20
+	VcOwnsxPercentOfPlanetsValue int64 `json:"vc_owns_x_percent_of_planets_value,omitempty" db:"vc_owns_x_percent_of_planets_value"`
+
+	// Winner must meet "X" of the above selected criteria
+	// Selecting this will give players more than one way to win,
+	// if you set "X" to less than the number of selected categories.
+	//
+	// This will provide more ways to win and lead to interesting strategies that will effect
+	// one another as the game progresses.
+	//
+	// Making players meet the same set of conditions will lead to either a production game,
+	// with wars intermittent, or to a conquest game, with rampant death and destruction.
+	//
+	// Note: It is never wise to select virtually all conditions with every condition needing to be met.
+	// This will lead to a game where, once one player firmly establishes a lead,
+	// many players will probably cede victory without further play.
+	//
+	// Maximum: 7
+	// Minimum: 0
+	VcWinnerMustMeetxOfTheAbove int64 `json:"vc_winner_must_meet_x_of_the_above,omitempty" db:"vc_winner_must_meet_x_of_the_above"`
 }
 
 // Validate validates this ruleset
@@ -136,6 +275,46 @@ func (m *Ruleset) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateUniverseSize(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcAtLeastxYearsMustPassBeforeaWinnerIsDeclared(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcAttainTechXInYFieldFieldsValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcAttainTechXInYFieldTechValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcExceedNextPlayerScoreByxValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcExceedScoreOfxValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcHasProductionCapacityOfxThousandValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcHaveHighestScoreAfterxYearsValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcOwnsxCapitalShipsValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcOwnsxPercentOfPlanetsValue(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateVcWinnerMustMeetxOfTheAbove(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -187,6 +366,166 @@ func (m *Ruleset) validateUniverseSize(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaximumInt("universe_size", "body", m.UniverseSize, 4, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcAtLeastxYearsMustPassBeforeaWinnerIsDeclared(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_at_least_x_years_must_pass_before_a_winner_is_declared", "body", m.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared, 30, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_at_least_x_years_must_pass_before_a_winner_is_declared", "body", m.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared, 500, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcAttainTechXInYFieldFieldsValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcAttainTechXInYFieldFieldsValue) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_attain_tech_X_in_Y_field_fields_value", "body", m.VcAttainTechXInYFieldFieldsValue, 2, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_attain_tech_X_in_Y_field_fields_value", "body", m.VcAttainTechXInYFieldFieldsValue, 6, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcAttainTechXInYFieldTechValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcAttainTechXInYFieldTechValue) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_attain_tech_X_in_Y_field_tech_value", "body", m.VcAttainTechXInYFieldTechValue, 8, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_attain_tech_X_in_Y_field_tech_value", "body", m.VcAttainTechXInYFieldTechValue, 26, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcExceedNextPlayerScoreByxValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcExceedNextPlayerScoreByxValue) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_exceed_next_player_score_by_x_value", "body", m.VcExceedNextPlayerScoreByxValue, 20, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_exceed_next_player_score_by_x_value", "body", m.VcExceedNextPlayerScoreByxValue, 300, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcExceedScoreOfxValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcExceedScoreOfxValue) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_exceed_score_of_x_value", "body", m.VcExceedScoreOfxValue, 1000, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_exceed_score_of_x_value", "body", m.VcExceedScoreOfxValue, 20000, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcHasProductionCapacityOfxThousandValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcHasProductionCapacityOfxThousandValue) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_has_production_capacity_of_x_thousand_value", "body", m.VcHasProductionCapacityOfxThousandValue, 10, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_has_production_capacity_of_x_thousand_value", "body", m.VcHasProductionCapacityOfxThousandValue, 500, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcHaveHighestScoreAfterxYearsValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcHaveHighestScoreAfterxYearsValue) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_have_highest_score_after_x_years_value", "body", m.VcHaveHighestScoreAfterxYearsValue, 30, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_have_highest_score_after_x_years_value", "body", m.VcHaveHighestScoreAfterxYearsValue, 900, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcOwnsxCapitalShipsValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcOwnsxCapitalShipsValue) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_owns_x_capital_ships_value", "body", m.VcOwnsxCapitalShipsValue, 10, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_owns_x_capital_ships_value", "body", m.VcOwnsxCapitalShipsValue, 300, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcOwnsxPercentOfPlanetsValue(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcOwnsxPercentOfPlanetsValue) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_owns_x_percent_of_planets_value", "body", m.VcOwnsxPercentOfPlanetsValue, 20, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_owns_x_percent_of_planets_value", "body", m.VcOwnsxPercentOfPlanetsValue, 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Ruleset) validateVcWinnerMustMeetxOfTheAbove(formats strfmt.Registry) error {
+	if swag.IsZero(m.VcWinnerMustMeetxOfTheAbove) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("vc_winner_must_meet_x_of_the_above", "body", m.VcWinnerMustMeetxOfTheAbove, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("vc_winner_must_meet_x_of_the_above", "body", m.VcWinnerMustMeetxOfTheAbove, 7, false); err != nil {
 		return err
 	}
 

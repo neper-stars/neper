@@ -39,6 +39,9 @@
               },
               {
                 "$ref": "https://neper.io/messages/schemas/v1/neper/session_player_race.schema.json"
+              },
+              {
+                "$ref": "https://neper.io/messages/schemas/v1/neper/ruleset.schema.json"
               }
             ]
           }

@@ -1868,6 +1868,120 @@ func init() {
           "minimum": 0,
           "x-go-custom-tag": "db:\"universe_size\"",
           "x-nullable": false
+        },
+        "vc_at_least_x_years_must_pass_before_a_winner_is_declared": {
+          "description": "At least \"X\" years must pass before a winner is declared\nSimply put, how long do you want the game to go?\nRemember, one year in the game is usually equivalent to one turn played per day.\nSelecting 500 years means that the game will last at least 500 days of real time (more likely two full years).\n\nSince you are the one running the game and doing all the work,\nbe sure to choose a time frame that you can live with.\n",
+          "type": "integer",
+          "maximum": 500,
+          "minimum": 30,
+          "x-go-custom-tag": "db:\"vc_at_least_x_years_must_pass_before_a_winner_is_declared\"",
+          "x-nullable": false
+        },
+        "vc_attain_tech_X_in_Y_field": {
+          "description": "Attain Tech \"X\" in \"Y\" fields (Balanced strategy)\nBecause tech-level acquisition goes hand in hand with resources,\nplayers desiring to meet this condition will angle their race towards more efficient tech production,\nas well as be encouraged to increase their size in order to harness more resources.\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"vc_attain_tech_x_in_y_field\"",
+          "x-nullable": false
+        },
+        "vc_attain_tech_X_in_Y_field_fields_value": {
+          "description": "number of fields to attain",
+          "type": "integer",
+          "maximum": 6,
+          "minimum": 2,
+          "x-go-custom-tag": "db:\"vc_attain_tech_x_in_y_field_fields_value\""
+        },
+        "vc_attain_tech_X_in_Y_field_tech_value": {
+          "description": "tech value to attain",
+          "type": "integer",
+          "maximum": 26,
+          "minimum": 8,
+          "x-go-custom-tag": "db:\"vc_attain_tech_x_in_y_field_tech_value\""
+        },
+        "vc_exceed_next_player_score_by_x": {
+          "description": "Exceed the next player's score by \"X\"% (Offensive strategy)\nThis is perhaps the most popular victory condition, as it forces players to eliminate any opposition.\nThis will create many alliances and politic-ing as lesser empires try to get an edge and\nchop down the leading players.\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"vc_exceed_next_player_score_by_x\"",
+          "x-nullable": false
+        },
+        "vc_exceed_next_player_score_by_x_value": {
+          "description": "Percentage of score you need to have above the next player to score this victory condition.",
+          "type": "integer",
+          "maximum": 300,
+          "minimum": 20,
+          "x-go-custom-tag": "db:\"vc_exceed_next_player_score_by_x_value\""
+        },
+        "vc_exceed_score_of_x": {
+          "description": "Exceed a score of \"X\" (Balanced strategy)\nOnce again, resources are the deciding factor here,\nforcing a combination of good production efficiency and territory acquisition out of the players.\n\n\"Hyper-producing\" races may run amok in a game like this, scaring the hell out of other players,\nand causing an early war or two.\n\nPlayers could also win via this condition by manipulating other factors which can effect score,\nunlike the other victory condition two listings down.\nAdditionally, as with any \"total\" type requirement, a host should be careful not to place unreal\ngoals on a game that can not fulfil them.\nHaving a higher score as a requirement to win in a small universe may be unattainable altogether.\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"vc_exceed_score_of_x\"",
+          "x-nullable": false
+        },
+        "vc_exceed_score_of_x_value": {
+          "description": "score value to exceed to validate this victory condition.",
+          "type": "integer",
+          "maximum": 20000,
+          "minimum": 1000,
+          "x-go-custom-tag": "db:\"vc_exceed_score_of_x_value\""
+        },
+        "vc_has_production_capacity_of_x_thousand": {
+          "description": "Has a production capacity of \"X\" thousand (Balanced strategy)\nThis is very similar to the score requirement above,\nbut it relies totally on the production of resources.\nPlayers will shoot for high production efficiency and conquest of worlds.\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"vc_has_production_capacity_of_x_thousand\"",
+          "x-nullable": false
+        },
+        "vc_has_production_capacity_of_x_thousand_value": {
+          "description": "production value needed to score this victory condition",
+          "type": "integer",
+          "maximum": 500,
+          "minimum": 10,
+          "x-go-custom-tag": "db:\"vc_has_production_capacity_of_x_thousand_value\""
+        },
+        "vc_have_highest_score_after_x_years": {
+          "description": "Have the highest score after \"X\" years\nConsider this carefully.\nThis is a bonus category which a player can score if they have the highest score any time\nafter the year specified.\nThis parameter should not be used in conjunction with the \"Exceed next highest score by \"X\"%\",\nsince it already indicates that the player holding this category is ahead in the game.\n\nBecause this is a relatively easy category to win, be sure to give other players a chance to win\nafter one player wins this category.\nIt should be used as an incentive to build quickly, but it should not decide the entire chances of victory.\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"vc_have_highest_score_after_x_years\"",
+          "x-nullable": false
+        },
+        "vc_have_highest_score_after_x_years_value": {
+          "description": "Number of years after which this victory condition can be achieved.",
+          "type": "integer",
+          "maximum": 900,
+          "minimum": 30,
+          "x-go-custom-tag": "db:\"vc_have_highest_score_after_x_years_value\""
+        },
+        "vc_owns_x_capital_ships": {
+          "description": "Owns \"X\" capital ships (Defensive startegy)\nThis really lends itself to keeping out of trouble for the player.\nEven though one can build capital ships, it is another thing to keep them intact in order to win the game.\nAlso, because of the long time necessary in order to achieve the technology to build these ships,\ngames will run a long time.\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"vc_owns_x_capital_ships\"",
+          "x-nullable": false
+        },
+        "vc_owns_x_capital_ships_value": {
+          "description": "number of capital ships necessary to validate this victory condition",
+          "type": "integer",
+          "maximum": 300,
+          "minimum": 10,
+          "x-go-custom-tag": "db:\"vc_owns_x_capital_ships_value\""
+        },
+        "vc_owns_x_percent_of_planets": {
+          "description": "Enables the victory condition based on number of planets.\nIf true, you will need to fill the vc_percent_of_planets field\nwith the required percentage for this condition to be true.\n\nOwns \"X\"% of planets (Offensive strategy) -\nBe carefull how high you put this. Players with restricted habitability ranges will,\ngenerally, not be able to own more than 50% of all possible worlds.\nFor the HE: Hyper-expansion will always have the advantage in a game with this victory condition.\nPerhaps this is one reason why HE is banned from most games.\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"vc_owns_x_percent_of_planets\"",
+          "x-nullable": false
+        },
+        "vc_owns_x_percent_of_planets_value": {
+          "description": "required percentage",
+          "type": "integer",
+          "maximum": 100,
+          "minimum": 20,
+          "x-go-custom-tag": "db:\"vc_owns_x_percent_of_planets_value\""
+        },
+        "vc_winner_must_meet_x_of_the_above": {
+          "description": "Winner must meet \"X\" of the above selected criteria\nSelecting this will give players more than one way to win,\nif you set \"X\" to less than the number of selected categories.\n\nThis will provide more ways to win and lead to interesting strategies that will effect\none another as the game progresses.\n\nMaking players meet the same set of conditions will lead to either a production game,\nwith wars intermittent, or to a conquest game, with rampant death and destruction.\n\nNote: It is never wise to select virtually all conditions with every condition needing to be met.\nThis will lead to a game where, once one player firmly establishes a lead,\nmany players will probably cede victory without further play.\n",
+          "type": "integer",
+          "maximum": 7,
+          "minimum": 0,
+          "x-go-custom-tag": "db:\"vc_winner_must_meet_x_of_the_above\"",
+          "x-nullable": false
         }
       }
     },

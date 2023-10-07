@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/ruleset.schema.json",
+  "$$target": "https://neper.io/messages/schemas/v1/neper/ruleset.schema.json",
+  "title": "ruleset",
+  "description": "ruleset",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "__type__": {
+      "description": "data type",
+      "type": "string",
+      "enum": [
+        "ruleset"
+      ]
+    },
+    "id": {
+      "description": "unique record id",
+      "type": "string"
+    },
+    "session_id": {
+      "description": "unique id of the related session",
+      "type": "string"
+    },
+    "accelerated_bbs_play": {
+      "type": "boolean"
+    },
+    "computer_players_form_alliances": {
+      "type": "boolean"
+    },
+    "density": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3
+    },
+    "galaxy_clumping": {
+      "type": "boolean"
+    },
+    "maximum_minerals": {
+      "type": "boolean"
+    },
+    "no_random_events": {
+      "type": "boolean"
+    },
+    "public_player_scores": {
+      "type": "boolean"
+    },
+    "random_seed": {
+      "type": "integer"
+    },
+    "slower_tech_advances": {
+      "type": "boolean"
+    },
+    "starting_distance": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3
+    },
+    "universe_size": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4
+    },
+    "vc_attain_tech_X_in_Y_field": {
+      "type": "boolean"
+    },
+    "vc_attain_tech_X_in_Y_field_fields_value": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 6
+    },
+    "vc_attain_tech_X_in_Y_field_tech_value": {
+      "type": "integer",
+      "minimum": 8,
+      "maximum": 26
+    },
+    "vc_exceed_next_player_score_by_x": {
+      "type": "boolean"
+    },
+    "vc_exceed_next_player_score_by_x_value": {
+      "type": "integer",
+      "description": "percentage of excess score from 2nd player",
+      "minimum": 20,
+      "maximum": 300
+    },
+    "vc_exceed_score_of_x": {
+      "type": "boolean"
+    },
+    "vc_exceed_score_of_x_value": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 20000
+    },
+    "vc_has_production_capacity_of_x_thousand": {
+      "type": "boolean"
+    },
+    "vc_has_production_capacity_of_x_thousand_value": {
+      "type": "integer",
+      "description": "expressed in 1000 (k)",
+      "minimum": 10,
+      "maximum": 500
+    },
+    "vc_have_highest_score_after_x_years": {
+      "type": "boolean"
+    },
+    "vc_have_highest_score_after_x_years_value": {
+      "type": "integer",
+      "description": "expressed in years",
+      "minimum": 30,
+      "maximum": 900
+    },
+    "vc_owns_x_capital_ships": {
+      "type": "boolean"
+    },
+    "vc_owns_x_capital_ships_value": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 300
+    },
+    "vc_owns_x_percent_of_planets": {
+      "type": "boolean"
+    },
+    "vc_owns_x_percent_of_planets_value": {
+      "type": "integer",
+      "description": "expressed in percent",
+      "minimum": 20,
+      "maximum": 100
+    },
+    "vc_winner_must_meet_x_of_the_above": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7
+    },
+    "vc_at_least_x_years_must_pass_before_a_winner_is_declared": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 500
+    }
+  },
+  "required": [
+    "__type__",
+    "id",
+    "accelerated_bbs_play",
+    "computer_players_form_alliances",
+    "density",
+    "galaxy_clumping",
+    "maximum_minerals",
+    "no_random_events",
+    "public_player_scores",
+    "slower_tech_advances",
+    "starting_distance",
+    "universe_size",
+    "vc_attain_tech_X_in_Y_field",
+    "vc_attain_tech_X_in_Y_field_fields_value",
+    "vc_attain_tech_X_in_Y_field_tech_value",
+    "vc_exceed_next_player_score_by_x",
+    "vc_has_production_capacity_of_x_thousand",
+    "vc_have_highest_score_after_x_years",
+    "vc_owns_x_capital_ships",
+    "vc_owns_x_percent_of_planets",
+    "vc_winner_must_meet_x_of_the_above",
+    "vc_at_least_x_years_must_pass_before_a_winner_is_declared"
+  ]
+}

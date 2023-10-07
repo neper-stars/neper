@@ -1,0 +1,16 @@
+{{.SessionName}}
+{{RuleSet.UniverseSize}} {{.RuleSet.Density}} {{.RuleSet.StartingDistance}} {{ with .RuleSet.RandomSeed }}{{.}}{{end}}
+{{.RuleSet.MaximumMinerals}} {{.RuleSet.SlowTech}} {{.RuleSet.AcceleratedBbsPlay}} {{.RuleSet.NoRandomEvents}} {{.RuleSet.ComputerPlayersFormAlliances}} {{.RuleSet.PublicPlayerScores}} {{.RuleSet.GalaxyClumping}}
+{{.NumberOfPlayers}}
+{{range .Races}}
+{{.}}
+{{end}}
+{{.VcOwnsxPercentOfPlanets}} {{with .VcOwnsxPercentOfPlanetsValue}}{{.}}{{end}}
+{{.VcAttainTechXInYField}} {{with .VcAttainTechXInYFieldTechValue}}{{.}}{{end}} {{with .VcAttainTechXInYFieldFieldsValue}}{{.}}{{end}}
+{{.VcExceedScoreOfx}} {{with .VcExceedScoreOfxValue}}{{.}}{{end}}
+{{.VcExceedNextPlayerScoreByx}} {{with.VcExceedNextPlayerScoreByxValue}}{{.}}{{end}}
+{{.VcHasProductionCapacityOfxThousand}} {{with .VcHasProductionCapacityOfxThousandValue}}{{.}}{{end}}
+{{.VcOwnsxCapitalShips}} {{with .VcOwnsxCapitalShipsValue}}{{.}}{{end}}
+{{.VcHaveHighestScoreAfterxYears}} {{with .VcHaveHighestScoreAfterxYearsValue}}{{.}}{{end}}
+{{.VcWinnerMustMeetxOfTheAbove}} {{with .VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared}}{{.}}{{end}}
+{{.SessionID}}.xy

@@ -367,6 +367,171 @@ definitions:
           to controlling entire star clusters. This is more realistic.
           However: Many players dislike the fact that planet names have a tendency to print on top of other names,
           making it a real pain to quickly locate particular worlds.
+      vc_owns_x_percent_of_planets:
+        type: boolean
+        x-go-custom-tag: db:"vc_owns_x_percent_of_planets"
+        x-nullable: false
+        description: |
+          Enables the victory condition based on number of planets.
+          If true, you will need to fill the vc_percent_of_planets field
+          with the required percentage for this condition to be true.
+          
+          Owns "X"% of planets (Offensive strategy) -
+          Be carefull how high you put this. Players with restricted habitability ranges will,
+          generally, not be able to own more than 50% of all possible worlds.
+          For the HE: Hyper-expansion will always have the advantage in a game with this victory condition.
+          Perhaps this is one reason why HE is banned from most games.
+      vc_owns_x_percent_of_planets_value:
+        type: integer
+        x-go-custom-tag: db:"vc_owns_x_percent_of_planets_value"
+        minimum: 20
+        maximum: 100
+        description: required percentage
+      vc_attain_tech_X_in_Y_field:
+        type: boolean
+        x-go-custom-tag: db:"vc_attain_tech_x_in_y_field"
+        x-nullable: false
+        description: |
+          Attain Tech "X" in "Y" fields (Balanced strategy)
+          Because tech-level acquisition goes hand in hand with resources,
+          players desiring to meet this condition will angle their race towards more efficient tech production,
+          as well as be encouraged to increase their size in order to harness more resources.
+      vc_attain_tech_X_in_Y_field_tech_value:
+        type: integer
+        x-go-custom-tag: db:"vc_attain_tech_x_in_y_field_tech_value"
+        minimum: 8
+        maximum: 26
+        description: tech value to attain
+      vc_attain_tech_X_in_Y_field_fields_value:
+        type: integer
+        x-go-custom-tag: db:"vc_attain_tech_x_in_y_field_fields_value"
+        minimum: 2
+        maximum: 6
+        description: number of fields to attain
+      vc_exceed_score_of_x:
+        type: boolean
+        x-go-custom-tag: db:"vc_exceed_score_of_x"
+        x-nullable: false
+        description: |
+          Exceed a score of "X" (Balanced strategy)
+          Once again, resources are the deciding factor here,
+          forcing a combination of good production efficiency and territory acquisition out of the players.
+          
+          "Hyper-producing" races may run amok in a game like this, scaring the hell out of other players,
+          and causing an early war or two.
+          
+          Players could also win via this condition by manipulating other factors which can effect score,
+          unlike the other victory condition two listings down.
+          Additionally, as with any "total" type requirement, a host should be careful not to place unreal
+          goals on a game that can not fulfil them.
+          Having a higher score as a requirement to win in a small universe may be unattainable altogether.
+      vc_exceed_score_of_x_value:
+        type: integer
+        x-go-custom-tag: db:"vc_exceed_score_of_x_value"
+        minimum: 1000
+        maximum: 20000
+        description: score value to exceed to validate this victory condition.
+      vc_exceed_next_player_score_by_x:
+        type: boolean
+        x-go-custom-tag: db:"vc_exceed_next_player_score_by_x"
+        x-nullable: false
+        description: |
+          Exceed the next player's score by "X"% (Offensive strategy)
+          This is perhaps the most popular victory condition, as it forces players to eliminate any opposition.
+          This will create many alliances and politic-ing as lesser empires try to get an edge and
+          chop down the leading players.
+      vc_exceed_next_player_score_by_x_value:
+        type: integer
+        x-go-custom-tag: db:"vc_exceed_next_player_score_by_x_value"
+        minimum: 20
+        maximum: 300
+        description: Percentage of score you need to have above the next player to score this victory condition.
+      vc_has_production_capacity_of_x_thousand:
+        type: boolean
+        x-go-custom-tag: db:"vc_has_production_capacity_of_x_thousand"
+        x-nullable: false
+        description: |
+          Has a production capacity of "X" thousand (Balanced strategy)
+          This is very similar to the score requirement above,
+          but it relies totally on the production of resources.
+          Players will shoot for high production efficiency and conquest of worlds.
+      vc_has_production_capacity_of_x_thousand_value:
+        type: integer
+        x-go-custom-tag: db:"vc_has_production_capacity_of_x_thousand_value"
+        minimum: 10
+        maximum: 500
+        description: production value needed to score this victory condition
+      vc_owns_x_capital_ships:
+        type: boolean
+        x-go-custom-tag: db:"vc_owns_x_capital_ships"
+        x-nullable: false
+        description: |
+          Owns "X" capital ships (Defensive startegy)
+          This really lends itself to keeping out of trouble for the player.
+          Even though one can build capital ships, it is another thing to keep them intact in order to win the game.
+          Also, because of the long time necessary in order to achieve the technology to build these ships,
+          games will run a long time.
+      vc_owns_x_capital_ships_value:
+        type: integer
+        x-go-custom-tag: db:"vc_owns_x_capital_ships_value"
+        minimum: 10
+        maximum: 300
+        description: number of capital ships necessary to validate this victory condition
+      vc_have_highest_score_after_x_years:
+        type: boolean
+        x-go-custom-tag: db:"vc_have_highest_score_after_x_years"
+        x-nullable: false
+        description: |
+          Have the highest score after "X" years
+          Consider this carefully.
+          This is a bonus category which a player can score if they have the highest score any time
+          after the year specified.
+          This parameter should not be used in conjunction with the "Exceed next highest score by "X"%",
+          since it already indicates that the player holding this category is ahead in the game.
+          
+          Because this is a relatively easy category to win, be sure to give other players a chance to win
+          after one player wins this category.
+          It should be used as an incentive to build quickly, but it should not decide the entire chances of victory.
+      vc_have_highest_score_after_x_years_value:
+        type: integer
+        x-go-custom-tag: db:"vc_have_highest_score_after_x_years_value"
+        minimum: 30
+        maximum: 900
+        description: Number of years after which this victory condition can be achieved.
+      vc_winner_must_meet_x_of_the_above:
+        type: integer
+        x-go-custom-tag: db:"vc_winner_must_meet_x_of_the_above"
+        x-nullable: false
+        minimum: 0
+        maximum: 7
+        description: |
+          Winner must meet "X" of the above selected criteria
+          Selecting this will give players more than one way to win,
+          if you set "X" to less than the number of selected categories.
+          
+          This will provide more ways to win and lead to interesting strategies that will effect
+          one another as the game progresses.
+          
+          Making players meet the same set of conditions will lead to either a production game,
+          with wars intermittent, or to a conquest game, with rampant death and destruction.
+          
+          Note: It is never wise to select virtually all conditions with every condition needing to be met.
+          This will lead to a game where, once one player firmly establishes a lead,
+          many players will probably cede victory without further play.
+      vc_at_least_x_years_must_pass_before_a_winner_is_declared:
+        type: integer
+        x-go-custom-tag: db:"vc_at_least_x_years_must_pass_before_a_winner_is_declared"
+        x-nullable: false
+        minimum: 30
+        maximum: 500
+        description: |
+          At least "X" years must pass before a winner is declared
+          Simply put, how long do you want the game to go?
+          Remember, one year in the game is usually equivalent to one turn played per day.
+          Selecting 500 years means that the game will last at least 500 days of real time (more likely two full years).
+          
+          Since you are the one running the game and doing all the work,
+          be sure to choose a time frame that you can live with.
 
   race:
     type: object
