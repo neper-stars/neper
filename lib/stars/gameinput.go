@@ -30,19 +30,25 @@ func NewGameInput(log *zerolog.Logger, baseDir, sessionID, sessionName string, r
 		RuleSet:         r,
 		Players:         p,
 	}
+	g.computeUniverseFilename()
 	g.computeRaces()
 	return &g
 }
 
 type GameInput struct {
-	log             *zerolog.Logger
-	BaseDir         string
-	SessionID       string
-	SessionName     string
-	NumberOfPlayers int
-	RuleSet         models.Ruleset
-	Players         []models.SessionPlayerRace
-	Races           []string
+	log              *zerolog.Logger
+	BaseDir          string
+	SessionID        string
+	SessionName      string
+	NumberOfPlayers  int
+	RuleSet          models.Ruleset
+	Players          []models.SessionPlayerRace
+	Races            []string
+	UniverseFilename string
+}
+
+func (g *GameInput) computeUniverseFilename() {
+	g.UniverseFilename = g.gameFile("game.xy")
 }
 
 func (g *GameInput) computeRaces() {
@@ -59,8 +65,16 @@ func (g *GameInput) botLine(pr models.SessionPlayerRace) string {
 	return fmt.Sprintf("# %s %d", pr.RaceID, *pr.BotLevel)
 }
 
+func (g *GameInput) gameDir() string {
+	return g.BaseDir + windowsSep + g.SessionID
+}
+
+func (g *GameInput) gameFile(fn string) string {
+	return g.gameDir() + windowsSep + fn
+}
+
 func (g *GameInput) playerLine(pr models.SessionPlayerRace) string {
-	p := g.BaseDir + windowsSep + g.SessionID + windowsSep + fmt.Sprintf("game.r%d", pr.PlayerOrder+1)
+	p := g.gameFile(fmt.Sprintf("game.r%d", pr.PlayerOrder+1))
 	return p
 }
 

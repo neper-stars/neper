@@ -75,7 +75,7 @@ z:\stars\shireID\game.r2
 0 
 0 
 1 100
-shireID.xy`
+z:\stars\shireID\game.xy`
 
 func TestGameInput(t *testing.T) {
 	log := testutils.GetLogger(t)
