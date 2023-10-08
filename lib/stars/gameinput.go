@@ -101,5 +101,5 @@ func GameInputTmpl() *template.Template {
 	return tmpl
 }
 
-//go:embed gameinput.tmpl
+//go:embed resources/gameinput.tmpl
 var gameInput string

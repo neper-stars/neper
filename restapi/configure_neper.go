@@ -15,6 +15,7 @@ import (
 	"orus.io/orus-io/go-orusapi"
 
 	"github.com/neper-stars/neper/auth"
+	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi/handlers"
 	"github.com/neper-stars/neper/restapi/operations"
 )
@@ -35,6 +36,7 @@ type Config struct {
 	Now           func() time.Time
 	TokenOptions  auth.TokenOptions
 	Authenticator *auth.Auth // Authentication
+	StarsRunner   *stars.Runner
 }
 
 // OnShutdown add a shutdown callback

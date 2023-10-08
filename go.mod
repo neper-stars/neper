@@ -10,6 +10,7 @@ require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/fatih/structtag v1.2.0
+	github.com/go-cmd/cmd v1.4.2
 	github.com/go-openapi/errors v0.20.4
 	github.com/go-openapi/loads v0.21.2
 	github.com/go-openapi/runtime v0.26.0
@@ -23,6 +24,7 @@ require (
 	github.com/justinas/alice v1.2.0
 	github.com/lib/pq v1.10.9
 	github.com/m4rw3r/uuid v1.0.1
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/orus-io/go-flags v1.4.1-0.20200710100319-828e94849811
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.16.0
@@ -30,6 +32,7 @@ require (
 	github.com/steinfletcher/apitest v1.5.15
 	github.com/stretchr/testify v1.8.4
 	github.com/ulikunitz/xz v0.5.11
+	golang.org/x/sys v0.12.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 	github.com/neper-stars/houston v0.0.0-00010101000000-000000000000
 	orus.io/orus-io/go-orusapi v0.0.0-00010101000000-000000000000
@@ -71,7 +74,6 @@ require (
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/term v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
