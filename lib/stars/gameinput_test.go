@@ -6,14 +6,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"orus.io/orus-io/go-orusapi/testutils"
 
-	"fmt"
-
+	"github.com/rs/zerolog"
 	"github.com/neper-stars/neper/models"
 )
 
-func TestGameInput_computeRace(t *testing.T) {
-	log := testutils.GetLogger(t)
-	ruleset := models.Ruleset{
+func testRuleset(t *testing.T) models.Ruleset {
+	t.Helper()
+	return models.Ruleset{
 		Density:                          2,
 		RandomSeed:                       0,
 		StartingDistance:                 2,
@@ -24,8 +23,12 @@ func TestGameInput_computeRace(t *testing.T) {
 		VcWinnerMustMeetxOfTheAbove:      1,
 		VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared: 100,
 	}
+}
+
+func testPlayers(t *testing.T) []models.SessionPlayerRace {
+	t.Helper()
 	level1 := int64(1)
-	players := []models.SessionPlayerRace{
+	return []models.SessionPlayerRace{
 		{
 			ID:            "spr1",
 			PlayerOrder:   0,
@@ -50,12 +53,44 @@ func TestGameInput_computeRace(t *testing.T) {
 			UserProfileID: "system",
 		},
 	}
-	gi := NewGameInput(&log, "z:\\stars", "shireID", "The Shire", ruleset, players)
+}
 
-	fmt.Printf("%+v\n", gi.Races)
-	require.Equal(t, 3, len(gi.Players))
-	require.Equal(t, 3, len(gi.Races))
-	require.Equal(t, "z:\\stars\\shireID\\game.r1", gi.Races[0])
-	require.Equal(t, "z:\\stars\\shireID\\game.r2", gi.Races[1])
-	require.Equal(t, "# 1 1", gi.Races[2])
+func testGameInput(t *testing.T, log zerolog.Logger) *GameInput {
+	t.Helper()
+	return NewGameInput(&log, "z:\\stars", "shireID", "The Shire", testRuleset(t), testPlayers(t))
+}
+
+var expectedFileContent = `The Shire
+2 2 2 
+0 0 0 0 0 0 0
+3
+z:\stars\shireID\game.r1
+z:\stars\shireID\game.r2
+# 1 1
+0 
+1 26 4
+0 
+0 
+0 
+0 
+0 
+1 100
+shireID.xy`
+
+func TestGameInput(t *testing.T) {
+	log := testutils.GetLogger(t)
+	gi := testGameInput(t, log)
+
+	t.Run("computeRace", func(t *testing.T) {
+		require.Equal(t, 3, len(gi.Players))
+		require.Equal(t, 3, len(gi.Races))
+		require.Equal(t, "z:\\stars\\shireID\\game.r1", gi.Races[0])
+		require.Equal(t, "z:\\stars\\shireID\\game.r2", gi.Races[1])
+		require.Equal(t, "# 1 1", gi.Races[2])
+	})
+	t.Run("fullFile", func(t *testing.T) {
+		content, err := gi.Content()
+		require.NoError(t, err)
+		require.Equal(t, expectedFileContent, string(content))
+	})
 }

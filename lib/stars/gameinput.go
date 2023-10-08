@@ -75,7 +75,14 @@ func (g *GameInput) Content() ([]byte, error) {
 }
 
 func GameInputTmpl() *template.Template {
-	tmpl, err := template.New("gameinput").Parse(gameInput)
+	tmpl, err := template.New("gameinput").Funcs(template.FuncMap{
+		"starsbool": func(b bool) string {
+			if b {
+				return "1"
+			}
+			return "0"
+		},
+	}).Parse(gameInput)
 	must(err)
 	return tmpl
 }
