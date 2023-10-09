@@ -23,7 +23,7 @@ func must(err error) {
 func NewGameInput(log *zerolog.Logger, baseDir, sessionID, sessionName string, r models.Ruleset, p []models.SessionPlayerRace) *GameInput {
 	g := GameInput{
 		log:             log,
-		BaseDir:         baseDir,
+		BaseDir:         baseDir, // this is the wine base (eg: s:\) which we will concat with sessionID
 		SessionID:       sessionID,
 		SessionName:     sessionName,
 		NumberOfPlayers: len(p),
@@ -78,14 +78,14 @@ func (g *GameInput) playerLine(pr models.SessionPlayerRace) string {
 	return p
 }
 
-func (g *GameInput) Content() ([]byte, error) {
+func (g *GameInput) Content() (*bytes.Buffer, error) {
 	tmpl := GameInputTmpl()
 	w := new(bytes.Buffer)
 	if err := tmpl.Execute(w, g); err != nil {
 		g.log.Err(err).Msg("failed to render gameinput template")
 		return nil, err
 	}
-	return w.Bytes(), nil
+	return w, nil
 }
 
 func GameInputTmpl() *template.Template {

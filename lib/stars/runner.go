@@ -37,8 +37,8 @@ func NewRunnerOptions() *RunnerOptions {
 
 type Runner struct {
 	log           *zerolog.Logger
-	executableDir string // x: for executables
-	saveDir       string // s: for saves
+	executableDir string // will be mapped to x: for executables
+	saveDir       string // will be mapped to s: for saves
 }
 
 func NewRunner(log *zerolog.Logger, executableDir, saveDir string) *Runner {

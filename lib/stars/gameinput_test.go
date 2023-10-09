@@ -91,6 +91,6 @@ func TestGameInput(t *testing.T) {
 	t.Run("fullFile", func(t *testing.T) {
 		content, err := gi.Content()
 		require.NoError(t, err)
-		require.Equal(t, expectedFileContent, string(content))
+		require.Equal(t, expectedFileContent, content.String())
 	})
 }
