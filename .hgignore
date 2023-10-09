@@ -16,6 +16,7 @@ TEST_VARS
 
 # config file as examplified in README
 config.ini
+neper.conf
 
 tests-coverage.*
 
