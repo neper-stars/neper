@@ -5,8 +5,6 @@ package cmd
 import (
 	"github.com/go-openapi/swag"
 
-	"path/filepath"
-
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi"
@@ -38,15 +36,14 @@ func setupServeConfig(config *restapi.Config) error {
 	config.BaseURL = InfoOptions.BaseURL
 	// This is where the api config can be customized at will
 	config.TokenOptions = *TokenOptions
-	absExecutableDir, err := filepath.Abs(StarsRunnerOptions.ExecutableDir)
-	if err != nil {
-		return err
+	{
+		runner, err := stars.NewRunner(&config.Log, StarsRunnerOptions)
+		if err != nil {
+			return err
+		}
+		config.StarsRunner = runner
 	}
-	absSaveDir, err := filepath.Abs(StarsRunnerOptions.SaveDir)
-	if err != nil {
-		return err
-	}
-	config.StarsRunner = stars.NewRunner(&config.Log, absExecutableDir, absSaveDir)
+	config.Log.Debug().Str("prefix", StarsRunnerOptions.WinePrefix).Msg("wine")
 	if err := config.StarsRunner.InitialChecks(); err != nil {
 		return err
 	}

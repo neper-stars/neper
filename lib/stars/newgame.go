@@ -26,7 +26,7 @@ func (r *Runner) wSessionSaveDir(sessionID string) string {
 }
 
 func (r *Runner) localSessionSaveDir(sessionID string) string {
-	return filepath.Join(r.saveDir, sessionID)
+	return filepath.Join(r.SaveDir, sessionID)
 }
 
 func (r *Runner) wStarsExecutablePath() string {
@@ -61,13 +61,20 @@ func (r *Runner) NewGame(ctx context.Context, log *zerolog.Logger, session model
 	}()
 	_, err = io.Copy(targetGameDef, content)
 	if err != nil {
-		r.log.Err(err).Str("sessionID", session.ID).Msg("failed to write game.def")
+		r.log.Err(err).Str("sessionID", session.ID).Msg("failed to write: game.def")
+		return err
+	}
+	// ensure content is on disk before calling stars on the file
+	if err := targetGameDef.Sync(); err != nil {
+		r.log.Err(err).Str("sessionID", session.ID).Msg("failed to sync to disk: game.def")
 		return err
 	}
 
 	gameDefWindowsPath := r.wPathJoin(r.wSessionSaveDir(session.ID), gameDefName)
 	// use content to create a new game
 	genCmd := cmd.NewCmd(wine, r.wStarsExecutablePath(), "-a", gameDefWindowsPath)
+	// inject the wine prefix in the env vars
+	genCmd.Env = append(genCmd.Env, r.WinePrefix)
 	stdOut, stdErr, err := RunCMD(genCmd)
 	if err != nil {
 		r.log.Err(err).

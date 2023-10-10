@@ -25,8 +25,9 @@ const (
 )
 
 type RunnerOptions struct {
-	ExecutableDir string `long:"stars-executable-dir" ini-name:"stars_executable_dir" description:"directory that will be used to put stars.exe"`
-	SaveDir       string `long:"stars-save-dir" ini-name:"stars_save_dir" description:"directory that will be used as a base to create all savegame dirs"`
+	ExecutableDir string `long:"stars-executable-dir" env:"STARS_EXECUTABLE_DIR" ini-name:"stars_executable_dir" description:"directory that will be used to put stars.exe"`
+	SaveDir       string `long:"stars-save-dir" env:"STARS_SAVE_DIR" ini-name:"stars_save_dir" description:"directory that will be used as a base to create all savegame dirs"`
+	WinePrefix    string `long:"wine-prefix" env:"WINE_PREFIX" ini-name:"wine_prefix" description:"wine prefix to use for running wine apps" default:"~/.wine"`
 }
 
 // NewRunnerOptions ...
@@ -37,16 +38,26 @@ func NewRunnerOptions() *RunnerOptions {
 
 type Runner struct {
 	log           *zerolog.Logger
-	executableDir string // will be mapped to x: for executables
-	saveDir       string // will be mapped to s: for saves
+	ExecutableDir string // will be mapped to x: for executables
+	SaveDir       string // will be mapped to s: for saves
+	WinePrefix    string // contains the wine prefix to use
 }
 
-func NewRunner(log *zerolog.Logger, executableDir, saveDir string) *Runner {
+func NewRunner(log *zerolog.Logger, opts *RunnerOptions) (*Runner, error) {
+	absExecutableDir, err := filepath.Abs(opts.ExecutableDir)
+	if err != nil {
+		return nil, err
+	}
+	absSaveDir, err := filepath.Abs(opts.SaveDir)
+	if err != nil {
+		return nil, err
+	}
 	return &Runner{
 		log:           log,
-		executableDir: executableDir,
-		saveDir:       saveDir,
-	}
+		ExecutableDir: absExecutableDir,
+		SaveDir:       absSaveDir,
+		WinePrefix:    opts.WinePrefix,
+	}, nil
 }
 
 func (r *Runner) InitialChecks() error {
@@ -86,10 +97,10 @@ func (r *Runner) devicesDir() (string, error) {
 }
 
 func (r *Runner) ensureDriveLetters() error {
-	if err := r.ensureDriveLetter(saveDirDriveLetter, r.saveDir); err != nil {
+	if err := r.ensureDriveLetter(saveDirDriveLetter, r.SaveDir); err != nil {
 		return err
 	}
-	if err := r.ensureDriveLetter(executableDirDriveLetter, r.executableDir); err != nil {
+	if err := r.ensureDriveLetter(executableDirDriveLetter, r.ExecutableDir); err != nil {
 		return err
 	}
 	return nil
@@ -112,11 +123,14 @@ func (r *Runner) ensureDriveLetter(letter, targetDir string) error {
 		}
 	}
 	m := fInfo.Mode()
-	if !(uint32(m&fs.ModeSymlink) == 0) {
-		// file is NOT a symlink
+	if m.IsDir() {
 		return errors.New(fmt.Sprintf("%s should be a symlink, not a directory", letter))
 	}
-	return nil
+	if m&fs.ModeSymlink != 0 {
+		// file IS a symlink
+		return nil
+	}
+	return errors.New(fmt.Sprintf("%s should be a symlink, not a normal file", letter))
 }
 
 func (r *Runner) createDriveLetter(targetDir, dir, letter string) error {
@@ -127,17 +141,17 @@ func (r *Runner) createDriveLetter(targetDir, dir, letter string) error {
 var starsBin []byte
 
 func (r *Runner) ensureSaveDir() error {
-	if err := os.MkdirAll(r.saveDir, 0770); err != nil {
+	if err := os.MkdirAll(r.SaveDir, 0770); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (r *Runner) ensureStars() error {
-	if err := os.MkdirAll(r.executableDir, 0770); err != nil {
+	if err := os.MkdirAll(r.ExecutableDir, 0770); err != nil {
 		return err
 	}
-	starsFilePath := filepath.Join(r.executableDir, starsExecutableName)
+	starsFilePath := filepath.Join(r.ExecutableDir, starsExecutableName)
 	_, err := os.Stat(starsFilePath)
 	if errors.Is(err, os.ErrNotExist) {
 		// we should create the stars.exe file
