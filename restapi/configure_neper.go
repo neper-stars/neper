@@ -65,9 +65,9 @@ func (capi *ConfiguredAPI) PreServerShutdown() {
 }
 
 func (capi *ConfiguredAPI) ServerShutdown() {
-	lsize := len(capi.config.Shutdown)
+	lSize := len(capi.config.Shutdown)
 	for i := range capi.config.Shutdown {
-		capi.config.Shutdown[lsize-i-1]()
+		capi.config.Shutdown[lSize-i-1]()
 	}
 }
 
@@ -103,6 +103,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	apiAuth := auth.NewAuth(config.TokenOptions, config.DB, config.Now, config.Log)
 	api.KeyAuth = apiAuth.Auth
 	config.OnShutdown(apiAuth.Close)
+	config.OnShutdown(config.StarsRunner.Shutdown)
 
 	// Authenticate
 	api.AuthenticateHandler = handlers.NewAuthenticateHandler(config.DB, apiAuth)
@@ -153,8 +154,8 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 }
 
 // The TLS configuration before HTTPS server starts.
-// func configureTLS(tlsConfig *tls.Config) {
 // Make all necessary changes to the TLS configuration here.
+// func configureTLS(tlsConfig *tls.Config) {
 // }
 
 // As soon as server is initialized but not run yet, this function will be called.
