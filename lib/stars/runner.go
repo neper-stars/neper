@@ -89,7 +89,19 @@ func (r *Runner) Initialize() error {
 	// we don't need a big screen...
 	xvfbArgs := []string{r.displayName(), "-screen", "0", "1024x768x16"}
 	r.xvfbProcess = cmd.NewCmd(xvfb, xvfbArgs...)
+	r.log.Debug().Msg("starting Xvfb virtual X server... giving it 3 seconds")
 	r.xvfbStatusChan = r.xvfbProcess.Start()
+	wait := time.After(3 * time.Second)
+	select {
+	case <-wait:
+		if r.xvfbProcess.Status().PID != 0 {
+			r.log.Debug().
+				Int("PID", r.xvfbProcess.Status().PID).
+				Msg("started Xvfb")
+			break
+		}
+		r.log.Error().Msg("failed to start Xvfb, timed-out")
+	}
 	return nil
 }
 
@@ -115,17 +127,22 @@ func (r *Runner) Shutdown() {
 	r.log.Warn().Msg("Xvfb server may not have shutdown properly, please inspect")
 }
 
-func (r *Runner) InitialChecks() error {
+// PreChecks are specific checks that need to be OK before running initialize
+func (r *Runner) PreChecks() error {
 	if err := r.ensureXvfb(); err != nil {
 		r.log.Err(err).Msg("Xvfb not found in your PATH or neper has no right to execute it.")
 		return err
 	}
-	if err := r.ensureWinePrefix(); err != nil {
-		r.log.Err(err).Msg("wineprefix directory not properly configured")
-		return err
-	}
+	return nil
+}
+
+func (r *Runner) InitialChecks() error {
 	if err := r.ensureWine(); err != nil {
 		r.log.Err(err).Msg("wine not found in your PATH or neper has no right to execute it.")
+		return err
+	}
+	if err := r.ensureWinePrefix(); err != nil {
+		r.log.Err(err).Msg("wineprefix directory not properly configured")
 		return err
 	}
 	if err := r.ensureDriveLetters(); err != nil {

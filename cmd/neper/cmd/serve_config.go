@@ -43,11 +43,13 @@ func setupServeConfig(config *restapi.Config) error {
 		}
 		config.StarsRunner = runner
 	}
+	if err := config.StarsRunner.PreChecks(); err != nil {
+		return err
+	}
 	if err := config.StarsRunner.Initialize(); err != nil {
 		config.Log.Err(err).Msg("failed to initialize stars runner")
 		return err
 	}
-	config.Log.Debug().Str("prefix", StarsRunnerOptions.WinePrefix).Msg("wine")
 	if err := config.StarsRunner.InitialChecks(); err != nil {
 		return err
 	}

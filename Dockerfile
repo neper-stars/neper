@@ -8,7 +8,7 @@ FROM quay.orus.io/cloudcrane/alpine:3.18
 
 COPY --from=builder /usr/local/bin/neper /usr/local/bin/neper
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN apk add --no-cache wine \
+RUN apk add --no-cache wine xvfb\
 	&& adduser \
 	    --disabled-password \
 	    --gecos "" \
@@ -17,6 +17,5 @@ RUN apk add --no-cache wine \
 
 USER neper
 WORKDIR /home/neper
-RUN wine winecfg || :
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
