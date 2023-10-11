@@ -2,9 +2,8 @@ package stars
 
 import (
 	"fmt"
-	"time"
-
 	"strings"
+	"time"
 
 	"github.com/go-cmd/cmd"
 	"github.com/rs/zerolog"
@@ -45,7 +44,7 @@ func RunCMDTimeout(log *zerolog.Logger, c *cmd.Cmd, t time.Duration) (stdOut, st
 	}
 
 	if status.Error != nil || status.Exit > 0 {
-		return status.Stdout, status.Stderr, fmt.Errorf("could not execute command: %w", err)
+		return status.Stdout, status.Stderr, fmt.Errorf("could not execute command: %w", status.Error)
 	}
 	stdOut = status.Stdout
 	stdErr = status.Stderr

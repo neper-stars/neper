@@ -1,19 +1,16 @@
 package stars
 
 import (
+	"bytes"
 	_ "embed"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
-
-	"bytes"
-	"io"
-
-	"time"
-
 	"strings"
+	"time"
 
 	"github.com/go-cmd/cmd"
 	"github.com/mitchellh/go-homedir"
@@ -55,18 +52,25 @@ type Runner struct {
 	xvfbStatusChan  <-chan cmd.Status
 }
 
+func expand(input string) (string, error) {
+	expandedInput, err := homedir.Expand(input)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Abs(expandedInput)
+}
+
 func NewRunner(log *zerolog.Logger, opts *RunnerOptions) (*Runner, error) {
-	absExecutableDir, err := filepath.Abs(opts.ExecutableDir)
+	absExecutableDir, err := expand(opts.ExecutableDir)
 	if err != nil {
 		return nil, err
 	}
-	absSaveDir, err := filepath.Abs(opts.SaveDir)
+	absSaveDir, err := expand(opts.SaveDir)
 	if err != nil {
 		return nil, err
 	}
-	prefix, err := homedir.Expand(opts.WinePrefix)
+	prefix, err := expand(opts.WinePrefix)
 	if err != nil {
-		log.Err(err).Str("prefix", opts.WinePrefix).Msg("failed to expand given wine prefix")
 		return nil, err
 	}
 
@@ -85,27 +89,41 @@ func (r *Runner) displayName() string {
 	return fmt.Sprintf(":%d", r.DisplayNumber)
 }
 
-func (r *Runner) Initialize() error {
+func (r *Runner) Init() error {
+	if err := r.preChecks(); err != nil {
+		return err
+	}
+	if err := r.initialize(); err != nil {
+		return err
+	}
+	if err := r.checks(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *Runner) initialize() error {
 	// we don't need a big screen...
 	xvfbArgs := []string{r.displayName(), "-screen", "0", "1024x768x16"}
 	r.xvfbProcess = cmd.NewCmd(xvfb, xvfbArgs...)
 	r.log.Debug().Msg("starting Xvfb virtual X server... giving it 3 seconds")
 	r.xvfbStatusChan = r.xvfbProcess.Start()
 	wait := time.After(3 * time.Second)
-	select {
-	case <-wait:
-		if r.xvfbProcess.Status().PID != 0 {
-			r.log.Debug().
-				Int("PID", r.xvfbProcess.Status().PID).
-				Msg("started Xvfb")
-			break
-		}
-		r.log.Error().Msg("failed to start Xvfb, timed-out")
+	<-wait
+	if r.xvfbProcess.Status().PID != 0 {
+		r.log.Debug().
+			Int("PID", r.xvfbProcess.Status().PID).
+			Msg("started Xvfb")
 	}
+	r.log.Error().Msg("failed to start Xvfb, timed-out")
 	return nil
 }
 
 func (r *Runner) Shutdown() {
+	if r == nil || r.xvfbProcess == nil {
+		// something went really wrong, or something went really wrong ?
+		return
+	}
 	pid := r.xvfbProcess.Status().PID
 	r.log.Debug().Msg("shutting down Xvfb server")
 	if err := r.xvfbProcess.Stop(); err != nil {
@@ -127,8 +145,8 @@ func (r *Runner) Shutdown() {
 	r.log.Warn().Msg("Xvfb server may not have shutdown properly, please inspect")
 }
 
-// PreChecks are specific checks that need to be OK before running initialize
-func (r *Runner) PreChecks() error {
+// preChecks are specific checks that need to be OK before running initialize
+func (r *Runner) preChecks() error {
 	if err := r.ensureXvfb(); err != nil {
 		r.log.Err(err).Msg("Xvfb not found in your PATH or neper has no right to execute it.")
 		return err
@@ -136,7 +154,7 @@ func (r *Runner) PreChecks() error {
 	return nil
 }
 
-func (r *Runner) InitialChecks() error {
+func (r *Runner) checks() error {
 	if err := r.ensureWine(); err != nil {
 		r.log.Err(err).Msg("wine not found in your PATH or neper has no right to execute it.")
 		return err
@@ -212,13 +230,13 @@ func (r *Runner) ensureDriveLetter(letter, targetDir string) error {
 	}
 	m := fInfo.Mode()
 	if m.IsDir() {
-		return errors.New(fmt.Sprintf("%s should be a symlink, not a directory", letter))
+		return fmt.Errorf("%s should be a symlink, not a directory", letter)
 	}
 	if m&fs.ModeSymlink != 0 {
 		// file IS a symlink
 		return nil
 	}
-	return errors.New(fmt.Sprintf("%s should be a symlink, not a normal file", letter))
+	return fmt.Errorf("%s should be a symlink, not a normal file", letter)
 }
 
 func (r *Runner) createDriveLetter(targetDir, dir, letter string) error {
@@ -271,6 +289,11 @@ func (r *Runner) ensureWinePrefix() error {
 	info, err := os.Stat(r.WinePrefix)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
+			dir := filepath.Dir(r.WinePrefix)
+			if err := os.MkdirAll(dir, 0770); err != nil {
+				r.log.Err(err).Msg("failed to create containing dir for wineprefix")
+				return err
+			}
 			// wineprefix does not exist yet... we should run `wine winecfg` to initialize it
 			r.log.Info().Msg("initializing wineprefix... this can take some time")
 			return r.createWinePrefix()

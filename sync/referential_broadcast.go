@@ -144,6 +144,12 @@ func (w *Worker) handleNeperReferentialBroadcast(ctx context.Context, data io.Re
 							return err
 						}
 						return w.syncSessionPlayerRace(ctx, sql, op, &data)
+					case DataTypeEnumRuleset:
+						var data Ruleset
+						if err := data.UnmarshalJSON(buf); err != nil {
+							return err
+						}
+						return w.syncRuleset(ctx, sql, op, &data)
 					default:
 						return fmt.Errorf("unknown data type: %d", datatype)
 					}

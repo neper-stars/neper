@@ -2,18 +2,14 @@ package stars
 
 import (
 	"context"
-
-	"github.com/rs/zerolog"
-
+	"io"
+	"os"
+	"path/filepath"
 	"strings"
 
-	"path/filepath"
-
-	"os"
-
-	"io"
-
 	"github.com/go-cmd/cmd"
+	"github.com/rs/zerolog"
+
 	"github.com/neper-stars/neper/models"
 )
 
@@ -35,9 +31,7 @@ func (r *Runner) wStarsExecutablePath() string {
 
 func (r *Runner) wPathJoin(segments ...string) string {
 	var segs []string
-	for _, segment := range segments {
-		segs = append(segs, segment)
-	}
+	segs = append(segs, segments...)
 	return strings.Join(segs, windowsSep)
 }
 

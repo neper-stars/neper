@@ -3,10 +3,10 @@ package stars
 import (
 	"testing"
 
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 	"orus.io/orus-io/go-orusapi/testutils"
 
-	"github.com/rs/zerolog"
 	"github.com/neper-stars/neper/models"
 )
 
@@ -57,15 +57,15 @@ func testPlayers(t *testing.T) []models.SessionPlayerRace {
 
 func testGameInput(t *testing.T, log zerolog.Logger) *GameInput {
 	t.Helper()
-	return NewGameInput(&log, "z:\\stars", "shireID", "The Shire", testRuleset(t), testPlayers(t))
+	return NewGameInput(&log, "s:", "shireID", "The Shire", testRuleset(t), testPlayers(t))
 }
 
 var expectedFileContent = `The Shire
 2 2 2 
 0 0 0 0 0 0 0
 3
-z:\stars\shireID\game.r1
-z:\stars\shireID\game.r2
+s:\shireID\game.r1
+s:\shireID\game.r2
 # 1 1
 0 
 1 26 4
@@ -75,7 +75,7 @@ z:\stars\shireID\game.r2
 0 
 0 
 1 100
-z:\stars\shireID\game.xy`
+s:\shireID\game.xy`
 
 func TestGameInput(t *testing.T) {
 	log := testutils.GetLogger(t)
@@ -84,8 +84,8 @@ func TestGameInput(t *testing.T) {
 	t.Run("computeRace", func(t *testing.T) {
 		require.Equal(t, 3, len(gi.Players))
 		require.Equal(t, 3, len(gi.Races))
-		require.Equal(t, "z:\\stars\\shireID\\game.r1", gi.Races[0])
-		require.Equal(t, "z:\\stars\\shireID\\game.r2", gi.Races[1])
+		require.Equal(t, "s:\\shireID\\game.r1", gi.Races[0])
+		require.Equal(t, "s:\\shireID\\game.r2", gi.Races[1])
 		require.Equal(t, "# 1 1", gi.Races[2])
 	})
 	t.Run("fullFile", func(t *testing.T) {

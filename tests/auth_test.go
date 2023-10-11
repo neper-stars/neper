@@ -12,6 +12,12 @@ import (
 func TestAuthentication(t *testing.T) {
 	tester := NewAPITester(t, nil)
 	defer tester.Close()
+	/*
+		log := testutils.GetLogger(t)
+		runner, shutdown := stars.GetTestStarsRunner(t, &log)
+		defer shutdown()
+		tester.Config.StarsRunner = runner
+	*/
 
 	tester.LoadFixtureFile("fixtures/sessions.json")
 	tester.LoadFixtureFile("fixtures/gandalf.json")

@@ -1,12 +1,11 @@
 package handlers
 
 import (
+	"database/sql"
 	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"orus.io/orus-io/go-orusapi/database"
-
-	"database/sql"
 
 	"github.com/neper-stars/neper/models"
 )

@@ -3,11 +3,10 @@ package stars
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"text/template"
 
 	"github.com/rs/zerolog"
-
-	"fmt"
 
 	"github.com/neper-stars/neper/models"
 )

@@ -31,7 +31,6 @@ type SessionReadHandler struct {
 func (h *SessionReadHandler) handle(
 	ctx context.Context, params operations.SessionReadParams, principal *models.Principal,
 ) (*models.Session, error) {
-
 	sessionID := params.SessionID
 
 	log := *zerolog.Ctx(ctx)
