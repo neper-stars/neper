@@ -317,10 +317,10 @@ func (r *Runner) displayEnv() string {
 }
 
 func (r *Runner) createWinePrefix() error {
-	// we run wineHostname as it is a non GUI command and running such a wine command will
+	// we run 'wine hostname' as it is a non GUI command and running such a wine command will
 	// create the wine prefix we want
 	c := cmd.NewCmd(wine, wineHostname)
-	// inject wineprefix
+	// inject wineprefix & display variable to use Xvfb
 	c.Env = append(c.Env, r.winePrefixEnv(), r.displayEnv())
 	// unset wine debug if level is not appropriate
 	if r.log.GetLevel() > zerolog.DebugLevel {

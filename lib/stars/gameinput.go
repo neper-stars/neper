@@ -12,6 +12,10 @@ import (
 )
 
 const windowsSep = "\\"
+const universeBaseFilename = "game.xy"
+const hostBaseFilename = "game.hst"
+const turnBaseFilename = "game.m"
+const orderBaseFilename = "game.x"
 
 func must(err error) {
 	if err != nil {
@@ -47,7 +51,7 @@ type GameInput struct {
 }
 
 func (g *GameInput) computeUniverseFilename() {
-	g.UniverseFilename = g.gameFile("game.xy")
+	g.UniverseFilename = g.gameFile(universeBaseFilename)
 }
 
 func (g *GameInput) computeRaces() {

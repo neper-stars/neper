@@ -23,6 +23,7 @@ func RunCMD(c *cmd.Cmd) (stdout, stderr []string, err error) {
 }
 
 func RunCMDTimeout(log *zerolog.Logger, c *cmd.Cmd, t time.Duration) (stdOut, stdErr []string, err error) {
+	// TODO: we could generalize by accepting a context and verify the context validity in the select
 	log.Debug().
 		Str("process", c.Name).
 		Str("args", strings.Join(c.Args, " ")).
