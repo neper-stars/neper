@@ -1,4 +1,4 @@
-FROM quay.orus.io/docker_mirror/golang:1.21.0-bullseye as builder
+FROM quay.orus.io/docker_mirror/golang:1.21.3-bullseye as builder
 
 COPY . .
 

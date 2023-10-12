@@ -39,7 +39,7 @@ func testPlayers(t *testing.T) []models.SessionPlayerRace {
 		{
 			ID:            "spr2",
 			PlayerOrder:   1,
-			RaceID:        "halflings",
+			RaceID:        "halflingsID",
 			SessionID:     "shireID",
 			UserProfileID: "gollumID",
 		},
@@ -57,23 +57,23 @@ func testPlayers(t *testing.T) []models.SessionPlayerRace {
 
 func testGameInput(t *testing.T, log zerolog.Logger) *GameInput {
 	t.Helper()
-	return NewGameInput(&log, "s:", "shireID", "The Shire", testRuleset(t), testPlayers(t))
+	return NewGameInput(&log, saveDirDriveLetter, "shireID", "The Shire", testRuleset(t), testPlayers(t))
 }
 
 var expectedFileContent = `The Shire
-2 2 2 
+2 2 2
 0 0 0 0 0 0 0
 3
 s:\shireID\game.r1
 s:\shireID\game.r2
 # 1 1
-0 
+0
 1 26 4
-0 
-0 
-0 
-0 
-0 
+0
+0
+0
+0
+0
 1 100
 s:\shireID\game.xy`
 

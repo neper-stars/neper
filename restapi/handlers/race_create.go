@@ -54,7 +54,7 @@ func (h *RaceCreateHandler) handle(
 		return nil, err
 	}
 
-	race, err := neper.NewRace(inputRace.Data)
+	race, err := neper.RaceFromString(inputRace.Data)
 	if err != nil {
 		h.log.Err(err).Msg("failed to parse race data from input")
 		return nil, errs.NewErrInvalidRace("failed to parse race file:" + err.Error())

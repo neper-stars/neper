@@ -1,18 +1,18 @@
 {{.SessionName}}
-{{.RuleSet.UniverseSize}} {{.RuleSet.Density}} {{.RuleSet.StartingDistance}} {{ with .RuleSet.RandomSeed }}{{.}}{{end}}
+{{.RuleSet.UniverseSize}} {{.RuleSet.Density}} {{.RuleSet.StartingDistance}}{{ with .RuleSet.RandomSeed }} {{.}}{{end}}
 {{starsbool .RuleSet.MaximumMinerals}} {{starsbool .RuleSet.SlowerTechAdvances}} {{starsbool .RuleSet.AcceleratedBbsPlay}} {{starsbool .RuleSet.NoRandomEvents}} {{starsbool .RuleSet.ComputerPlayersFormAlliances}} {{starsbool .RuleSet.PublicPlayerScores}} {{starsbool .RuleSet.GalaxyClumping}}
 {{.NumberOfPlayers}}
 {{range .Races -}}
 {{.}}
 {{end -}}
 {{- with .RuleSet -}}
-{{starsbool .VcOwnsxPercentOfPlanets}} {{with .VcOwnsxPercentOfPlanetsValue}}{{.}}{{end}}
-{{starsbool .VcAttainTechXInYField}} {{with .VcAttainTechXInYFieldTechValue}}{{.}}{{end}} {{with .VcAttainTechXInYFieldFieldsValue}}{{.}}{{end}}
-{{starsbool .VcExceedScoreOfx}} {{with .VcExceedScoreOfxValue}}{{.}}{{end}}
-{{starsbool .VcExceedNextPlayerScoreByx}} {{with.VcExceedNextPlayerScoreByxValue}}{{.}}{{end}}
-{{starsbool .VcHasProductionCapacityOfxThousand}} {{with .VcHasProductionCapacityOfxThousandValue}}{{.}}{{end}}
-{{starsbool .VcOwnsxCapitalShips}} {{with .VcOwnsxCapitalShipsValue}}{{.}}{{end}}
-{{starsbool .VcHaveHighestScoreAfterxYears}} {{with .VcHaveHighestScoreAfterxYearsValue}}{{.}}{{end}}
+{{starsbool .VcOwnsxPercentOfPlanets}}{{with .VcOwnsxPercentOfPlanetsValue}} {{.}}{{end}}
+{{starsbool .VcAttainTechXInYField}}{{with .VcAttainTechXInYFieldTechValue}} {{.}}{{end}}{{with .VcAttainTechXInYFieldFieldsValue}} {{.}}{{end}}
+{{starsbool .VcExceedScoreOfx}}{{with .VcExceedScoreOfxValue}} {{.}}{{end}}
+{{starsbool .VcExceedNextPlayerScoreByx}}{{with.VcExceedNextPlayerScoreByxValue}} {{.}}{{end}}
+{{starsbool .VcHasProductionCapacityOfxThousand}}{{with .VcHasProductionCapacityOfxThousandValue}} {{.}}{{end}}
+{{starsbool .VcOwnsxCapitalShips}}{{with .VcOwnsxCapitalShipsValue}} {{.}}{{end}}
+{{starsbool .VcHaveHighestScoreAfterxYears}}{{with .VcHaveHighestScoreAfterxYearsValue}} {{.}}{{end}}
 {{.VcWinnerMustMeetxOfTheAbove}} {{.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared}}
 {{end -}}
 {{.UniverseFilename}}

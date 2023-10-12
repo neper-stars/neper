@@ -15,7 +15,8 @@ const windowsSep = "\\"
 const universeBaseFilename = "game.xy"
 const hostBaseFilename = "game.hst"
 const turnBaseFilename = "game.m"
-const orderBaseFilename = "game.x"
+
+// const orderBaseFilename = "game.x"
 
 func must(err error) {
 	if err != nil {

@@ -1,41 +1,62 @@
 package neper
 
 import (
-	"encoding/base64"
 	"errors"
+	"io"
+	"os"
 
 	hs "github.com/neper-stars/houston"
 
 	"github.com/neper-stars/neper/models"
 )
 
-func unBase64(data string) ([]byte, error) {
-	dst := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
-	n, err := base64.StdEncoding.Decode(dst, []byte(data))
-	if err != nil {
-		return nil, err
-	}
-	dst = dst[:n]
-	return dst, nil
-}
-
-func NewRace(data string) (*models.Race, error) {
+func RaceFromString(data string) (*models.Race, error) {
 	r := models.Race{}
 	r.Data = data
 
 	// first decode the base64 to binary
-	rawData, err := unBase64(data)
+	rawData, err := r.RawData()
 	if err != nil {
 		return nil, err
 	}
 
+	// parse data
+	if err := ParseRaceData(&r, rawData); err != nil {
+		return nil, err
+	}
+	return &r, nil
+}
+
+func RaceFromFile(fn string) (*models.Race, error) {
+	f, err := os.Open(fn)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return RaceFromReader(f)
+}
+
+func RaceFromReader(r io.Reader) (*models.Race, error) {
+	rawData, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	race := models.RaceFromRaw(rawData)
+
+	if err := ParseRaceData(race, rawData); err != nil {
+		return nil, err
+	}
+	return race, nil
+}
+
+func ParseRaceData(race *models.Race, rawData []byte) error {
 	// now start parsing binary data
 	fd := hs.FileData(rawData)
 
 	// get the blocks back
 	bl, err := fd.BlockList()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// iterate on all blocks to find the player blocks
@@ -45,17 +66,16 @@ func NewRace(data string) (*models.Race, error) {
 		case hs.PlayerBlockType:
 			pb, ok := b.(hs.PlayerBlock)
 			if !ok {
-				return nil, errors.New("failed to assert player block")
+				return errors.New("failed to assert player block")
 			}
 			if pb.Valid {
-				r.NamePlural = pb.NamePlural
-				r.NameSingular = pb.NameSingular
+				race.NamePlural = pb.NamePlural
+				race.NameSingular = pb.NameSingular
 			}
 		// else
 		// fmt.Println("empty player block... nothing to report")
 		default:
 		}
 	}
-
-	return &r, nil
+	return nil
 }

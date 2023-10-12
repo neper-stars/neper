@@ -114,9 +114,10 @@ func (r *Runner) initialize() error {
 		r.log.Debug().
 			Int("PID", r.xvfbProcess.Status().PID).
 			Msg("started Xvfb")
+		return nil
 	}
-	r.log.Error().Msg("failed to start Xvfb, timed-out")
-	return nil
+	r.log.Error().Msg("runner initialize: failed to start Xvfb, timed-out")
+	return errors.New("failed to start Xvfb, timed-out")
 }
 
 func (r *Runner) Shutdown() {
