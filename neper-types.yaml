@@ -573,6 +573,71 @@ definitions:
         x-go-custom-tag: db:"data"
         x-nullable: false
 
+  session_files:
+    type: object
+    description: |
+      a session_files is a bundle of all the files a host needs at any point in time to generate the next turn
+      This exists principally so that a host can always get access to all the file of the game and take over
+      the hosting duty from Neper (you never know the reasons...)
+    properties:
+      id:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"id"
+        x-nullable: false
+      session_id:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"session_id"
+        x-nullable: false
+      year:
+        type: integer
+        readOnly: true
+        x-go-custom-tag: db:"year"
+        x-nullable: false
+      universe:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"universe"
+        x-nullable: false
+      host_file:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"hostfile"
+        x-nullable: false
+      turns:
+        type: array
+        items:
+          $ref: "#/definitions/turn"
+      orders:
+        type: array
+        items:
+          $ref: "#/definitions/order"
+
+  turn:
+    type: object
+    description: |
+      a turn file for a specific player.
+      This is the binary file from the game: .mN file
+      The data is encoded in base64.
+    properties:
+      b64_data:
+        type: string
+    required:
+      - b64_data
+
+  order:
+    type: object
+    description: |
+      a order file from a specific player.
+      This is the binary file from the game: .xN file
+      The data is encoded in base64.
+    properties:
+      b64_data:
+        type: string
+    required:
+      - b64_data
+
   decimal:
     type: number
     multipleOf: 0.01

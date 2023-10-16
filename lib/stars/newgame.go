@@ -2,6 +2,7 @@ package stars
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -42,6 +43,39 @@ type GameFiles struct {
 	HostFile []byte   // one game.hst file (this is the host control file, only for Neper)
 	Turns    [][]byte // one game.mX file for each player (including computer players) X should be the player number +1
 	Orders   [][]byte // one .rX file for each player (only for the non computer players) X should be the player number +1
+}
+
+func b64encode(in []byte) string {
+	dst := make([]byte, base64.StdEncoding.EncodedLen(len(in)))
+	base64.StdEncoding.Encode(dst, in)
+	return string(dst)
+}
+
+func (g GameFiles) HydrateSessionFilesDB(s *models.SessionFilesDB) {
+	s.Universe = b64encode(g.Universe)
+	s.HostFile = b64encode(g.HostFile)
+
+	var turns []*models.Turn
+	var turnsDB []models.Turn
+	for i := range g.Turns {
+		encoded := b64encode(g.Turns[i])
+		turn := models.Turn{B64Data: &encoded}
+		turns = append(turns, &turn)
+		turnsDB = append(turnsDB, turn)
+	}
+	s.Turns = turns
+	s.TurnsDB = turnsDB
+
+	var orders []*models.Order
+	var ordersDB []models.Order
+	for i := range g.Orders {
+		encoded := b64encode(g.Orders[i])
+		order := models.Order{B64Data: &encoded}
+		orders = append(orders, &order)
+		ordersDB = append(ordersDB, order)
+	}
+	s.Orders = orders
+	s.OrdersDB = ordersDB
 }
 
 func (r *Runner) closeDeferred(closer io.ReadCloser) {

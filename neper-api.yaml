@@ -347,9 +347,38 @@ paths:
             $ref: "neper-types.yaml#/definitions/ruleset"
       responses:
         200:
-          description: the updated session
+          description: the uploaded ruleset
           schema:
             $ref: "neper-types.yaml#/definitions/ruleset"
+        400:
+          $ref: "#/responses/invalid"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
+
+  /v1/sessions/{session_id}/game:
+    post:
+      operationId: gameCreate
+      summary: "initialize the game for this session"
+      description: |
+        Generate the first turn for this session, using the previously uploaded ruleset
+        and all the player races.
+        This means all players must have uploaded a valid race file
+        AND the rules must be set.
+        You must be the session owner/manager to be able to use this endpoint.
+      parameters:
+        - name: "session_id"
+          in: "path"
+          type: "string"
+          required: true
+      responses:
+        201:
+          description: the created session files
+          schema:
+            $ref: "neper-types.yaml#/definitions/session_files"
         400:
           $ref: "#/responses/invalid"
         401:

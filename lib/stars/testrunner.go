@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/m4rw3r/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )
@@ -15,12 +16,15 @@ type ShutdownFunc func()
 // is done if you want the test Xvfb server to shut down
 func GetTestStarsRunner(t *testing.T, log *zerolog.Logger) (*Runner, ShutdownFunc) {
 	t.Helper()
+	// each runner gets its own UID
+	uid, err := uuid.V4()
+	require.NoError(t, err)
 	// We use a home root dir because this is something we do not want in our source tree
 	// and this is also something that could be kept from one run to another
 	// Not sure if we should do this. We could put this in the tests dir and .hgignore it
-	testWinePrefix := "~/.neper/wine"
-	testExecutableDir := "~/.neper/stars"
-	testSaveDir := "~/.neper/saves"
+	testWinePrefix := "~/.neper/wine" + uid.String()
+	testExecutableDir := "~/.neper/stars" + uid.String()
+	testSaveDir := "~/.neper/saves" + uid.String()
 	opts := RunnerOptions{
 		ExecutableDir:   testExecutableDir,
 		SaveDir:         testSaveDir,

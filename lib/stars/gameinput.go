@@ -24,10 +24,10 @@ func must(err error) {
 	}
 }
 
-func NewGameInput(log *zerolog.Logger, baseDir, sessionID, sessionName string, r models.Ruleset, p []models.SessionPlayerRace) *GameInput {
+func NewGameInput(log *zerolog.Logger, sessionID, sessionName string, r models.Ruleset, p []models.SessionPlayerRace) *GameInput {
 	g := GameInput{
 		log:             log,
-		BaseDir:         baseDir, // this is the wine base (eg: s:\) which we will concat with sessionID
+		BaseDir:         saveDirDriveLetter, // this is the wine base (eg: s:\) which we will concat with sessionID
 		SessionID:       sessionID,
 		SessionName:     sessionName,
 		NumberOfPlayers: len(p),

@@ -1,0 +1,36 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "ruleset",
+        "id": "merryvsgollumrulsetID",
+        "session_id": "merryvsgollumID",
+        "accelerated_bbs_play": false,
+        "computer_players_form_alliances": false,
+        "density": 2,
+        "galaxy_clumping": false,
+        "maximum_minerals": false,
+        "no_random_events": false,
+        "public_player_scores": false,
+        "random_seed": 1234567890,
+        "slower_tech_advances": false,
+        "starting_distance": 3,
+        "universe_size": 3,
+        "vc_attain_tech_X_in_Y_field": true,
+        "vc_attain_tech_X_in_Y_field_fields_value": 4,
+        "vc_attain_tech_X_in_Y_field_tech_value": 22,
+        "vc_exceed_next_player_score_by_x": false,
+        "vc_exceed_score_of_x": false,
+        "vc_has_production_capacity_of_x_thousand": false,
+        "vc_have_highest_score_after_x_years": true,
+        "vc_have_highest_score_after_x_years_value": 250,
+        "vc_owns_x_capital_ships": true,
+        "vc_owns_x_capital_ships_value": 300,
+        "vc_owns_x_percent_of_planets": false,
+        "vc_winner_must_meet_x_of_the_above": 1,
+        "vc_at_least_x_years_must_pass_before_a_winner_is_declared": 100
+      }
+    }
+  ]
+}

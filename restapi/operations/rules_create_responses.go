@@ -16,7 +16,7 @@ import (
 // RulesCreateOKCode is the HTTP code returned for type RulesCreateOK
 const RulesCreateOKCode int = 200
 
-/*RulesCreateOK the updated session
+/*RulesCreateOK the uploaded ruleset
 
 swagger:response rulesCreateOK
 */

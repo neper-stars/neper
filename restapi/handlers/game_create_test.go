@@ -1,0 +1,83 @@
+package handlers
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
+	"gopkg.in/dgrijalva/jwt-go.v3"
+	"orus.io/orus-io/go-orusapi/database"
+	"orus.io/orus-io/go-orusapi/testutils"
+
+	"github.com/neper-stars/neper/fixtures"
+	"github.com/neper-stars/neper/lib/stars"
+	"github.com/neper-stars/neper/migration"
+	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/restapi/operations"
+	"github.com/neper-stars/neper/sync"
+)
+
+func getTestPrincipal(userID string, globalManager bool) models.Principal {
+	return models.Principal{
+		StandardClaims: jwt.StandardClaims{
+			Subject:   userID,
+			ExpiresAt: time.Now().Add(time.Minute).Unix(),
+		},
+		IsGlobalManager: globalManager,
+	}
+}
+
+func TestGameCreateHandler(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+	// load some predefined session with 2 players, that already have set up
+	// their races
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum.json")
+	// add a ruleset to our session
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_vs_gollum_ruleset.json")
+
+	runner, shutdown := stars.GetTestStarsRunner(t, &log)
+	defer shutdown()
+	createHandler := NewGameCreateHandler(&log, testdb.DB, runner)
+
+	t.Run("merry_generates_the_first_turn", func(t *testing.T) {
+		sessionID := "merryvsgollumID"
+		merryID := "merryID"
+		merryPrincipal := getTestPrincipal(merryID, false)
+
+		params := operations.NewGameCreateParams()
+		params.SessionID = sessionID
+
+		// the handler returns all the game files
+		returnedFiles, err := createHandler.handle(ctx, params, &merryPrincipal)
+		require.NoError(t, err)
+		require.Equal(t, sessionID, returnedFiles.SessionID)
+		require.Equal(t, 2, len(returnedFiles.Turns))
+		require.Equal(t, 0, len(returnedFiles.Orders))
+		require.True(t, len(returnedFiles.HostFile) > 0)
+		print(returnedFiles.HostFile)
+
+		var rawData []byte
+		_, err = stars.B64Decode(returnedFiles.HostFile)
+		raceNames, err := stars.RaceNamesFromHostFile(rawData)
+		require.NoError(t, err)
+		for i := range raceNames {
+			switch i {
+			case 0:
+				// first player plays with hobbits
+				require.Equal(t, "Hobbits", raceNames[i])
+			case 1:
+				// second player plays with halflings
+				require.Equal(t, "Halflings", raceNames[i])
+			default:
+				t.Fail()
+			}
+		}
+	})
+}

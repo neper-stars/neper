@@ -287,6 +287,41 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/game": {
+      "post": {
+        "description": "Generate the first turn for this session, using the previously uploaded ruleset\nand all the player races.\nThis means all players must have uploaded a valid race file\nAND the rules must be set.\nYou must be the session owner/manager to be able to use this endpoint.\n",
+        "summary": "initialize the game for this session",
+        "operationId": "gameCreate",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "the created session files",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/session_files"
+            }
+          },
+          "400": {
+            "$ref": "#/responses/invalid"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
     "/v1/sessions/{session_id}/invite": {
       "post": {
         "description": "invite a player to the session",
@@ -487,7 +522,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "the updated session",
+            "description": "the uploaded ruleset",
             "schema": {
               "$ref": "neper-types.yaml#/definitions/ruleset"
             }
@@ -1144,6 +1179,53 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/game": {
+      "post": {
+        "description": "Generate the first turn for this session, using the previously uploaded ruleset\nand all the player races.\nThis means all players must have uploaded a valid race file\nAND the rules must be set.\nYou must be the session owner/manager to be able to use this endpoint.\n",
+        "summary": "initialize the game for this session",
+        "operationId": "gameCreate",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "the created session files",
+            "schema": {
+              "$ref": "#/definitions/sessionFiles"
+            }
+          },
+          "400": {
+            "description": "invalid client request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/v1/sessions/{session_id}/invite": {
       "post": {
         "description": "invite a player to the session",
@@ -1392,7 +1474,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "the updated session",
+            "description": "the uploaded ruleset",
             "schema": {
               "$ref": "#/definitions/ruleset"
             }
@@ -1743,6 +1825,18 @@ func init() {
         }
       }
     },
+    "order": {
+      "description": "a order file from a specific player.\nThis is the binary file from the game: .xN file\nThe data is encoded in base64.\n",
+      "type": "object",
+      "required": [
+        "b64_data"
+      ],
+      "properties": {
+        "b64_data": {
+          "type": "string"
+        }
+      }
+    },
     "playerOrder": {
       "description": "the order of a player in a game session",
       "type": "object",
@@ -2033,6 +2127,54 @@ func init() {
         }
       }
     },
+    "sessionFiles": {
+      "description": "a session_files is a bundle of all the files a host needs at any point in time to generate the next turn\nThis exists principally so that a host can always get access to all the file of the game and take over\nthe hosting duty from Neper (you never know the reasons...)\n",
+      "type": "object",
+      "properties": {
+        "host_file": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"hostfile\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "id": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"id\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/order"
+          }
+        },
+        "session_id": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"session_id\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "turns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/turn"
+          }
+        },
+        "universe": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"universe\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "year": {
+          "type": "integer",
+          "x-go-custom-tag": "db:\"year\"",
+          "x-nullable": false,
+          "readOnly": true
+        }
+      }
+    },
     "sessionPlayerRace": {
       "description": "a binding between a player race and a session. The host can also choose the player order.",
       "type": "object",
@@ -2083,6 +2225,18 @@ func init() {
           "x-go-custom-tag": "db:\"user_profile_id\"",
           "x-nullable": false,
           "readOnly": true
+        }
+      }
+    },
+    "turn": {
+      "description": "a turn file for a specific player.\nThis is the binary file from the game: .mN file\nThe data is encoded in base64.\n",
+      "type": "object",
+      "required": [
+        "b64_data"
+      ],
+      "properties": {
+        "b64_data": {
+          "type": "string"
         }
       }
     },

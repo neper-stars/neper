@@ -140,6 +140,7 @@
   "required": [
     "__type__",
     "id",
+    "session_id",
     "accelerated_bbs_play",
     "computer_players_form_alliances",
     "density",
@@ -151,8 +152,6 @@
     "starting_distance",
     "universe_size",
     "vc_attain_tech_X_in_Y_field",
-    "vc_attain_tech_X_in_Y_field_fields_value",
-    "vc_attain_tech_X_in_Y_field_tech_value",
     "vc_exceed_next_player_score_by_x",
     "vc_has_production_capacity_of_x_thousand",
     "vc_have_highest_score_after_x_years",

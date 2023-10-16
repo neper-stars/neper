@@ -34,6 +34,8 @@ func guessDataType(data []byte) (datatype DataTypeEnum, err error) {
 			datatype = DataTypeEnumInvitation
 		case "session_player_race":
 			datatype = DataTypeEnumSessionPlayerRace
+		case "ruleset":
+			datatype = DataTypeEnumRuleset
 		default:
 			iter.ReportError("guessDataType", "unknown __type__: "+value)
 			return false

@@ -57,7 +57,7 @@ func testPlayers(t *testing.T) []models.SessionPlayerRace {
 
 func testGameInput(t *testing.T, log zerolog.Logger) *GameInput {
 	t.Helper()
-	return NewGameInput(&log, saveDirDriveLetter, "shireID", "The Shire", testRuleset(t), testPlayers(t))
+	return NewGameInput(&log, "shireID", "The Shire", testRuleset(t), testPlayers(t))
 }
 
 var expectedFileContent = `The Shire

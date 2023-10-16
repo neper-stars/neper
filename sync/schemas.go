@@ -862,7 +862,7 @@ type Ruleset struct {
 	RandomSeed int `json:"random_seed,omitempty"`
 
 	// SessionId unique id of the related session
-	SessionId string `json:"session_id,omitempty"`
+	SessionId string `json:"session_id"`
 
 	// SlowerTechAdvances
 	SlowerTechAdvances bool `json:"slower_tech_advances"`
@@ -883,10 +883,10 @@ type Ruleset struct {
 	VcAttainTechXInYField bool `json:"vc_attain_tech_X_in_Y_field"`
 
 	// VcAttainTechXInYFieldFieldsValue
-	VcAttainTechXInYFieldFieldsValue int `json:"vc_attain_tech_X_in_Y_field_fields_value"`
+	VcAttainTechXInYFieldFieldsValue int `json:"vc_attain_tech_X_in_Y_field_fields_value,omitempty"`
 
 	// VcAttainTechXInYFieldTechValue
-	VcAttainTechXInYFieldTechValue int `json:"vc_attain_tech_X_in_Y_field_tech_value"`
+	VcAttainTechXInYFieldTechValue int `json:"vc_attain_tech_X_in_Y_field_tech_value,omitempty"`
 
 	// VcExceedNextPlayerScoreByX
 	VcExceedNextPlayerScoreByX bool `json:"vc_exceed_next_player_score_by_x"`
@@ -1602,11 +1602,9 @@ func (s Ruleset) MarshalJSONStream(stream *jsoniter.Stream) {
 	}
 
 	// Marshal the SessionId field
-	if !IsEmpty(s.SessionId) {
-		ct.More()
-		stream.WriteObjectField("session_id")
-		stream.WriteString(s.SessionId)
-	}
+	ct.More()
+	stream.WriteObjectField("session_id")
+	stream.WriteString(s.SessionId)
 
 	// Marshal the SlowerTechAdvances field
 	ct.More()
@@ -1654,19 +1652,23 @@ func (s Ruleset) MarshalJSONStream(stream *jsoniter.Stream) {
 	}
 
 	// Marshal the VcAttainTechXInYFieldFieldsValue field
-	ct.More()
-	stream.WriteObjectField("vc_attain_tech_X_in_Y_field_fields_value")
-	stream.WriteVal(s.VcAttainTechXInYFieldFieldsValue)
-	if stream.Error != nil {
-		return
+	if !IsEmpty(s.VcAttainTechXInYFieldFieldsValue) {
+		ct.More()
+		stream.WriteObjectField("vc_attain_tech_X_in_Y_field_fields_value")
+		stream.WriteVal(s.VcAttainTechXInYFieldFieldsValue)
+		if stream.Error != nil {
+			return
+		}
 	}
 
 	// Marshal the VcAttainTechXInYFieldTechValue field
-	ct.More()
-	stream.WriteObjectField("vc_attain_tech_X_in_Y_field_tech_value")
-	stream.WriteVal(s.VcAttainTechXInYFieldTechValue)
-	if stream.Error != nil {
-		return
+	if !IsEmpty(s.VcAttainTechXInYFieldTechValue) {
+		ct.More()
+		stream.WriteObjectField("vc_attain_tech_X_in_Y_field_tech_value")
+		stream.WriteVal(s.VcAttainTechXInYFieldTechValue)
+		if stream.Error != nil {
+			return
+		}
 	}
 
 	// Marshal the VcExceedNextPlayerScoreByX field
@@ -1806,14 +1808,13 @@ func (s *Ruleset) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 	MaximumMineralsReceived := false
 	NoRandomEventsReceived := false
 	PublicPlayerScoresReceived := false
+	SessionIdReceived := false
 	SlowerTechAdvancesReceived := false
 	StartingDistanceReceived := false
 	TypeReceived := false
 	UniverseSizeReceived := false
 	VcAtLeastXYearsMustPassBeforeAWinnerIsDeclaredReceived := false
 	VcAttainTechXInYFieldReceived := false
-	VcAttainTechXInYFieldFieldsValueReceived := false
-	VcAttainTechXInYFieldTechValueReceived := false
 	VcExceedNextPlayerScoreByXReceived := false
 	VcHasProductionCapacityOfXThousandReceived := false
 	VcHaveHighestScoreAfterXYearsReceived := false
@@ -1909,6 +1910,7 @@ func (s *Ruleset) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			if iter.Error != nil {
 				return
 			}
+			SessionIdReceived = true
 		case "slower_tech_advances":
 			s.SlowerTechAdvances = iter.ReadBool()
 			if iter.Error != nil {
@@ -1991,7 +1993,6 @@ func (s *Ruleset) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			if iter.Error != nil {
 				return
 			}
-			VcAttainTechXInYFieldFieldsValueReceived = true
 		case "vc_attain_tech_X_in_Y_field_tech_value":
 			if iter.WhatIsNext() == jsoniter.BoolValue {
 				if iter.ReadBool() {
@@ -2004,7 +2005,6 @@ func (s *Ruleset) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			if iter.Error != nil {
 				return
 			}
-			VcAttainTechXInYFieldTechValueReceived = true
 		case "vc_exceed_next_player_score_by_x":
 			s.VcExceedNextPlayerScoreByX = iter.ReadBool()
 			if iter.Error != nil {
@@ -2163,6 +2163,10 @@ func (s *Ruleset) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 		iter.ReportError("validating Ruleset", "\"public_player_scores\" is required but was not present")
 	}
 
+	if !SessionIdReceived {
+		iter.ReportError("validating Ruleset", "\"session_id\" is required but was not present")
+	}
+
 	if !SlowerTechAdvancesReceived {
 		iter.ReportError("validating Ruleset", "\"slower_tech_advances\" is required but was not present")
 	}
@@ -2185,14 +2189,6 @@ func (s *Ruleset) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 
 	if !VcAttainTechXInYFieldReceived {
 		iter.ReportError("validating Ruleset", "\"vc_attain_tech_X_in_Y_field\" is required but was not present")
-	}
-
-	if !VcAttainTechXInYFieldFieldsValueReceived {
-		iter.ReportError("validating Ruleset", "\"vc_attain_tech_X_in_Y_field_fields_value\" is required but was not present")
-	}
-
-	if !VcAttainTechXInYFieldTechValueReceived {
-		iter.ReportError("validating Ruleset", "\"vc_attain_tech_X_in_Y_field_tech_value\" is required but was not present")
 	}
 
 	if !VcExceedNextPlayerScoreByXReceived {

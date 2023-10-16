@@ -43,4 +43,8 @@ CREATE TABLE ruleset (
         check (ruleset.density <= 4),
     CONSTRAINT check_universe_size_min
         check (ruleset.density >= 0),
+    CONSTRAINT check_capital_ships_min
+        check (ruleset.vc_owns_x_capital_ships_value >= 10),
+    CONSTRAINT check_capital_ships_max
+        check (ruleset.vc_owns_x_capital_ships_value <= 300)
 );

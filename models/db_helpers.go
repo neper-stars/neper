@@ -211,6 +211,57 @@ const (
 	// RulesetUniverseSizeColumn is the name of the column containing field "UniverseSize" data
 	RulesetUniverseSizeColumn = "universe_size"
 
+	// RulesetVcAtLeastxYearsMustPassBeforeaWinnerIsDeclaredColumn is the name of the column containing field "VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared" data
+	RulesetVcAtLeastxYearsMustPassBeforeaWinnerIsDeclaredColumn = "vc_at_least_x_years_must_pass_before_a_winner_is_declared"
+
+	// RulesetVcAttainTechXInYFieldColumn is the name of the column containing field "VcAttainTechXInYField" data
+	RulesetVcAttainTechXInYFieldColumn = "vc_attain_tech_x_in_y_field"
+
+	// RulesetVcAttainTechXInYFieldFieldsValueColumn is the name of the column containing field "VcAttainTechXInYFieldFieldsValue" data
+	RulesetVcAttainTechXInYFieldFieldsValueColumn = "vc_attain_tech_x_in_y_field_fields_value"
+
+	// RulesetVcAttainTechXInYFieldTechValueColumn is the name of the column containing field "VcAttainTechXInYFieldTechValue" data
+	RulesetVcAttainTechXInYFieldTechValueColumn = "vc_attain_tech_x_in_y_field_tech_value"
+
+	// RulesetVcExceedNextPlayerScoreByxColumn is the name of the column containing field "VcExceedNextPlayerScoreByx" data
+	RulesetVcExceedNextPlayerScoreByxColumn = "vc_exceed_next_player_score_by_x"
+
+	// RulesetVcExceedNextPlayerScoreByxValueColumn is the name of the column containing field "VcExceedNextPlayerScoreByxValue" data
+	RulesetVcExceedNextPlayerScoreByxValueColumn = "vc_exceed_next_player_score_by_x_value"
+
+	// RulesetVcExceedScoreOfxColumn is the name of the column containing field "VcExceedScoreOfx" data
+	RulesetVcExceedScoreOfxColumn = "vc_exceed_score_of_x"
+
+	// RulesetVcExceedScoreOfxValueColumn is the name of the column containing field "VcExceedScoreOfxValue" data
+	RulesetVcExceedScoreOfxValueColumn = "vc_exceed_score_of_x_value"
+
+	// RulesetVcHasProductionCapacityOfxThousandColumn is the name of the column containing field "VcHasProductionCapacityOfxThousand" data
+	RulesetVcHasProductionCapacityOfxThousandColumn = "vc_has_production_capacity_of_x_thousand"
+
+	// RulesetVcHasProductionCapacityOfxThousandValueColumn is the name of the column containing field "VcHasProductionCapacityOfxThousandValue" data
+	RulesetVcHasProductionCapacityOfxThousandValueColumn = "vc_has_production_capacity_of_x_thousand_value"
+
+	// RulesetVcHaveHighestScoreAfterxYearsColumn is the name of the column containing field "VcHaveHighestScoreAfterxYears" data
+	RulesetVcHaveHighestScoreAfterxYearsColumn = "vc_have_highest_score_after_x_years"
+
+	// RulesetVcHaveHighestScoreAfterxYearsValueColumn is the name of the column containing field "VcHaveHighestScoreAfterxYearsValue" data
+	RulesetVcHaveHighestScoreAfterxYearsValueColumn = "vc_have_highest_score_after_x_years_value"
+
+	// RulesetVcOwnsxCapitalShipsColumn is the name of the column containing field "VcOwnsxCapitalShips" data
+	RulesetVcOwnsxCapitalShipsColumn = "vc_owns_x_capital_ships"
+
+	// RulesetVcOwnsxCapitalShipsValueColumn is the name of the column containing field "VcOwnsxCapitalShipsValue" data
+	RulesetVcOwnsxCapitalShipsValueColumn = "vc_owns_x_capital_ships_value"
+
+	// RulesetVcOwnsxPercentOfPlanetsColumn is the name of the column containing field "VcOwnsxPercentOfPlanets" data
+	RulesetVcOwnsxPercentOfPlanetsColumn = "vc_owns_x_percent_of_planets"
+
+	// RulesetVcOwnsxPercentOfPlanetsValueColumn is the name of the column containing field "VcOwnsxPercentOfPlanetsValue" data
+	RulesetVcOwnsxPercentOfPlanetsValueColumn = "vc_owns_x_percent_of_planets_value"
+
+	// RulesetVcWinnerMustMeetxOfTheAboveColumn is the name of the column containing field "VcWinnerMustMeetxOfTheAbove" data
+	RulesetVcWinnerMustMeetxOfTheAboveColumn = "vc_winner_must_meet_x_of_the_above"
+
 	// RulesetDBTable is the name of the table where RulesetDB are stored
 	RulesetDBTable = "ruleset"
 
@@ -250,6 +301,57 @@ const (
 	// RulesetDBUniverseSizeColumn is the name of the column containing field "UniverseSize" data
 	RulesetDBUniverseSizeColumn = "universe_size"
 
+	// RulesetDBVcAtLeastxYearsMustPassBeforeaWinnerIsDeclaredColumn is the name of the column containing field "VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared" data
+	RulesetDBVcAtLeastxYearsMustPassBeforeaWinnerIsDeclaredColumn = "vc_at_least_x_years_must_pass_before_a_winner_is_declared"
+
+	// RulesetDBVcAttainTechXInYFieldColumn is the name of the column containing field "VcAttainTechXInYField" data
+	RulesetDBVcAttainTechXInYFieldColumn = "vc_attain_tech_x_in_y_field"
+
+	// RulesetDBVcAttainTechXInYFieldFieldsValueColumn is the name of the column containing field "VcAttainTechXInYFieldFieldsValue" data
+	RulesetDBVcAttainTechXInYFieldFieldsValueColumn = "vc_attain_tech_x_in_y_field_fields_value"
+
+	// RulesetDBVcAttainTechXInYFieldTechValueColumn is the name of the column containing field "VcAttainTechXInYFieldTechValue" data
+	RulesetDBVcAttainTechXInYFieldTechValueColumn = "vc_attain_tech_x_in_y_field_tech_value"
+
+	// RulesetDBVcExceedNextPlayerScoreByxColumn is the name of the column containing field "VcExceedNextPlayerScoreByx" data
+	RulesetDBVcExceedNextPlayerScoreByxColumn = "vc_exceed_next_player_score_by_x"
+
+	// RulesetDBVcExceedNextPlayerScoreByxValueColumn is the name of the column containing field "VcExceedNextPlayerScoreByxValue" data
+	RulesetDBVcExceedNextPlayerScoreByxValueColumn = "vc_exceed_next_player_score_by_x_value"
+
+	// RulesetDBVcExceedScoreOfxColumn is the name of the column containing field "VcExceedScoreOfx" data
+	RulesetDBVcExceedScoreOfxColumn = "vc_exceed_score_of_x"
+
+	// RulesetDBVcExceedScoreOfxValueColumn is the name of the column containing field "VcExceedScoreOfxValue" data
+	RulesetDBVcExceedScoreOfxValueColumn = "vc_exceed_score_of_x_value"
+
+	// RulesetDBVcHasProductionCapacityOfxThousandColumn is the name of the column containing field "VcHasProductionCapacityOfxThousand" data
+	RulesetDBVcHasProductionCapacityOfxThousandColumn = "vc_has_production_capacity_of_x_thousand"
+
+	// RulesetDBVcHasProductionCapacityOfxThousandValueColumn is the name of the column containing field "VcHasProductionCapacityOfxThousandValue" data
+	RulesetDBVcHasProductionCapacityOfxThousandValueColumn = "vc_has_production_capacity_of_x_thousand_value"
+
+	// RulesetDBVcHaveHighestScoreAfterxYearsColumn is the name of the column containing field "VcHaveHighestScoreAfterxYears" data
+	RulesetDBVcHaveHighestScoreAfterxYearsColumn = "vc_have_highest_score_after_x_years"
+
+	// RulesetDBVcHaveHighestScoreAfterxYearsValueColumn is the name of the column containing field "VcHaveHighestScoreAfterxYearsValue" data
+	RulesetDBVcHaveHighestScoreAfterxYearsValueColumn = "vc_have_highest_score_after_x_years_value"
+
+	// RulesetDBVcOwnsxCapitalShipsColumn is the name of the column containing field "VcOwnsxCapitalShips" data
+	RulesetDBVcOwnsxCapitalShipsColumn = "vc_owns_x_capital_ships"
+
+	// RulesetDBVcOwnsxCapitalShipsValueColumn is the name of the column containing field "VcOwnsxCapitalShipsValue" data
+	RulesetDBVcOwnsxCapitalShipsValueColumn = "vc_owns_x_capital_ships_value"
+
+	// RulesetDBVcOwnsxPercentOfPlanetsColumn is the name of the column containing field "VcOwnsxPercentOfPlanets" data
+	RulesetDBVcOwnsxPercentOfPlanetsColumn = "vc_owns_x_percent_of_planets"
+
+	// RulesetDBVcOwnsxPercentOfPlanetsValueColumn is the name of the column containing field "VcOwnsxPercentOfPlanetsValue" data
+	RulesetDBVcOwnsxPercentOfPlanetsValueColumn = "vc_owns_x_percent_of_planets_value"
+
+	// RulesetDBVcWinnerMustMeetxOfTheAboveColumn is the name of the column containing field "VcWinnerMustMeetxOfTheAbove" data
+	RulesetDBVcWinnerMustMeetxOfTheAboveColumn = "vc_winner_must_meet_x_of_the_above"
+
 	// RulesetDBIDColumn is the name of the column containing field "ID" data
 	RulesetDBIDColumn = "id"
 
@@ -279,6 +381,48 @@ const (
 
 	// SessionDBPrivateColumn is the name of the column containing field "Private" data
 	SessionDBPrivateColumn = "private"
+
+	// SessionFilesHostFileColumn is the name of the column containing field "HostFile" data
+	SessionFilesHostFileColumn = "hostfile"
+
+	// SessionFilesIDColumn is the name of the column containing field "ID" data
+	SessionFilesIDColumn = "id"
+
+	// SessionFilesSessionIDColumn is the name of the column containing field "SessionID" data
+	SessionFilesSessionIDColumn = "session_id"
+
+	// SessionFilesUniverseColumn is the name of the column containing field "Universe" data
+	SessionFilesUniverseColumn = "universe"
+
+	// SessionFilesYearColumn is the name of the column containing field "Year" data
+	SessionFilesYearColumn = "year"
+
+	// SessionFilesDBTable is the name of the table where SessionFilesDB are stored
+	SessionFilesDBTable = "session_file"
+
+	// SessionFilesDBPKeyColumn is the name of the primary key
+	SessionFilesDBPKeyColumn = SessionFilesDBIDColumn
+
+	// SessionFilesDBHostFileColumn is the name of the column containing field "HostFile" data
+	SessionFilesDBHostFileColumn = "hostfile"
+
+	// SessionFilesDBIDColumn is the name of the column containing field "ID" data
+	SessionFilesDBIDColumn = "id"
+
+	// SessionFilesDBSessionIDColumn is the name of the column containing field "SessionID" data
+	SessionFilesDBSessionIDColumn = "session_id"
+
+	// SessionFilesDBUniverseColumn is the name of the column containing field "Universe" data
+	SessionFilesDBUniverseColumn = "universe"
+
+	// SessionFilesDBYearColumn is the name of the column containing field "Year" data
+	SessionFilesDBYearColumn = "year"
+
+	// SessionFilesDBTurnsDBColumn is the name of the column containing field "TurnsDB" data
+	SessionFilesDBTurnsDBColumn = "turns"
+
+	// SessionFilesDBOrdersDBColumn is the name of the column containing field "OrdersDB" data
+	SessionFilesDBOrdersDBColumn = "orders"
 
 	// SessionPlayerRaceBotLevelColumn is the name of the column containing field "BotLevel" data
 	SessionPlayerRaceBotLevelColumn = "bot_level"
@@ -390,6 +534,7 @@ var (
 		RaceDBTable,
 		RulesetDBTable,
 		SessionDBTable,
+		SessionFilesDBTable,
 		SessionPlayerRaceDBTable,
 		UserProfileDBTable,
 		UserProfileSessionRelDBTable,
@@ -445,6 +590,23 @@ var (
 		RulesetSlowerTechAdvancesColumn,
 		RulesetStartingDistanceColumn,
 		RulesetUniverseSizeColumn,
+		RulesetVcAtLeastxYearsMustPassBeforeaWinnerIsDeclaredColumn,
+		RulesetVcAttainTechXInYFieldColumn,
+		RulesetVcAttainTechXInYFieldFieldsValueColumn,
+		RulesetVcAttainTechXInYFieldTechValueColumn,
+		RulesetVcExceedNextPlayerScoreByxColumn,
+		RulesetVcExceedNextPlayerScoreByxValueColumn,
+		RulesetVcExceedScoreOfxColumn,
+		RulesetVcExceedScoreOfxValueColumn,
+		RulesetVcHasProductionCapacityOfxThousandColumn,
+		RulesetVcHasProductionCapacityOfxThousandValueColumn,
+		RulesetVcHaveHighestScoreAfterxYearsColumn,
+		RulesetVcHaveHighestScoreAfterxYearsValueColumn,
+		RulesetVcOwnsxCapitalShipsColumn,
+		RulesetVcOwnsxCapitalShipsValueColumn,
+		RulesetVcOwnsxPercentOfPlanetsColumn,
+		RulesetVcOwnsxPercentOfPlanetsValueColumn,
+		RulesetVcWinnerMustMeetxOfTheAboveColumn,
 	}
 	// RulesetDBDataColumns is the list of the columns for the RulesetDB structure, expect its primary key
 	RulesetDBDataColumns = []string{
@@ -459,6 +621,23 @@ var (
 		RulesetDBSlowerTechAdvancesColumn,
 		RulesetDBStartingDistanceColumn,
 		RulesetDBUniverseSizeColumn,
+		RulesetDBVcAtLeastxYearsMustPassBeforeaWinnerIsDeclaredColumn,
+		RulesetDBVcAttainTechXInYFieldColumn,
+		RulesetDBVcAttainTechXInYFieldFieldsValueColumn,
+		RulesetDBVcAttainTechXInYFieldTechValueColumn,
+		RulesetDBVcExceedNextPlayerScoreByxColumn,
+		RulesetDBVcExceedNextPlayerScoreByxValueColumn,
+		RulesetDBVcExceedScoreOfxColumn,
+		RulesetDBVcExceedScoreOfxValueColumn,
+		RulesetDBVcHasProductionCapacityOfxThousandColumn,
+		RulesetDBVcHasProductionCapacityOfxThousandValueColumn,
+		RulesetDBVcHaveHighestScoreAfterxYearsColumn,
+		RulesetDBVcHaveHighestScoreAfterxYearsValueColumn,
+		RulesetDBVcOwnsxCapitalShipsColumn,
+		RulesetDBVcOwnsxCapitalShipsValueColumn,
+		RulesetDBVcOwnsxPercentOfPlanetsColumn,
+		RulesetDBVcOwnsxPercentOfPlanetsValueColumn,
+		RulesetDBVcWinnerMustMeetxOfTheAboveColumn,
 		RulesetDBSessionIDColumn,
 	}
 
@@ -483,6 +662,29 @@ var (
 	SessionDBColumns = append(
 		[]string{ SessionDBIDColumn },
 		SessionDBDataColumns...,
+	)
+	// SessionFilesColumns is the list of the columns for the SessionFiles structure
+	SessionFilesColumns = []string{
+		SessionFilesHostFileColumn,
+		SessionFilesIDColumn,
+		SessionFilesSessionIDColumn,
+		SessionFilesUniverseColumn,
+		SessionFilesYearColumn,
+	}
+	// SessionFilesDBDataColumns is the list of the columns for the SessionFilesDB structure, expect its primary key
+	SessionFilesDBDataColumns = []string{
+		SessionFilesDBHostFileColumn,
+		SessionFilesDBSessionIDColumn,
+		SessionFilesDBUniverseColumn,
+		SessionFilesDBYearColumn,
+		SessionFilesDBTurnsDBColumn,
+		SessionFilesDBOrdersDBColumn,
+	}
+
+	// SessionFilesDBColumns is the list of the columns for the SessionFilesDB structure
+	SessionFilesDBColumns = append(
+		[]string{ SessionFilesDBIDColumn },
+		SessionFilesDBDataColumns...,
 	)
 	// SessionPlayerRaceColumns is the list of the columns for the SessionPlayerRace structure
 	SessionPlayerRaceColumns = []string{
@@ -922,6 +1124,40 @@ func (s Ruleset) Values(columns ...string) []interface{} {
 			values[i] = s.StartingDistance
 		case "universe_size":
 			values[i] = s.UniverseSize
+		case "vc_at_least_x_years_must_pass_before_a_winner_is_declared":
+			values[i] = s.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared
+		case "vc_attain_tech_x_in_y_field":
+			values[i] = s.VcAttainTechXInYField
+		case "vc_attain_tech_x_in_y_field_fields_value":
+			values[i] = s.VcAttainTechXInYFieldFieldsValue
+		case "vc_attain_tech_x_in_y_field_tech_value":
+			values[i] = s.VcAttainTechXInYFieldTechValue
+		case "vc_exceed_next_player_score_by_x":
+			values[i] = s.VcExceedNextPlayerScoreByx
+		case "vc_exceed_next_player_score_by_x_value":
+			values[i] = s.VcExceedNextPlayerScoreByxValue
+		case "vc_exceed_score_of_x":
+			values[i] = s.VcExceedScoreOfx
+		case "vc_exceed_score_of_x_value":
+			values[i] = s.VcExceedScoreOfxValue
+		case "vc_has_production_capacity_of_x_thousand":
+			values[i] = s.VcHasProductionCapacityOfxThousand
+		case "vc_has_production_capacity_of_x_thousand_value":
+			values[i] = s.VcHasProductionCapacityOfxThousandValue
+		case "vc_have_highest_score_after_x_years":
+			values[i] = s.VcHaveHighestScoreAfterxYears
+		case "vc_have_highest_score_after_x_years_value":
+			values[i] = s.VcHaveHighestScoreAfterxYearsValue
+		case "vc_owns_x_capital_ships":
+			values[i] = s.VcOwnsxCapitalShips
+		case "vc_owns_x_capital_ships_value":
+			values[i] = s.VcOwnsxCapitalShipsValue
+		case "vc_owns_x_percent_of_planets":
+			values[i] = s.VcOwnsxPercentOfPlanets
+		case "vc_owns_x_percent_of_planets_value":
+			values[i] = s.VcOwnsxPercentOfPlanetsValue
+		case "vc_winner_must_meet_x_of_the_above":
+			values[i] = s.VcWinnerMustMeetxOfTheAbove
 		}
 	}
 	return values
@@ -955,6 +1191,40 @@ func (s Ruleset) ValuesMap(columns ...string) map[string]interface{} {
 			values["starting_distance"] = s.StartingDistance
 		case "universe_size":
 			values["universe_size"] = s.UniverseSize
+		case "vc_at_least_x_years_must_pass_before_a_winner_is_declared":
+			values["vc_at_least_x_years_must_pass_before_a_winner_is_declared"] = s.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared
+		case "vc_attain_tech_x_in_y_field":
+			values["vc_attain_tech_x_in_y_field"] = s.VcAttainTechXInYField
+		case "vc_attain_tech_x_in_y_field_fields_value":
+			values["vc_attain_tech_x_in_y_field_fields_value"] = s.VcAttainTechXInYFieldFieldsValue
+		case "vc_attain_tech_x_in_y_field_tech_value":
+			values["vc_attain_tech_x_in_y_field_tech_value"] = s.VcAttainTechXInYFieldTechValue
+		case "vc_exceed_next_player_score_by_x":
+			values["vc_exceed_next_player_score_by_x"] = s.VcExceedNextPlayerScoreByx
+		case "vc_exceed_next_player_score_by_x_value":
+			values["vc_exceed_next_player_score_by_x_value"] = s.VcExceedNextPlayerScoreByxValue
+		case "vc_exceed_score_of_x":
+			values["vc_exceed_score_of_x"] = s.VcExceedScoreOfx
+		case "vc_exceed_score_of_x_value":
+			values["vc_exceed_score_of_x_value"] = s.VcExceedScoreOfxValue
+		case "vc_has_production_capacity_of_x_thousand":
+			values["vc_has_production_capacity_of_x_thousand"] = s.VcHasProductionCapacityOfxThousand
+		case "vc_has_production_capacity_of_x_thousand_value":
+			values["vc_has_production_capacity_of_x_thousand_value"] = s.VcHasProductionCapacityOfxThousandValue
+		case "vc_have_highest_score_after_x_years":
+			values["vc_have_highest_score_after_x_years"] = s.VcHaveHighestScoreAfterxYears
+		case "vc_have_highest_score_after_x_years_value":
+			values["vc_have_highest_score_after_x_years_value"] = s.VcHaveHighestScoreAfterxYearsValue
+		case "vc_owns_x_capital_ships":
+			values["vc_owns_x_capital_ships"] = s.VcOwnsxCapitalShips
+		case "vc_owns_x_capital_ships_value":
+			values["vc_owns_x_capital_ships_value"] = s.VcOwnsxCapitalShipsValue
+		case "vc_owns_x_percent_of_planets":
+			values["vc_owns_x_percent_of_planets"] = s.VcOwnsxPercentOfPlanets
+		case "vc_owns_x_percent_of_planets_value":
+			values["vc_owns_x_percent_of_planets_value"] = s.VcOwnsxPercentOfPlanetsValue
+		case "vc_winner_must_meet_x_of_the_above":
+			values["vc_winner_must_meet_x_of_the_above"] = s.VcWinnerMustMeetxOfTheAbove
 		}
 	}
 	return values
@@ -1006,6 +1276,40 @@ func (s RulesetDB) Values(columns ...string) []interface{} {
 			values[i] = s.StartingDistance
 		case "universe_size":
 			values[i] = s.UniverseSize
+		case "vc_at_least_x_years_must_pass_before_a_winner_is_declared":
+			values[i] = s.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared
+		case "vc_attain_tech_x_in_y_field":
+			values[i] = s.VcAttainTechXInYField
+		case "vc_attain_tech_x_in_y_field_fields_value":
+			values[i] = s.VcAttainTechXInYFieldFieldsValue
+		case "vc_attain_tech_x_in_y_field_tech_value":
+			values[i] = s.VcAttainTechXInYFieldTechValue
+		case "vc_exceed_next_player_score_by_x":
+			values[i] = s.VcExceedNextPlayerScoreByx
+		case "vc_exceed_next_player_score_by_x_value":
+			values[i] = s.VcExceedNextPlayerScoreByxValue
+		case "vc_exceed_score_of_x":
+			values[i] = s.VcExceedScoreOfx
+		case "vc_exceed_score_of_x_value":
+			values[i] = s.VcExceedScoreOfxValue
+		case "vc_has_production_capacity_of_x_thousand":
+			values[i] = s.VcHasProductionCapacityOfxThousand
+		case "vc_has_production_capacity_of_x_thousand_value":
+			values[i] = s.VcHasProductionCapacityOfxThousandValue
+		case "vc_have_highest_score_after_x_years":
+			values[i] = s.VcHaveHighestScoreAfterxYears
+		case "vc_have_highest_score_after_x_years_value":
+			values[i] = s.VcHaveHighestScoreAfterxYearsValue
+		case "vc_owns_x_capital_ships":
+			values[i] = s.VcOwnsxCapitalShips
+		case "vc_owns_x_capital_ships_value":
+			values[i] = s.VcOwnsxCapitalShipsValue
+		case "vc_owns_x_percent_of_planets":
+			values[i] = s.VcOwnsxPercentOfPlanets
+		case "vc_owns_x_percent_of_planets_value":
+			values[i] = s.VcOwnsxPercentOfPlanetsValue
+		case "vc_winner_must_meet_x_of_the_above":
+			values[i] = s.VcWinnerMustMeetxOfTheAbove
 		case "id":
 			values[i] = s.ID
 		case "session_id":
@@ -1043,6 +1347,40 @@ func (s RulesetDB) ValuesMap(columns ...string) map[string]interface{} {
 			values["starting_distance"] = s.StartingDistance
 		case "universe_size":
 			values["universe_size"] = s.UniverseSize
+		case "vc_at_least_x_years_must_pass_before_a_winner_is_declared":
+			values["vc_at_least_x_years_must_pass_before_a_winner_is_declared"] = s.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared
+		case "vc_attain_tech_x_in_y_field":
+			values["vc_attain_tech_x_in_y_field"] = s.VcAttainTechXInYField
+		case "vc_attain_tech_x_in_y_field_fields_value":
+			values["vc_attain_tech_x_in_y_field_fields_value"] = s.VcAttainTechXInYFieldFieldsValue
+		case "vc_attain_tech_x_in_y_field_tech_value":
+			values["vc_attain_tech_x_in_y_field_tech_value"] = s.VcAttainTechXInYFieldTechValue
+		case "vc_exceed_next_player_score_by_x":
+			values["vc_exceed_next_player_score_by_x"] = s.VcExceedNextPlayerScoreByx
+		case "vc_exceed_next_player_score_by_x_value":
+			values["vc_exceed_next_player_score_by_x_value"] = s.VcExceedNextPlayerScoreByxValue
+		case "vc_exceed_score_of_x":
+			values["vc_exceed_score_of_x"] = s.VcExceedScoreOfx
+		case "vc_exceed_score_of_x_value":
+			values["vc_exceed_score_of_x_value"] = s.VcExceedScoreOfxValue
+		case "vc_has_production_capacity_of_x_thousand":
+			values["vc_has_production_capacity_of_x_thousand"] = s.VcHasProductionCapacityOfxThousand
+		case "vc_has_production_capacity_of_x_thousand_value":
+			values["vc_has_production_capacity_of_x_thousand_value"] = s.VcHasProductionCapacityOfxThousandValue
+		case "vc_have_highest_score_after_x_years":
+			values["vc_have_highest_score_after_x_years"] = s.VcHaveHighestScoreAfterxYears
+		case "vc_have_highest_score_after_x_years_value":
+			values["vc_have_highest_score_after_x_years_value"] = s.VcHaveHighestScoreAfterxYearsValue
+		case "vc_owns_x_capital_ships":
+			values["vc_owns_x_capital_ships"] = s.VcOwnsxCapitalShips
+		case "vc_owns_x_capital_ships_value":
+			values["vc_owns_x_capital_ships_value"] = s.VcOwnsxCapitalShipsValue
+		case "vc_owns_x_percent_of_planets":
+			values["vc_owns_x_percent_of_planets"] = s.VcOwnsxPercentOfPlanets
+		case "vc_owns_x_percent_of_planets_value":
+			values["vc_owns_x_percent_of_planets_value"] = s.VcOwnsxPercentOfPlanetsValue
+		case "vc_winner_must_meet_x_of_the_above":
+			values["vc_winner_must_meet_x_of_the_above"] = s.VcWinnerMustMeetxOfTheAbove
 		case "id":
 			values["id"] = s.ID
 		case "session_id":
@@ -1065,6 +1403,23 @@ func NewRulesetDBTableSchema() *RulesetDBTableSchema {
 	t.SlowerTechAdvances = NewColumn(&t, "slower_tech_advances")
 	t.StartingDistance = NewColumn(&t, "starting_distance")
 	t.UniverseSize = NewColumn(&t, "universe_size")
+	t.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared = NewColumn(&t, "vc_at_least_x_years_must_pass_before_a_winner_is_declared")
+	t.VcAttainTechXInYField = NewColumn(&t, "vc_attain_tech_x_in_y_field")
+	t.VcAttainTechXInYFieldFieldsValue = NewColumn(&t, "vc_attain_tech_x_in_y_field_fields_value")
+	t.VcAttainTechXInYFieldTechValue = NewColumn(&t, "vc_attain_tech_x_in_y_field_tech_value")
+	t.VcExceedNextPlayerScoreByx = NewColumn(&t, "vc_exceed_next_player_score_by_x")
+	t.VcExceedNextPlayerScoreByxValue = NewColumn(&t, "vc_exceed_next_player_score_by_x_value")
+	t.VcExceedScoreOfx = NewColumn(&t, "vc_exceed_score_of_x")
+	t.VcExceedScoreOfxValue = NewColumn(&t, "vc_exceed_score_of_x_value")
+	t.VcHasProductionCapacityOfxThousand = NewColumn(&t, "vc_has_production_capacity_of_x_thousand")
+	t.VcHasProductionCapacityOfxThousandValue = NewColumn(&t, "vc_has_production_capacity_of_x_thousand_value")
+	t.VcHaveHighestScoreAfterxYears = NewColumn(&t, "vc_have_highest_score_after_x_years")
+	t.VcHaveHighestScoreAfterxYearsValue = NewColumn(&t, "vc_have_highest_score_after_x_years_value")
+	t.VcOwnsxCapitalShips = NewColumn(&t, "vc_owns_x_capital_ships")
+	t.VcOwnsxCapitalShipsValue = NewColumn(&t, "vc_owns_x_capital_ships_value")
+	t.VcOwnsxPercentOfPlanets = NewColumn(&t, "vc_owns_x_percent_of_planets")
+	t.VcOwnsxPercentOfPlanetsValue = NewColumn(&t, "vc_owns_x_percent_of_planets_value")
+	t.VcWinnerMustMeetxOfTheAbove = NewColumn(&t, "vc_winner_must_meet_x_of_the_above")
 	t.ID = NewColumn(&t, "id")
 	t.SessionID = NewColumn(&t, "session_id")
 	return &t
@@ -1083,6 +1438,23 @@ type RulesetDBTableSchema struct {
 	SlowerTechAdvances Column
 	StartingDistance Column
 	UniverseSize Column
+	VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared Column
+	VcAttainTechXInYField Column
+	VcAttainTechXInYFieldFieldsValue Column
+	VcAttainTechXInYFieldTechValue Column
+	VcExceedNextPlayerScoreByx Column
+	VcExceedNextPlayerScoreByxValue Column
+	VcExceedScoreOfx Column
+	VcExceedScoreOfxValue Column
+	VcHasProductionCapacityOfxThousand Column
+	VcHasProductionCapacityOfxThousandValue Column
+	VcHaveHighestScoreAfterxYears Column
+	VcHaveHighestScoreAfterxYearsValue Column
+	VcOwnsxCapitalShips Column
+	VcOwnsxCapitalShipsValue Column
+	VcOwnsxPercentOfPlanets Column
+	VcOwnsxPercentOfPlanetsValue Column
+	VcWinnerMustMeetxOfTheAbove Column
 	ID Column
 	SessionID Column
 }
@@ -1124,6 +1496,23 @@ func (t RulesetDBTableSchema) As(name string) *RulesetDBTableSchema {
 	t.SlowerTechAdvances = NewColumn(&t, "slower_tech_advances")
 	t.StartingDistance = NewColumn(&t, "starting_distance")
 	t.UniverseSize = NewColumn(&t, "universe_size")
+	t.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared = NewColumn(&t, "vc_at_least_x_years_must_pass_before_a_winner_is_declared")
+	t.VcAttainTechXInYField = NewColumn(&t, "vc_attain_tech_x_in_y_field")
+	t.VcAttainTechXInYFieldFieldsValue = NewColumn(&t, "vc_attain_tech_x_in_y_field_fields_value")
+	t.VcAttainTechXInYFieldTechValue = NewColumn(&t, "vc_attain_tech_x_in_y_field_tech_value")
+	t.VcExceedNextPlayerScoreByx = NewColumn(&t, "vc_exceed_next_player_score_by_x")
+	t.VcExceedNextPlayerScoreByxValue = NewColumn(&t, "vc_exceed_next_player_score_by_x_value")
+	t.VcExceedScoreOfx = NewColumn(&t, "vc_exceed_score_of_x")
+	t.VcExceedScoreOfxValue = NewColumn(&t, "vc_exceed_score_of_x_value")
+	t.VcHasProductionCapacityOfxThousand = NewColumn(&t, "vc_has_production_capacity_of_x_thousand")
+	t.VcHasProductionCapacityOfxThousandValue = NewColumn(&t, "vc_has_production_capacity_of_x_thousand_value")
+	t.VcHaveHighestScoreAfterxYears = NewColumn(&t, "vc_have_highest_score_after_x_years")
+	t.VcHaveHighestScoreAfterxYearsValue = NewColumn(&t, "vc_have_highest_score_after_x_years_value")
+	t.VcOwnsxCapitalShips = NewColumn(&t, "vc_owns_x_capital_ships")
+	t.VcOwnsxCapitalShipsValue = NewColumn(&t, "vc_owns_x_capital_ships_value")
+	t.VcOwnsxPercentOfPlanets = NewColumn(&t, "vc_owns_x_percent_of_planets")
+	t.VcOwnsxPercentOfPlanetsValue = NewColumn(&t, "vc_owns_x_percent_of_planets_value")
+	t.VcWinnerMustMeetxOfTheAbove = NewColumn(&t, "vc_winner_must_meet_x_of_the_above")
 	t.ID = NewColumn(&t, "id")
 	t.SessionID = NewColumn(&t, "session_id")
 	return &t
@@ -1308,6 +1697,202 @@ func (t SessionDBTableSchema) ToSql() (string, []interface{}, error) {
 }
 
 func (t SessionDBTableSchema) Select() squirrel.SelectBuilder {
+	return squirrel.Select(t.Columns(true)...).From(t.Sql())
+}
+
+// Columns returns the database table column names
+func (s SessionFiles) Columns() []string {
+	return SessionFilesColumns
+}
+
+// Values returns the values for a list of columns. If a column does not exits,
+// the corresponding value is left empty
+func (s SessionFiles) Values(columns ...string) []interface{} {
+	values := make([]interface{}, len(columns))
+	for i, column := range columns {
+		switch column {
+		case "hostfile":
+			values[i] = s.HostFile
+		case "id":
+			values[i] = s.ID
+		case "session_id":
+			values[i] = s.SessionID
+		case "universe":
+			values[i] = s.Universe
+		case "year":
+			values[i] = s.Year
+		}
+	}
+	return values
+}
+
+// ValuesMap returns the values map for a list of columns. If a column does not
+// exits, the corresponding value is left empty
+func (s SessionFiles) ValuesMap(columns ...string) map[string]interface{} {
+	values := make(map[string]interface{})
+	for _, column := range columns {
+		switch column {
+		case "hostfile":
+			values["hostfile"] = s.HostFile
+		case "id":
+			values["id"] = s.ID
+		case "session_id":
+			values["session_id"] = s.SessionID
+		case "universe":
+			values["universe"] = s.Universe
+		case "year":
+			values["year"] = s.Year
+		}
+	}
+	return values
+}
+
+// Table returns the database table name
+func (s SessionFilesDB) Table() string {
+	return SessionFilesDBTable
+}
+
+// PKeyColumn returns the database table primary key column name
+func (s SessionFilesDB) PKeyColumn() string {
+	return SessionFilesDBPKeyColumn
+}
+
+// Columns returns the database table column names
+func (s SessionFilesDB) Columns(withPKey bool) []string {
+	if withPKey {
+		return SessionFilesDBColumns
+	}
+	return SessionFilesDBDataColumns
+}
+
+// Values returns the values for a list of columns. If a column does not exits,
+// the corresponding value is left empty
+func (s SessionFilesDB) Values(columns ...string) []interface{} {
+	values := make([]interface{}, len(columns))
+	for i, column := range columns {
+		switch column {
+		case "hostfile":
+			values[i] = s.HostFile
+		case "id":
+			values[i] = s.ID
+		case "session_id":
+			values[i] = s.SessionID
+		case "universe":
+			values[i] = s.Universe
+		case "year":
+			values[i] = s.Year
+		case "turns":
+			values[i] = s.TurnsDB
+		case "orders":
+			values[i] = s.OrdersDB
+		}
+	}
+	return values
+}
+
+// ValuesMap returns the values map for a list of columns. If a column does not
+// exits, the corresponding value is left empty
+func (s SessionFilesDB) ValuesMap(columns ...string) map[string]interface{} {
+	values := make(map[string]interface{})
+	for _, column := range columns {
+		switch column {
+		case "hostfile":
+			values["hostfile"] = s.HostFile
+		case "id":
+			values["id"] = s.ID
+		case "session_id":
+			values["session_id"] = s.SessionID
+		case "universe":
+			values["universe"] = s.Universe
+		case "year":
+			values["year"] = s.Year
+		case "turns":
+			values["turns"] = s.TurnsDB
+		case "orders":
+			values["orders"] = s.OrdersDB
+		}
+	}
+	return values
+}
+
+func NewSessionFilesDBTableSchema() *SessionFilesDBTableSchema {
+	t := SessionFilesDBTableSchema{}
+	t.HostFile = NewColumn(&t, "hostfile")
+	t.ID = NewColumn(&t, "id")
+	t.SessionID = NewColumn(&t, "session_id")
+	t.Universe = NewColumn(&t, "universe")
+	t.Year = NewColumn(&t, "year")
+	t.TurnsDB = NewColumn(&t, "turns")
+	t.OrdersDB = NewColumn(&t, "orders")
+	return &t
+}
+
+type SessionFilesDBTableSchema struct {
+	alias string
+	HostFile Column
+	ID Column
+	SessionID Column
+	Universe Column
+	Year Column
+	TurnsDB Column
+	OrdersDB Column
+}
+
+// Columns returns the database table column names
+func (t SessionFilesDBTableSchema) Columns(withPKey bool) []string {
+	if withPKey {
+		return SessionFilesDBColumns
+	}
+	return SessionFilesDBDataColumns
+}
+
+// FQColumns returns the database table column names prefixed with the table alias
+func (t SessionFilesDBTableSchema) FQColumns(withPKey bool) []string {
+	var colList []string
+    colList = SessionFilesDBDataColumns
+
+	if withPKey {
+		colList = SessionFilesDBColumns	
+	}
+
+    var cols []string
+	for _, col := range colList {
+			cols = append(cols, t.GetName()+"."+col)
+	}
+	return cols
+}
+
+func (t SessionFilesDBTableSchema) As(name string) *SessionFilesDBTableSchema {
+	t.alias = name
+	t.HostFile = NewColumn(&t, "hostfile")
+	t.ID = NewColumn(&t, "id")
+	t.SessionID = NewColumn(&t, "session_id")
+	t.Universe = NewColumn(&t, "universe")
+	t.Year = NewColumn(&t, "year")
+	t.TurnsDB = NewColumn(&t, "turns")
+	t.OrdersDB = NewColumn(&t, "orders")
+	return &t
+}
+
+func (t SessionFilesDBTableSchema) GetName() string {
+	if t.alias == "" {
+		return SessionFilesDBTable
+	}
+	return t.alias
+}
+
+func (t SessionFilesDBTableSchema) Sql() string {
+	if t.alias == "" {
+		return SessionFilesDBTable
+	}
+	return SessionFilesDBTable + " AS " + t.alias
+}
+
+func (t SessionFilesDBTableSchema) ToSql() (string, []interface{}, error) {
+	return t.Sql(), nil, nil
+}
+
+func (t SessionFilesDBTableSchema) Select() squirrel.SelectBuilder {
 	return squirrel.Select(t.Columns(true)...).From(t.Sql())
 }
 
@@ -1855,6 +2440,7 @@ func NewDBSchema() *DBSchema {
 		RaceDB: NewRaceDBTableSchema(),
 		RulesetDB: NewRulesetDBTableSchema(),
 		SessionDB: NewSessionDBTableSchema(),
+		SessionFilesDB: NewSessionFilesDBTableSchema(),
 		SessionPlayerRaceDB: NewSessionPlayerRaceDBTableSchema(),
 		UserProfileDB: NewUserProfileDBTableSchema(),
 		UserProfileSessionRelDB: NewUserProfileSessionRelDBTableSchema(),
@@ -1866,6 +2452,7 @@ type DBSchema struct {
 	RaceDB *RaceDBTableSchema
 	RulesetDB *RulesetDBTableSchema
 	SessionDB *SessionDBTableSchema
+	SessionFilesDB *SessionFilesDBTableSchema
 	SessionPlayerRaceDB *SessionPlayerRaceDBTableSchema
 	UserProfileDB *UserProfileDBTableSchema
 	UserProfileSessionRelDB *UserProfileSessionRelDBTableSchema

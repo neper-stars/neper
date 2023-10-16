@@ -25,6 +25,7 @@ const (
 	saveDirDriveLetter       = "s:"
 	executableDirDriveLetter = "x:"
 	starsExecutableName      = "stars.exe"
+	starsININame             = "Stars.ini"
 )
 
 type RunnerOptions struct {
@@ -164,6 +165,20 @@ func (r *Runner) checks() error {
 		r.log.Err(err).Msg("wineprefix directory not properly configured")
 		return err
 	}
+	// we have a special Stars.ini file with a valid serial number entered.
+	// this would not work with anyone trying to use it to play
+	// as the stars.exe will try to determine if the environment has changed since the
+	// serial has been entered (like if you changed screen resolution)
+	// but this is sufficient for a turn generation command because in this case it does
+	// not verify if env has changed.
+	// BUT unfortunately stars will still need a valid serial being set in the interface
+	// at least once to get the GlobalSettings line of its ini file.
+	// once this is done (storing your serial alongside some environment elements like
+	// the screen resolution) you can generate turns
+	if err := r.ensureStarsINI(); err != nil {
+		r.log.Err(err).Msg("Stars.ini file could not be create in the windows directory")
+		return err
+	}
 	if err := r.ensureDriveLetters(); err != nil {
 		r.log.Err(err).Msg("could not setup required drive letters for wine")
 		return err
@@ -247,8 +262,35 @@ func (r *Runner) createDriveLetter(targetDir, dir, letter string) error {
 //go:embed resources/stars26jrc4.exe
 var starsBin []byte
 
+//go:embed resources/Stars.ini
+var starsINI []byte
+
 func (r *Runner) ensureSaveDir() error {
 	if err := os.MkdirAll(r.SaveDir, 0770); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *Runner) ensureStarsINI() error {
+	wineDir, err := r.wineConfDir()
+	if err != nil {
+		return err
+	}
+	starsINIFilePath := filepath.Join(wineDir, "drive_c", "windows", starsININame)
+	targetStarsINI, err := os.OpenFile(starsINIFilePath, os.O_RDWR|os.O_CREATE, 0660)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := targetStarsINI.Close(); err != nil {
+			r.log.Err(err).Msg("failed to close Stars.ini after writing to it")
+		}
+	}()
+	starsReader := bytes.NewReader(starsINI)
+	_, err = io.Copy(targetStarsINI, starsReader)
+	if err != nil {
+		r.log.Err(err).Msg("failed to write into Stars.ini")
 		return err
 	}
 	return nil

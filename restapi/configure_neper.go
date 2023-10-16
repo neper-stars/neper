@@ -138,6 +138,9 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	// ruleset
 	api.RulesCreateHandler = handlers.NewRulesCreateHandler(&config.Log, config.DB)
 
+	// game creation
+	api.GameCreateHandler = handlers.NewGameCreateHandler(&config.Log, config.DB, config.StarsRunner)
+
 	// for user to be able to find its own ID
 	api.UserinfoHandler = handlers.NewUserinfoHandler(config.DB)
 
