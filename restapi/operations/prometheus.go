@@ -60,6 +60,12 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["GET"]["/v1/sessions"] = SessionsListInstrumentHandler(
 		o.handlers["GET"]["/v1/sessions"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/turn/{year}"] = TurnGetInstrumentHandler(
+		o.handlers["GET"]["/v1/sessions/{session_id}/turn/{year}"])
+
+	o.handlers["PUT"]["/v1/sessions/{session_id}/turn/{year}"] = TurnSubmitInstrumentHandler(
+		o.handlers["PUT"]["/v1/sessions/{session_id}/turn/{year}"])
+
 	o.handlers["POST"]["/v1/user_profiles"] = UserProfileCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/user_profiles"])
 

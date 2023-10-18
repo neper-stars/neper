@@ -64,6 +64,41 @@ func userProfileSessionRelationQuery(userProfileID, sessionID string) sq.SelectB
 		)
 }
 
+func sessionPlayerRaceQuery(userProfileID, sessionID string) sq.SelectBuilder {
+	return database.SQ.
+		Select().
+		Columns(models.SessionPlayerRaceDBColumns...).
+		From(models.SessionPlayerRaceDBTable).
+		Where(
+			sq.And{
+				sq.Eq{models.SessionPlayerRaceDBUserProfileIDColumn: userProfileID},
+				sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID},
+			},
+		)
+}
+
+func sessionPlayerRaceForSessionQuery(sessionID string) sq.SelectBuilder {
+	return database.SQ.
+		Select().
+		Columns(models.SessionPlayerRaceDBColumns...).
+		From(models.SessionPlayerRaceDBTable).
+		Where(
+			sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID},
+		)
+}
+
+func lastSessionFilesQuery(sessionID string) sq.SelectBuilder {
+	return database.SQ.
+		Select().
+		Columns(models.SessionFilesDBColumns...).
+		From(models.SessionFilesDBTable).
+		Where(
+			sq.And{
+				sq.Eq{models.SessionFilesDBSessionIDColumn: sessionID},
+			},
+		).OrderBy(models.SessionFilesDBYearColumn + " DESC").Limit(1)
+}
+
 func invitationQuery(userProfileID, invitationID string) sq.SelectBuilder {
 	return database.SQ.
 		Select().

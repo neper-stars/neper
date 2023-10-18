@@ -84,18 +84,16 @@ func (h *GameCreateHandler) handle(
 	}
 
 	var sfDB models.SessionFilesDB
-	gameFiles.HydrateSessionFilesDB(&sfDB)
+	if err := gameFiles.HydrateSessionFilesDB(&sfDB); err != nil {
+		h.log.Err(err).Msg("failed to parse game files")
+		return nil, err
+	}
 
 	id, err := uuid.V4()
 	if err != nil {
 		return nil, err
 	}
 	sfDB.ID = id.String()
-
-	// this is a game creation so 2041
-	// accelerated BBS option from the ruleset does not change
-	// the starting date
-	sfDB.Year = 2401
 	sfDB.SessionID = sessionID
 
 	if _, err := sqlH.Insert(&sfDB); err != nil {

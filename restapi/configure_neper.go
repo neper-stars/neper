@@ -140,6 +140,8 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 
 	// game creation
 	api.GameCreateHandler = handlers.NewGameCreateHandler(&config.Log, config.DB, config.StarsRunner)
+	// turn get (each player its own call to get its own files)
+	api.TurnGetHandler = handlers.NewTurnGetHandler(&config.Log, config.DB)
 
 	// for user to be able to find its own ID
 	api.UserinfoHandler = handlers.NewUserinfoHandler(config.DB)

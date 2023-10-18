@@ -65,6 +65,7 @@ func TestGameCreateHandler(t *testing.T) {
 
 		var rawData []byte
 		_, err = stars.B64Decode(returnedFiles.HostFile)
+		require.NoError(t, err)
 		raceNames, err := stars.RaceNamesFromHostFile(rawData)
 		require.NoError(t, err)
 		for i := range raceNames {

@@ -24,7 +24,7 @@ type Order struct {
 
 	// b64 data
 	// Required: true
-	B64Data *string `json:"b64_data"`
+	B64Data string `json:"b64_data"`
 }
 
 // Validate validates this order
@@ -43,7 +43,7 @@ func (m *Order) Validate(formats strfmt.Registry) error {
 
 func (m *Order) validateB64Data(formats strfmt.Registry) error {
 
-	if err := validate.Required("b64_data", "body", m.B64Data); err != nil {
+	if err := validate.RequiredString("b64_data", "body", m.B64Data); err != nil {
 		return err
 	}
 

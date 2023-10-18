@@ -95,6 +95,12 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		SessionsListHandler: SessionsListHandlerFunc(func(params SessionsListParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionsList has not yet been implemented")
 		}),
+		TurnGetHandler: TurnGetHandlerFunc(func(params TurnGetParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation TurnGet has not yet been implemented")
+		}),
+		TurnSubmitHandler: TurnSubmitHandlerFunc(func(params TurnSubmitParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation TurnSubmit has not yet been implemented")
+		}),
 		UserProfileCreateHandler: UserProfileCreateHandlerFunc(func(params UserProfileCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation UserProfileCreate has not yet been implemented")
 		}),
@@ -195,6 +201,10 @@ type NeperAPI struct {
 	SessionUpdateHandler SessionUpdateHandler
 	// SessionsListHandler sets the operation handler for the sessions list operation
 	SessionsListHandler SessionsListHandler
+	// TurnGetHandler sets the operation handler for the turn get operation
+	TurnGetHandler TurnGetHandler
+	// TurnSubmitHandler sets the operation handler for the turn submit operation
+	TurnSubmitHandler TurnSubmitHandler
 	// UserProfileCreateHandler sets the operation handler for the user profile create operation
 	UserProfileCreateHandler UserProfileCreateHandler
 	// UserProfileListHandler sets the operation handler for the user profile list operation
@@ -336,6 +346,12 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.SessionsListHandler == nil {
 		unregistered = append(unregistered, "SessionsListHandler")
+	}
+	if o.TurnGetHandler == nil {
+		unregistered = append(unregistered, "TurnGetHandler")
+	}
+	if o.TurnSubmitHandler == nil {
+		unregistered = append(unregistered, "TurnSubmitHandler")
 	}
 	if o.UserProfileCreateHandler == nil {
 		unregistered = append(unregistered, "UserProfileCreateHandler")
@@ -519,6 +535,14 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/sessions"] = NewSessionsList(o.context, o.SessionsListHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/sessions/{session_id}/turn/{year}"] = NewTurnGet(o.context, o.TurnGetHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/v1/sessions/{session_id}/turn/{year}"] = NewTurnSubmit(o.context, o.TurnSubmitHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

@@ -44,6 +44,27 @@ func (e ErrSessionNotFound) Is(target error) bool {
 	return errors.Is(target, ErrNotFound)
 }
 
+// ErrSomethingNotFound is an error when you search something and don't find it.
+// it will match the Base ErrNotFound
+type ErrSomethingNotFound struct {
+	GivenMessage string
+}
+
+// NewErrSomethingNotFound is the constructor to obtain an ErrSessionNotFound error
+func NewErrSomethingNotFound(msg string) *ErrSessionNotFound {
+	return &ErrSessionNotFound{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrSomethingNotFound) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrSomethingNotFound) Is(target error) bool {
+	return errors.Is(target, ErrNotFound)
+}
+
 // ErrUserProfileNotFound no event found matching the criterions
 type ErrUserProfileNotFound struct {
 	GivenMessage string
@@ -85,6 +106,26 @@ func (e ErrRaceNotFound) Is(target error) bool {
 }
 
 // Invalid Errors
+
+// ErrInvalidSomething ...
+type ErrInvalidSomething struct {
+	GivenMessage string
+}
+
+// NewErrInvalidSomething ...
+func NewErrInvalidSomething(msg string) *ErrInvalidSomething {
+	return &ErrInvalidSomething{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrInvalidSomething) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrInvalidSomething) Is(target error) bool {
+	return errors.Is(target, ErrInvalid)
+}
 
 // ErrInvalidAccessLevel ...
 type ErrInvalidAccessLevel struct {

@@ -76,6 +76,14 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		sessionsListHandlerInFlight,
 	)
 	reg.MustRegister(
+		turnGetHandlerDuration,
+		turnGetHandlerInFlight,
+	)
+	reg.MustRegister(
+		turnSubmitHandlerDuration,
+		turnSubmitHandlerInFlight,
+	)
+	reg.MustRegister(
 		userProfileCreateHandlerDuration,
 		userProfileCreateHandlerInFlight,
 	)

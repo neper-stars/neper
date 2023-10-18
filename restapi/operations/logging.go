@@ -93,6 +93,14 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "sessionsList",
 	)(o.handlers["GET"]["/v1/sessions"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/turn/{year}"] = LogOperation(
+		"", "turnGet",
+	)(o.handlers["GET"]["/v1/sessions/{session_id}/turn/{year}"])
+
+	o.handlers["PUT"]["/v1/sessions/{session_id}/turn/{year}"] = LogOperation(
+		"", "turnSubmit",
+	)(o.handlers["PUT"]["/v1/sessions/{session_id}/turn/{year}"])
+
 	o.handlers["POST"]["/v1/user_profiles"] = LogOperation(
 		"", "userProfileCreate",
 	)(o.handlers["POST"]["/v1/user_profiles"])

@@ -614,6 +614,54 @@ definitions:
         items:
           $ref: "#/definitions/order"
 
+  turn_files:
+    type: object
+    description: |
+      a turn_files is a bundle of all the files a player needs at any point in time to generate the next orders
+      This represents all the files you (as a player) would need in a directory to open stars! and play your
+      turn.
+      you should find a turn file and a universe file (the same file each time because the universe file does not
+      evolve during the game once it has been generated)
+      The Year field indicates for which year you will give orders. The first time you will receive a Year 2400
+      and then 2401 and so on...
+    properties:
+      id:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"id"
+        x-nullable: false
+      session_id:
+        type: string
+        readOnly: true
+        x-go-custom-tag: db:"session_id"
+        x-nullable: false
+      year:
+        type: integer
+        readOnly: true
+        x-go-custom-tag: db:"year"
+        x-nullable: false
+      turn:
+        type: object
+        $ref: '#/definitions/player_turn'
+
+  player_turn:
+    type: object
+    description: |
+      A bundle with the Universe (.xy) and the Turn (.mN) files 
+      Everything is readonly. This is only intended to get data back from the server
+      on each turn generation in order to play and submit your orders.
+    properties:
+      universe:
+        type: string
+        description: base64 encoded .xy file data
+        readOnly: true
+        x-nullable: false
+      turn:
+        type: string
+        description: base64 encoded .mN file data
+        readOnly: true
+        x-nullable: false
+
   turn:
     type: object
     description: |
@@ -623,6 +671,7 @@ definitions:
     properties:
       b64_data:
         type: string
+        x-nullable: false
     required:
       - b64_data
 
@@ -635,6 +684,7 @@ definitions:
     properties:
       b64_data:
         type: string
+        x-nullable: false
     required:
       - b64_data
 

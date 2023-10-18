@@ -388,6 +388,73 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/turn/{year}:
+    get:
+      operationId: turnGet
+      description: |
+        get your turn files
+        You will get a player_turn structure containing the Universe file (.xy) data in a base64 encoded field
+        and the Turn file (.mN) data in a base64 encoded field
+      parameters:
+        - name: "session_id"
+          in: "path"
+          type: "string"
+          required: true
+        - name: "year"
+          in: "path"
+          type: "integer"
+          required: true
+      responses:
+        200:
+          description: "the returned player turn"
+          schema:
+            $ref: "neper-types.yaml#/definitions/turn_files"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+    put:
+      operationId: turnSubmit
+      summary: "submit your orders for the turn"
+      description: |
+        Submit your turn order file (.xN, where N is your player number)
+        You should obtain this file by clicking File > Save & Submit
+        Alternatively you could just press F9 in the stars! client
+        A 409 error may occur if you resubmit a turn file but another one is still
+        waiting to be used for turn generation. Make sure to only upload your submitted
+        turn file ONCE.
+        A 422 error may occur if you submit a turn file which is not marked as submitted by stars,
+        ie you just clicked File > Save and uploaded your .xN file. The server will reject those files
+        as 422 errors since they are not yet "submitted" in stars parlance.
+      parameters:
+        - name: "session_id"
+          in: "path"
+          type: "string"
+          required: true
+        - name: "year"
+          in: "path"
+          type: "integer"
+          required: true
+        - name: "turnfile"
+          in: "body"
+          schema:
+            $ref: "neper-types.yaml#/definitions/order"
+      responses:
+        200:
+          description: the orders for this turn has been accepted
+        400:
+          $ref: "#/responses/invalid"
+        409:
+          $ref: "#/responses/conflict"
+        422:
+          $ref: "#/responses/unprocessable"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
+
   /v1/user_profiles:
     get:
       operationId: userProfileList
@@ -542,6 +609,11 @@ responses:
 
   conflict:
     description: Resource already exists
+    schema:
+      $ref: "neper-types.yaml#/definitions/error"
+
+  unprocessable:
+    description: Resource is not processable by the server
     schema:
       $ref: "neper-types.yaml#/definitions/error"
 

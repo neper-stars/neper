@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-cmd/cmd"
 	"github.com/rs/zerolog"
+	hs "github.com/neper-stars/houston"
 
 	"github.com/neper-stars/neper/models"
 )
@@ -20,18 +21,25 @@ const (
 	gameDefName = "game.def"
 )
 
+// wSessionSaveDir returns a "windows" directory name for the session save dir
 func (r *Runner) wSessionSaveDir(sessionID string) string {
 	return saveDirDriveLetter + windowsSep + sessionID
 }
 
+// localSessionSaveDir return a local directory name for the session save dir
 func (r *Runner) localSessionSaveDir(sessionID string) string {
 	return filepath.Join(r.SaveDir, sessionID)
 }
 
+// wStarsExecutablePath return a "windows" full path for the stars executable
+// ie: something like `s:\stars.exe`
 func (r *Runner) wStarsExecutablePath() string {
 	return r.wPathJoin(executableDirDriveLetter, starsExecutableName)
 }
 
+// wPathJoin takes multiple path segments and returns a joined result in the
+// windows fashion.
+// ie: dir1 + dir2 + file.txt => `dir1\dir2\file.txt`
 func (r *Runner) wPathJoin(segments ...string) string {
 	var segs []string
 	segs = append(segs, segments...)
@@ -51,15 +59,20 @@ func b64encode(in []byte) string {
 	return string(dst)
 }
 
-func (g GameFiles) HydrateSessionFilesDB(s *models.SessionFilesDB) {
+func (g GameFiles) HydrateSessionFilesDB(s *models.SessionFilesDB) error {
+	header, err := hs.FileData(g.HostFile).FileHeader()
+	if err != nil {
+		return err
+	}
+
+	s.Year = int64(header.Year())
 	s.Universe = b64encode(g.Universe)
 	s.HostFile = b64encode(g.HostFile)
 
 	var turns []*models.Turn
 	var turnsDB []models.Turn
 	for i := range g.Turns {
-		encoded := b64encode(g.Turns[i])
-		turn := models.Turn{B64Data: &encoded}
+		turn := models.Turn{B64Data: b64encode(g.Turns[i])}
 		turns = append(turns, &turn)
 		turnsDB = append(turnsDB, turn)
 	}
@@ -69,13 +82,13 @@ func (g GameFiles) HydrateSessionFilesDB(s *models.SessionFilesDB) {
 	var orders []*models.Order
 	var ordersDB []models.Order
 	for i := range g.Orders {
-		encoded := b64encode(g.Orders[i])
-		order := models.Order{B64Data: &encoded}
+		order := models.Order{B64Data: b64encode(g.Orders[i])}
 		orders = append(orders, &order)
 		ordersDB = append(ordersDB, order)
 	}
 	s.Orders = orders
 	s.OrdersDB = ordersDB
+	return nil
 }
 
 func (r *Runner) closeDeferred(closer io.ReadCloser) {

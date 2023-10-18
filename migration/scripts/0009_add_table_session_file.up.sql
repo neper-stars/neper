@@ -9,6 +9,7 @@ CREATE TABLE session_file
     orders JSONB NOT NULL DEFAULT '[]'::JSONB,
 
     FOREIGN KEY (session_id) REFERENCES session (id) ON DELETE CASCADE,
+    UNIQUE (session_id, year),
     CONSTRAINT check_year_min
         check (session_file.year >= 2401)
 );

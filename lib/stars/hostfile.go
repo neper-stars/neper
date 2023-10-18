@@ -1,9 +1,8 @@
 package stars
 
 import (
-	"errors"
-
 	"encoding/base64"
+	"errors"
 
 	hs "github.com/neper-stars/houston"
 )

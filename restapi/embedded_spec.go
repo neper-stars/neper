@@ -542,6 +542,89 @@ func init() {
         }
       }
     },
+    "/v1/sessions/{session_id}/turn/{year}": {
+      "get": {
+        "description": "get your turn files\nYou will get a player_turn structure containing the Universe file (.xy) data in a base64 encoded field\nand the Turn file (.mN) data in a base64 encoded field\n",
+        "operationId": "turnGet",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "year",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the returned player turn",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/turn_files"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          }
+        }
+      },
+      "put": {
+        "description": "Submit your turn order file (.xN, where N is your player number)\nYou should obtain this file by clicking File \u003e Save \u0026 Submit\nAlternatively you could just press F9 in the stars! client\nA 409 error may occur if you resubmit a turn file but another one is still\nwaiting to be used for turn generation. Make sure to only upload your submitted\nturn file ONCE.\nA 422 error may occur if you submit a turn file which is not marked as submitted by stars,\nie you just clicked File \u003e Save and uploaded your .xN file. The server will reject those files\nas 422 errors since they are not yet \"submitted\" in stars parlance.\n",
+        "summary": "submit your orders for the turn",
+        "operationId": "turnSubmit",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "year",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "turnfile",
+            "in": "body",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/order"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the orders for this turn has been accepted"
+          },
+          "400": {
+            "$ref": "#/responses/invalid"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "409": {
+            "$ref": "#/responses/conflict"
+          },
+          "422": {
+            "$ref": "#/responses/unprocessable"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
     "/v1/user_profiles": {
       "get": {
         "operationId": "userProfileList",
@@ -831,6 +914,12 @@ func init() {
     },
     "unauthorized": {
       "description": "Invalid credentials",
+      "schema": {
+        "$ref": "neper-types.yaml#/definitions/error"
+      }
+    },
+    "unprocessable": {
+      "description": "Resource is not processable by the server",
       "schema": {
         "$ref": "neper-types.yaml#/definitions/error"
       }
@@ -1506,6 +1595,113 @@ func init() {
         }
       }
     },
+    "/v1/sessions/{session_id}/turn/{year}": {
+      "get": {
+        "description": "get your turn files\nYou will get a player_turn structure containing the Universe file (.xy) data in a base64 encoded field\nand the Turn file (.mN) data in a base64 encoded field\n",
+        "operationId": "turnGet",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "year",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the returned player turn",
+            "schema": {
+              "$ref": "#/definitions/turnFiles"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Submit your turn order file (.xN, where N is your player number)\nYou should obtain this file by clicking File \u003e Save \u0026 Submit\nAlternatively you could just press F9 in the stars! client\nA 409 error may occur if you resubmit a turn file but another one is still\nwaiting to be used for turn generation. Make sure to only upload your submitted\nturn file ONCE.\nA 422 error may occur if you submit a turn file which is not marked as submitted by stars,\nie you just clicked File \u003e Save and uploaded your .xN file. The server will reject those files\nas 422 errors since they are not yet \"submitted\" in stars parlance.\n",
+        "summary": "submit your orders for the turn",
+        "operationId": "turnSubmit",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "year",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "turnfile",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/order"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the orders for this turn has been accepted"
+          },
+          "400": {
+            "description": "invalid client request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "409": {
+            "description": "Resource already exists",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "422": {
+            "description": "Resource is not processable by the server",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/v1/user_profiles": {
       "get": {
         "operationId": "userProfileList",
@@ -1833,7 +2029,8 @@ func init() {
       ],
       "properties": {
         "b64_data": {
-          "type": "string"
+          "type": "string",
+          "x-nullable": false
         }
       }
     },
@@ -1851,6 +2048,24 @@ func init() {
         "user_profile_id": {
           "description": "the user profile id you want to set the order",
           "type": "string"
+        }
+      }
+    },
+    "playerTurn": {
+      "description": "A bundle with the Universe (.xy) and the Turn (.mN) files \nEverything is readonly. This is only intended to get data back from the server\non each turn generation in order to play and submit your orders.\n",
+      "type": "object",
+      "properties": {
+        "turn": {
+          "description": "base64 encoded .mN file data",
+          "type": "string",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "universe": {
+          "description": "base64 encoded .xy file data",
+          "type": "string",
+          "x-nullable": false,
+          "readOnly": true
         }
       }
     },
@@ -2236,7 +2451,35 @@ func init() {
       ],
       "properties": {
         "b64_data": {
-          "type": "string"
+          "type": "string",
+          "x-nullable": false
+        }
+      }
+    },
+    "turnFiles": {
+      "description": "a turn_files is a bundle of all the files a player needs at any point in time to generate the next orders\nThis represents all the files you (as a player) would need in a directory to open stars! and play your\nturn.\nyou should find a turn file and a universe file (the same file each time because the universe file does not\nevolve during the game once it has been generated)\nThe Year field indicates for which year you will give orders. The first time you will receive a Year 2400\nand then 2401 and so on...\n",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"id\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "session_id": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"session_id\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "turn": {
+          "$ref": "#/definitions/playerTurn"
+        },
+        "year": {
+          "type": "integer",
+          "x-go-custom-tag": "db:\"year\"",
+          "x-nullable": false,
+          "readOnly": true
         }
       }
     },
@@ -2344,6 +2587,12 @@ func init() {
     },
     "unauthorized": {
       "description": "Invalid credentials",
+      "schema": {
+        "$ref": "#/definitions/error"
+      }
+    },
+    "unprocessable": {
+      "description": "Resource is not processable by the server",
       "schema": {
         "$ref": "#/definitions/error"
       }
