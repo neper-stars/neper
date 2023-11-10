@@ -11,10 +11,12 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/jmoiron/sqlx"
 	"github.com/justinas/alice"
+	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi"
 
 	"github.com/neper-stars/neper/auth"
+	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi/handlers"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -33,10 +35,14 @@ type Config struct {
 	// Here you can add anything the ConfigureAPI function will need to set up
 	// the API
 
-	Now           func() time.Time
-	TokenOptions  auth.TokenOptions
-	Authenticator *auth.Auth // Authentication
-	StarsRunner   *stars.Runner
+	Now                 func() time.Time
+	TokenOptions        auth.TokenOptions
+	Authenticator       *auth.Auth // Authentication
+	StarsRunner         *stars.Runner
+	EmbeddedNatsOptions embeddednats.ServerOptions
+	NatsServer          *embeddednats.EmbeddedNats
+	NatsClientOptions   *embeddednats.ClientOptions
+	NatsClientConn      *nats.Conn
 }
 
 // OnShutdown add a shutdown callback
@@ -104,6 +110,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.KeyAuth = apiAuth.Auth
 	config.OnShutdown(apiAuth.Close)
 	config.OnShutdown(config.StarsRunner.Shutdown)
+	config.OnShutdown(config.NatsServer.Shutdown)
 
 	// Authenticate
 	api.AuthenticateHandler = handlers.NewAuthenticateHandler(config.DB, apiAuth)
@@ -142,6 +149,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.GameCreateHandler = handlers.NewGameCreateHandler(&config.Log, config.DB, config.StarsRunner)
 	// turn get (each player its own call to get its own files)
 	api.TurnGetHandler = handlers.NewTurnGetHandler(&config.Log, config.DB)
+	api.TurnSubmitHandler = handlers.NewTurnSubmitHandler(&config.Log, config.DB)
 
 	// for user to be able to find its own ID
 	api.UserinfoHandler = handlers.NewUserinfoHandler(config.DB)
