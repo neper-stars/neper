@@ -11,5 +11,5 @@ CREATE TABLE session_file
     FOREIGN KEY (session_id) REFERENCES session (id) ON DELETE CASCADE,
     UNIQUE (session_id, year),
     CONSTRAINT check_year_min
-        check (session_file.year >= 2401)
+        check (session_file.year >= 2400)
 );
