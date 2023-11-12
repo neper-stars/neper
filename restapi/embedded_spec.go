@@ -2032,6 +2032,25 @@ func init() {
           "type": "string",
           "x-nullable": false
         }
+      },
+      "x-go-type": {
+        "import": {
+          "package": "github.com/neper-stars/neper/models/types"
+        },
+        "type": "Order"
+      }
+    },
+    "orderList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/order"
+      },
+      "x-go-custom-tag": "db:\"orders\"",
+      "x-go-type": {
+        "import": {
+          "package": "github.com/neper-stars/neper/models/types"
+        },
+        "type": "OrderList"
       }
     },
     "playerOrder": {
@@ -2359,10 +2378,7 @@ func init() {
           "readOnly": true
         },
         "orders": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/order"
-          }
+          "$ref": "#/definitions/orderList"
         },
         "session_id": {
           "type": "string",
@@ -2371,10 +2387,7 @@ func init() {
           "readOnly": true
         },
         "turns": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/turn"
-          }
+          "$ref": "#/definitions/turnList"
         },
         "universe": {
           "type": "string",
@@ -2454,6 +2467,12 @@ func init() {
           "type": "string",
           "x-nullable": false
         }
+      },
+      "x-go-type": {
+        "import": {
+          "package": "github.com/neper-stars/neper/models/types"
+        },
+        "type": "Turn"
       }
     },
     "turnFiles": {
@@ -2481,6 +2500,19 @@ func init() {
           "x-nullable": false,
           "readOnly": true
         }
+      }
+    },
+    "turnList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/turn"
+      },
+      "x-go-custom-tag": "db:\"turns\"",
+      "x-go-type": {
+        "import": {
+          "package": "github.com/neper-stars/neper/models/types"
+        },
+        "type": "TurnList"
       }
     },
     "user": {

@@ -18,6 +18,7 @@ import (
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/models/types"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
@@ -113,22 +114,22 @@ func (h *TurnSubmitHandler) handle(
 		// initialize the orders
 		for i := 0; i < numPlayers; i++ {
 			if int64(i) == playerOrder {
-				sessionFilesDB.OrdersDB = append(sessionFilesDB.OrdersDB, models.Order{B64Data: params.Turnfile.B64Data})
+				sessionFilesDB.Orders = append(sessionFilesDB.Orders, types.Order{B64Data: params.Turnfile.B64Data})
 			} else {
-				sessionFilesDB.OrdersDB = append(sessionFilesDB.OrdersDB, models.Order{B64Data: ""})
+				sessionFilesDB.Orders = append(sessionFilesDB.Orders, types.Order{B64Data: ""})
 			}
 		}
 	} else {
 		// update the player order or die
-		if sessionFilesDB.OrdersDB[playerOrder].B64Data == "" {
-			sessionFilesDB.Orders[playerOrder] = &models.Order{B64Data: params.Turnfile.B64Data}
+		if sessionFilesDB.Orders[playerOrder].B64Data == "" {
+			sessionFilesDB.Orders[playerOrder] = types.Order{B64Data: params.Turnfile.B64Data}
 		} else {
 			return nil, errs.NewErrInvalidSomething("cannot submit twice your orders")
 		}
 	}
 
 	// then store the submitted order file in the database, after verifying it is not already present
-	if err := sqlH.UpdateColumns(&sessionFilesDB, models.SessionFilesDBOrdersDBColumn); err != nil {
+	if err := sqlH.UpdateColumns(&sessionFilesDB, models.SessionFilesDBOrdersColumn); err != nil {
 		return nil, err
 	}
 

@@ -7,12 +7,12 @@ package models
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
+	"github.com/neper-stars/neper/models/types"
 )
 
 // SessionFiles a session_files is a bundle of all the files a host needs at any point in time to generate the next turn
@@ -32,14 +32,14 @@ type SessionFiles struct {
 	ID string `json:"id,omitempty" db:"id"`
 
 	// orders
-	Orders []*Order `json:"orders"`
+	Orders types.OrderList `json:"orders,omitempty" db:"orders"`
 
 	// session id
 	// Read Only: true
 	SessionID string `json:"session_id,omitempty" db:"session_id"`
 
 	// turns
-	Turns []*Turn `json:"turns"`
+	Turns types.TurnList `json:"turns,omitempty" db:"turns"`
 
 	// universe
 	// Read Only: true
@@ -73,20 +73,11 @@ func (m *SessionFiles) validateOrders(formats strfmt.Registry) error {
 		return nil
 	}
 
-	for i := 0; i < len(m.Orders); i++ {
-		if swag.IsZero(m.Orders[i]) { // not required
-			continue
+	if err := m.Orders.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("orders")
 		}
-
-		if m.Orders[i] != nil {
-			if err := m.Orders[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("orders" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
+		return err
 	}
 
 	return nil
@@ -97,20 +88,11 @@ func (m *SessionFiles) validateTurns(formats strfmt.Registry) error {
 		return nil
 	}
 
-	for i := 0; i < len(m.Turns); i++ {
-		if swag.IsZero(m.Turns[i]) { // not required
-			continue
+	if err := m.Turns.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("turns")
 		}
-
-		if m.Turns[i] != nil {
-			if err := m.Turns[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("turns" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
+		return err
 	}
 
 	return nil
@@ -174,17 +156,11 @@ func (m *SessionFiles) contextValidateID(ctx context.Context, formats strfmt.Reg
 
 func (m *SessionFiles) contextValidateOrders(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Orders); i++ {
-
-		if m.Orders[i] != nil {
-			if err := m.Orders[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("orders" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
+	if err := m.Orders.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("orders")
 		}
-
+		return err
 	}
 
 	return nil
@@ -201,17 +177,11 @@ func (m *SessionFiles) contextValidateSessionID(ctx context.Context, formats str
 
 func (m *SessionFiles) contextValidateTurns(ctx context.Context, formats strfmt.Registry) error {
 
-	for i := 0; i < len(m.Turns); i++ {
-
-		if m.Turns[i] != nil {
-			if err := m.Turns[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("turns" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
+	if err := m.Turns.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("turns")
 		}
-
+		return err
 	}
 
 	return nil

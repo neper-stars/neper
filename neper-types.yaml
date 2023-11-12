@@ -606,13 +606,9 @@ definitions:
         x-go-custom-tag: db:"hostfile"
         x-nullable: false
       turns:
-        type: array
-        items:
-          $ref: "#/definitions/turn"
+        $ref: "#/definitions/turn_list"
       orders:
-        type: array
-        items:
-          $ref: "#/definitions/order"
+        $ref: "#/definitions/order_list"
 
   turn_files:
     type: object
@@ -662,6 +658,26 @@ definitions:
         readOnly: true
         x-nullable: false
 
+  turn_list:
+    type: array
+    items:
+      $ref: "#/definitions/turn"
+    x-go-custom-tag: db:"turns"
+    x-go-type:
+      type: TurnList
+      import:
+        package: github.com/neper-stars/neper/models/types
+
+  order_list:
+    type: array
+    items:
+      $ref: "#/definitions/order"
+    x-go-custom-tag: db:"orders"
+    x-go-type:
+      type: OrderList
+      import:
+        package: github.com/neper-stars/neper/models/types
+
   turn:
     type: object
     description: |
@@ -674,6 +690,10 @@ definitions:
         x-nullable: false
     required:
       - b64_data
+    x-go-type:
+      type: Turn
+      import:
+        package: github.com/neper-stars/neper/models/types
 
   order:
     type: object
@@ -687,6 +707,10 @@ definitions:
         x-nullable: false
     required:
       - b64_data
+    x-go-type:
+      type: Order
+      import:
+        package: github.com/neper-stars/neper/models/types
 
   decimal:
     type: number

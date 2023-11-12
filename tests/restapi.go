@@ -17,8 +17,11 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 	"orus.io/orus-io/go-orusapi/testutils"
 
+	"github.com/nats-io/nats.go"
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/cmd/neper/cmd"
+	"github.com/neper-stars/neper/lib/embeddednats"
+	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi"
@@ -62,6 +65,79 @@ type APITester struct {
 }
 
 type RestAPIConfigUpdate func(restapi.Config) restapi.Config
+
+func NewAPITesterConfigUpdater(t *testing.T, log *zerolog.Logger) *APITesterConfigUpdater {
+	return &APITesterConfigUpdater{
+		t:   t,
+		log: log,
+	}
+}
+
+type APITesterConfigUpdater struct {
+	t   *testing.T
+	log *zerolog.Logger
+}
+
+func (a *APITesterConfigUpdater) UpdateConfig(config restapi.Config) restapi.Config {
+	runner, shutdownCB := stars.GetTestStarsRunner(a.t, a.log)
+	config.StarsRunner = runner
+	config.OnShutdown(restapi.Callback(shutdownCB))
+
+	// NATS setup
+
+	// TODO: create a test key on the fly instead of using a predefined one
+	// create a test key for this run
+	/*
+		kp, err := nkeys.CreateUser()
+		if err != nil {
+			t.Fatal(err)
+		}
+		pk, err := kp.PrivateKey()
+		if err != nil {
+			t.Fatal(err)
+		}
+		epk, err := nkeys.Encode(nkeys.PrefixByteSeed, pk)
+		if err != nil {
+			t.Fatal(err)
+		}
+		log.Warn().Str("epk", string(epk)).Msg("XXXXXXXXXXXXXX")
+	*/
+	epk := []byte("SUAKNUB2GZOBIZPVAOL7GUGZA2TZUMPKEHFG6CDO2U3ZPINCSJCNSYMKOA")
+
+	signatureHandler, err := embeddednats.NewClientSigHandler(epk)
+	if err != nil {
+		a.t.Fatalf("could not start nats signature handler: %s", err.Error())
+	}
+	ns := embeddednats.NewEmbeddedServer(signatureHandler.PubKey())
+	config.NatsServer = ns
+
+	connHandlers := embeddednats.NewConnHandlers(a.log)
+	// launch the NATS.io server
+	go config.NatsServer.Run()
+
+	cOpts := nats.Options{
+		InProcessServer: ns,
+		AllowReconnect:  false,
+		MaxReconnect:    2,
+		// ClosedCB:             nil,
+		DisconnectedErrCB: connHandlers.ConnErrHandler,
+		ConnectedCB:       connHandlers.ConnHandler,
+		// ReconnectedCB:        nil,
+		// DiscoveredServersCB:  nil,
+		AsyncErrorCB:         connHandlers.ErrHandler,
+		Nkey:                 signatureHandler.PubKey(),
+		SignatureCB:          signatureHandler.Sign,
+		RetryOnFailedConnect: true,
+	}
+
+	nc, err := cOpts.Connect()
+	if err != nil {
+		a.t.Fatalf("failed to start client conn to inprocess nats server: %s", err.Error())
+	}
+	config.NatsClientConn = nc
+
+	return config
+}
 
 // NewAPITester sets up a APITester
 func NewAPITester(t *testing.T, config ...RestAPIConfigUpdate) *APITester {

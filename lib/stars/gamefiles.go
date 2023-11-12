@@ -5,6 +5,7 @@ import (
 
 	hs "github.com/neper-stars/houston"
 	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/models/types"
 )
 
 // GameFiles is the struct that will be returned by
@@ -24,10 +25,6 @@ func b64encode(in []byte) string {
 
 // HydrateSessionFilesDB fills all the SessionFilesDB fields according to the
 // current GameFiles
-// This is the only place where we set the Orders and Turns fields
-// that will be used to send back to the client.
-// This is due to the fact that we define a SessionFiles model with swagger that contains
-// all fields
 func (g GameFiles) HydrateSessionFilesDB(s *models.SessionFilesDB) error {
 	header, err := hs.FileData(g.HostFile).FileHeader()
 	if err != nil {
@@ -38,24 +35,16 @@ func (g GameFiles) HydrateSessionFilesDB(s *models.SessionFilesDB) error {
 	s.Universe = b64encode(g.Universe)
 	s.HostFile = b64encode(g.HostFile)
 
-	var turns []*models.Turn
-	var turnsDB []models.Turn
+	var turns []types.Turn
 	for i := range g.Turns {
-		turn := models.Turn{B64Data: b64encode(g.Turns[i])}
-		turns = append(turns, &turn)
-		turnsDB = append(turnsDB, turn)
+		turns = append(turns, types.Turn{B64Data: b64encode(g.Turns[i])})
 	}
 	s.Turns = turns
-	s.TurnsDB = turnsDB
 
-	var orders []*models.Order
-	var ordersDB []models.Order
+	var orders []types.Order
 	for i := range g.Orders {
-		order := models.Order{B64Data: b64encode(g.Orders[i])}
-		orders = append(orders, &order)
-		ordersDB = append(ordersDB, order)
+		orders = append(orders, types.Order{B64Data: b64encode(g.Orders[i])})
 	}
 	s.Orders = orders
-	s.OrdersDB = ordersDB
 	return nil
 }

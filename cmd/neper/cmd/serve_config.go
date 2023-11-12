@@ -5,8 +5,6 @@ package cmd
 import (
 	"github.com/go-openapi/swag"
 	"github.com/nats-io/nats.go"
-	"github.com/nats-io/nkeys"
-	"github.com/rs/zerolog"
 
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
@@ -67,7 +65,7 @@ func setupServeConfig(config *restapi.Config) error {
 	// NATS configuration
 	// ----------------------------
 	config.NatsClientOptions = NatsClientOptions
-	signatureHandler, err := NewClientSigHandler([]byte(config.NatsClientOptions.NPrivkey))
+	signatureHandler, err := embeddednats.NewClientSigHandler([]byte(config.NatsClientOptions.NPrivkey))
 	if err != nil {
 		return err
 	}
@@ -79,7 +77,7 @@ func setupServeConfig(config *restapi.Config) error {
 		go ns.Run()
 	}
 
-	connHandlers := NewConnHandlers(&config.Log)
+	connHandlers := embeddednats.NewConnHandlers(&config.Log)
 
 	cOpts := nats.Options{
 		Url:            config.NatsClientOptions.Url,
@@ -107,71 +105,4 @@ func setupServeConfig(config *restapi.Config) error {
 	// NATS out ------------------------------------
 
 	return nil
-}
-
-type ConnHandlers struct {
-	logger *zerolog.Logger
-}
-
-func NewConnHandlers(zl *zerolog.Logger) *ConnHandlers {
-	return &ConnHandlers{
-		logger: zl,
-	}
-}
-
-func (ch *ConnHandlers) ConnHandler(conn *nats.Conn) {
-	ch.logger.Info().
-		Str("connStatus", conn.Status().String()).
-		Msg("nats client connected successfully")
-}
-
-func (ch *ConnHandlers) ConnErrHandler(conn *nats.Conn, err error) {
-	ch.logger.Err(err).
-		Str("connStatus", conn.Status().String()).
-		Msg("nats client failed to connect")
-}
-
-func (ch *ConnHandlers) ErrHandler(conn *nats.Conn, sub *nats.Subscription, err error) {
-	ch.logger.Err(err).
-		Str("connStatus", conn.Status().String()).
-		Str("subject", sub.Subject).
-		Msg("nats client error")
-}
-
-// ClientSigHandler is used to sign the nonce that the server will send us as
-// a challenge.
-// We need the keypair.
-// As a helper we also provide a way to get the PublicKey back
-type ClientSigHandler struct {
-	kp     nkeys.KeyPair
-	pubKey string
-}
-
-// PubKey returns the public key part derived from the private key
-func (sh *ClientSigHandler) PubKey() string {
-	return sh.pubKey
-}
-
-// NewClientSigHandler constructs a new ClientSigHandler
-// This is the recommended way to create one.
-// This can return an error if the provided nkey cannot be
-// parsed to obtain a nkeys.KeyPair
-func NewClientSigHandler(nkey []byte) (*ClientSigHandler, error) {
-	kp, err := nkeys.ParseDecoratedNKey(nkey)
-	if err != nil {
-		return nil, err
-	}
-	pub, err := kp.PublicKey()
-	if err != nil {
-		return nil, err
-	}
-	return &ClientSigHandler{
-		kp:     kp,
-		pubKey: pub,
-	}, nil
-}
-
-// Sign it the callback function that will be passed to the NATS.io client.
-func (sh *ClientSigHandler) Sign(nonce []byte) ([]byte, error) {
-	return sh.kp.Sign(nonce)
 }

@@ -5,9 +5,6 @@ package models
 // dbtable:"session_file" dbpkey:"id"
 type SessionFilesDB struct {
 	SessionFiles
-
-	TurnsDB  TurnList  `db:"turns"`  // this field is for the DB storage with a type that implements JSONB
-	OrdersDB OrderList `db:"orders"` // ditto
 }
 
 type ReadyPlayers []bool
@@ -17,7 +14,7 @@ type ReadyPlayers []bool
 // human if you want to know if you can generate a turn
 func (s *SessionFilesDB) ReadyPlayers() ReadyPlayers {
 	r := ReadyPlayers{}
-	for _, order := range s.OrdersDB {
+	for _, order := range s.Orders {
 		r = append(r, order.B64Data != "")
 	}
 	return r

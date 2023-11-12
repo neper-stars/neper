@@ -388,8 +388,14 @@ const (
 	// SessionFilesIDColumn is the name of the column containing field "ID" data
 	SessionFilesIDColumn = "id"
 
+	// SessionFilesOrdersColumn is the name of the column containing field "Orders" data
+	SessionFilesOrdersColumn = "orders"
+
 	// SessionFilesSessionIDColumn is the name of the column containing field "SessionID" data
 	SessionFilesSessionIDColumn = "session_id"
+
+	// SessionFilesTurnsColumn is the name of the column containing field "Turns" data
+	SessionFilesTurnsColumn = "turns"
 
 	// SessionFilesUniverseColumn is the name of the column containing field "Universe" data
 	SessionFilesUniverseColumn = "universe"
@@ -409,20 +415,20 @@ const (
 	// SessionFilesDBIDColumn is the name of the column containing field "ID" data
 	SessionFilesDBIDColumn = "id"
 
+	// SessionFilesDBOrdersColumn is the name of the column containing field "Orders" data
+	SessionFilesDBOrdersColumn = "orders"
+
 	// SessionFilesDBSessionIDColumn is the name of the column containing field "SessionID" data
 	SessionFilesDBSessionIDColumn = "session_id"
+
+	// SessionFilesDBTurnsColumn is the name of the column containing field "Turns" data
+	SessionFilesDBTurnsColumn = "turns"
 
 	// SessionFilesDBUniverseColumn is the name of the column containing field "Universe" data
 	SessionFilesDBUniverseColumn = "universe"
 
 	// SessionFilesDBYearColumn is the name of the column containing field "Year" data
 	SessionFilesDBYearColumn = "year"
-
-	// SessionFilesDBTurnsDBColumn is the name of the column containing field "TurnsDB" data
-	SessionFilesDBTurnsDBColumn = "turns"
-
-	// SessionFilesDBOrdersDBColumn is the name of the column containing field "OrdersDB" data
-	SessionFilesDBOrdersDBColumn = "orders"
 
 	// SessionPlayerRaceBotLevelColumn is the name of the column containing field "BotLevel" data
 	SessionPlayerRaceBotLevelColumn = "bot_level"
@@ -465,6 +471,15 @@ const (
 
 	// SessionPlayerRaceDBUserProfileIDColumn is the name of the column containing field "UserProfileID" data
 	SessionPlayerRaceDBUserProfileIDColumn = "user_profile_id"
+
+	// TurnFilesIDColumn is the name of the column containing field "ID" data
+	TurnFilesIDColumn = "id"
+
+	// TurnFilesSessionIDColumn is the name of the column containing field "SessionID" data
+	TurnFilesSessionIDColumn = "session_id"
+
+	// TurnFilesYearColumn is the name of the column containing field "Year" data
+	TurnFilesYearColumn = "year"
 
 	// UserIDColumn is the name of the column containing field "ID" data
 	UserIDColumn = "id"
@@ -667,18 +682,20 @@ var (
 	SessionFilesColumns = []string{
 		SessionFilesHostFileColumn,
 		SessionFilesIDColumn,
+		SessionFilesOrdersColumn,
 		SessionFilesSessionIDColumn,
+		SessionFilesTurnsColumn,
 		SessionFilesUniverseColumn,
 		SessionFilesYearColumn,
 	}
 	// SessionFilesDBDataColumns is the list of the columns for the SessionFilesDB structure, expect its primary key
 	SessionFilesDBDataColumns = []string{
 		SessionFilesDBHostFileColumn,
+		SessionFilesDBOrdersColumn,
 		SessionFilesDBSessionIDColumn,
+		SessionFilesDBTurnsColumn,
 		SessionFilesDBUniverseColumn,
 		SessionFilesDBYearColumn,
-		SessionFilesDBTurnsDBColumn,
-		SessionFilesDBOrdersDBColumn,
 	}
 
 	// SessionFilesDBColumns is the list of the columns for the SessionFilesDB structure
@@ -709,6 +726,12 @@ var (
 		[]string{ SessionPlayerRaceDBIDColumn },
 		SessionPlayerRaceDBDataColumns...,
 	)
+	// TurnFilesColumns is the list of the columns for the TurnFiles structure
+	TurnFilesColumns = []string{
+		TurnFilesIDColumn,
+		TurnFilesSessionIDColumn,
+		TurnFilesYearColumn,
+	}
 	// UserColumns is the list of the columns for the User structure
 	UserColumns = []string{
 		UserIDColumn,
@@ -1715,8 +1738,12 @@ func (s SessionFiles) Values(columns ...string) []interface{} {
 			values[i] = s.HostFile
 		case "id":
 			values[i] = s.ID
+		case "orders":
+			values[i] = s.Orders
 		case "session_id":
 			values[i] = s.SessionID
+		case "turns":
+			values[i] = s.Turns
 		case "universe":
 			values[i] = s.Universe
 		case "year":
@@ -1736,8 +1763,12 @@ func (s SessionFiles) ValuesMap(columns ...string) map[string]interface{} {
 			values["hostfile"] = s.HostFile
 		case "id":
 			values["id"] = s.ID
+		case "orders":
+			values["orders"] = s.Orders
 		case "session_id":
 			values["session_id"] = s.SessionID
+		case "turns":
+			values["turns"] = s.Turns
 		case "universe":
 			values["universe"] = s.Universe
 		case "year":
@@ -1775,16 +1806,16 @@ func (s SessionFilesDB) Values(columns ...string) []interface{} {
 			values[i] = s.HostFile
 		case "id":
 			values[i] = s.ID
+		case "orders":
+			values[i] = s.Orders
 		case "session_id":
 			values[i] = s.SessionID
+		case "turns":
+			values[i] = s.Turns
 		case "universe":
 			values[i] = s.Universe
 		case "year":
 			values[i] = s.Year
-		case "turns":
-			values[i] = s.TurnsDB
-		case "orders":
-			values[i] = s.OrdersDB
 		}
 	}
 	return values
@@ -1800,16 +1831,16 @@ func (s SessionFilesDB) ValuesMap(columns ...string) map[string]interface{} {
 			values["hostfile"] = s.HostFile
 		case "id":
 			values["id"] = s.ID
+		case "orders":
+			values["orders"] = s.Orders
 		case "session_id":
 			values["session_id"] = s.SessionID
+		case "turns":
+			values["turns"] = s.Turns
 		case "universe":
 			values["universe"] = s.Universe
 		case "year":
 			values["year"] = s.Year
-		case "turns":
-			values["turns"] = s.TurnsDB
-		case "orders":
-			values["orders"] = s.OrdersDB
 		}
 	}
 	return values
@@ -1819,11 +1850,11 @@ func NewSessionFilesDBTableSchema() *SessionFilesDBTableSchema {
 	t := SessionFilesDBTableSchema{}
 	t.HostFile = NewColumn(&t, "hostfile")
 	t.ID = NewColumn(&t, "id")
+	t.Orders = NewColumn(&t, "orders")
 	t.SessionID = NewColumn(&t, "session_id")
+	t.Turns = NewColumn(&t, "turns")
 	t.Universe = NewColumn(&t, "universe")
 	t.Year = NewColumn(&t, "year")
-	t.TurnsDB = NewColumn(&t, "turns")
-	t.OrdersDB = NewColumn(&t, "orders")
 	return &t
 }
 
@@ -1831,11 +1862,11 @@ type SessionFilesDBTableSchema struct {
 	alias string
 	HostFile Column
 	ID Column
+	Orders Column
 	SessionID Column
+	Turns Column
 	Universe Column
 	Year Column
-	TurnsDB Column
-	OrdersDB Column
 }
 
 // Columns returns the database table column names
@@ -1866,11 +1897,11 @@ func (t SessionFilesDBTableSchema) As(name string) *SessionFilesDBTableSchema {
 	t.alias = name
 	t.HostFile = NewColumn(&t, "hostfile")
 	t.ID = NewColumn(&t, "id")
+	t.Orders = NewColumn(&t, "orders")
 	t.SessionID = NewColumn(&t, "session_id")
+	t.Turns = NewColumn(&t, "turns")
 	t.Universe = NewColumn(&t, "universe")
 	t.Year = NewColumn(&t, "year")
-	t.TurnsDB = NewColumn(&t, "turns")
-	t.OrdersDB = NewColumn(&t, "orders")
 	return &t
 }
 
@@ -2087,6 +2118,45 @@ func (t SessionPlayerRaceDBTableSchema) ToSql() (string, []interface{}, error) {
 
 func (t SessionPlayerRaceDBTableSchema) Select() squirrel.SelectBuilder {
 	return squirrel.Select(t.Columns(true)...).From(t.Sql())
+}
+
+// Columns returns the database table column names
+func (s TurnFiles) Columns() []string {
+	return TurnFilesColumns
+}
+
+// Values returns the values for a list of columns. If a column does not exits,
+// the corresponding value is left empty
+func (s TurnFiles) Values(columns ...string) []interface{} {
+	values := make([]interface{}, len(columns))
+	for i, column := range columns {
+		switch column {
+		case "id":
+			values[i] = s.ID
+		case "session_id":
+			values[i] = s.SessionID
+		case "year":
+			values[i] = s.Year
+		}
+	}
+	return values
+}
+
+// ValuesMap returns the values map for a list of columns. If a column does not
+// exits, the corresponding value is left empty
+func (s TurnFiles) ValuesMap(columns ...string) map[string]interface{} {
+	values := make(map[string]interface{})
+	for _, column := range columns {
+		switch column {
+		case "id":
+			values["id"] = s.ID
+		case "session_id":
+			values["session_id"] = s.SessionID
+		case "year":
+			values["year"] = s.Year
+		}
+	}
+	return values
 }
 
 // Columns returns the database table column names

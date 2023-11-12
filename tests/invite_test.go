@@ -7,10 +7,13 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/neper-stars/neper/models"
+	"orus.io/orus-io/go-orusapi/testutils"
 )
 
 func TestInvite(t *testing.T) {
-	tester := NewAPITester(t, nil)
+	log := testutils.GetLogger(t)
+	apiTesterConfigUpdater := NewAPITesterConfigUpdater(t, &log)
+	tester := NewAPITester(t, apiTesterConfigUpdater.UpdateConfig)
 	defer tester.Close()
 
 	tester.LoadFixtureFile("fixtures/sessions.json")

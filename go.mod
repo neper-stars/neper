@@ -8,6 +8,7 @@ replace github.com/neper-stars/houston => ./dependencies/houston
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/cockroachdb/apd/v3 v3.2.1
 	github.com/dlmiddlecote/sqlstats v1.0.2
 	github.com/fatih/structtag v1.2.0
 	github.com/go-cmd/cmd v1.4.2
@@ -34,6 +35,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.30.0
+	github.com/shopspring/decimal v1.2.0
 	github.com/steinfletcher/apitest v1.5.15
 	github.com/stretchr/testify v1.8.4
 	github.com/ulikunitz/xz v0.5.11

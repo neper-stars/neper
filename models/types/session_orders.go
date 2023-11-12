@@ -1,9 +1,12 @@
-package models
+package types
 
 import (
+	"context"
 	"database/sql/driver"
 	"errors"
 
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/jackc/pgtype"
 )
 
@@ -41,4 +44,36 @@ func (a OrderList) Value() (driver.Value, error) {
 		return nil, err
 	}
 	return data.Value()
+}
+
+func (a *OrderList) Validate(formats strfmt.Registry) error {
+	for _, order := range *a {
+		if err := order.Validate(formats); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// ContextValidate validates this orderList based on context it is used
+func (a *OrderList) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (a *OrderList) MarshalBinary() ([]byte, error) {
+	if a == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(a)
+}
+
+// UnmarshalBinary interface implementation
+func (a *OrderList) UnmarshalBinary(b []byte) error {
+	var res OrderList
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*a = res
+	return nil
 }

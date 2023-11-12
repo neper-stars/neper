@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
-	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/models/types"
 )
 
 // NewTurnSubmitParams creates a new TurnSubmitParams object
@@ -44,7 +44,7 @@ type TurnSubmitParams struct {
 	/*
 	  In: body
 	*/
-	Turnfile *models.Order
+	Turnfile *types.Order
 	/*
 	  Required: true
 	  In: path
@@ -68,7 +68,7 @@ func (o *TurnSubmitParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	if runtime.HasBody(r) {
 		defer r.Body.Close()
-		var body models.Order
+		var body types.Order
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("turnfile", "body", "", err))
 		} else {

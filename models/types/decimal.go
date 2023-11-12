@@ -3,7 +3,7 @@ package types
 import (
 	"context"
 
-	apd "github.com/cockroachdb/apd/v3"
+	"github.com/cockroachdb/apd/v3"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/shopspring/decimal"

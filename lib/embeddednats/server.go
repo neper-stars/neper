@@ -1,6 +1,8 @@
 package embeddednats
 
 import (
+	"net"
+
 	"github.com/nats-io/nats-server/v2/server"
 )
 
@@ -42,4 +44,9 @@ func (en *EmbeddedNats) Run() {
 func (en *EmbeddedNats) Shutdown() {
 	en.ns.Shutdown()
 	en.ns.WaitForShutdown()
+}
+
+// InProcessConn is use for testing purposes to get the nats server conn directly
+func (en *EmbeddedNats) InProcessConn() (net.Conn, error) {
+	return en.ns.InProcessConn()
 }
