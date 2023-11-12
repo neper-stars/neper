@@ -119,7 +119,8 @@ func (h *TurnSubmitHandler) handle(
 			}
 		}
 	} else {
-		if sessionFilesDB.Orders[playerOrder] == nil {
+		// update the player order or die
+		if sessionFilesDB.OrdersDB[playerOrder].B64Data == "" {
 			sessionFilesDB.Orders[playerOrder] = &models.Order{B64Data: params.Turnfile.B64Data}
 		} else {
 			return nil, errs.NewErrInvalidSomething("cannot submit twice your orders")
@@ -130,6 +131,8 @@ func (h *TurnSubmitHandler) handle(
 	if err := sqlH.UpdateColumns(&sessionFilesDB, models.SessionFilesDBOrdersDBColumn); err != nil {
 		return nil, err
 	}
+
+	// verify if all players are ready
 	readyPlayers := sessionFilesDB.ReadyPlayers()
 
 	var sessionPlayerRaces []models.SessionPlayerRaceDB

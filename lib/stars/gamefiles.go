@@ -24,6 +24,10 @@ func b64encode(in []byte) string {
 
 // HydrateSessionFilesDB fills all the SessionFilesDB fields according to the
 // current GameFiles
+// This is the only place where we set the Orders and Turns fields
+// that will be used to send back to the client.
+// This is due to the fact that we define a SessionFiles model with swagger that contains
+// all fields
 func (g GameFiles) HydrateSessionFilesDB(s *models.SessionFilesDB) error {
 	header, err := hs.FileData(g.HostFile).FileHeader()
 	if err != nil {

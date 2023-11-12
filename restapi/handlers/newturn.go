@@ -64,6 +64,8 @@ func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.P
 	defer ctxCancel()
 	newTurnChan := make(NewTurnChan)
 	errChan := make(chan error)
+	// this should become waitForNewTurn
+	// a NATS client waiting on a newturn for this session
 	go r.scanForNewTurn(ctx, newTurnChan, errChan)
 
 	pingTicker := time.NewTicker(time.Second * 30)

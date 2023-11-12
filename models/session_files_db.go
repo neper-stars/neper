@@ -6,8 +6,8 @@ package models
 type SessionFilesDB struct {
 	SessionFiles
 
-	TurnsDB  TurnList  `db:"turns"`
-	OrdersDB OrderList `db:"orders"`
+	TurnsDB  TurnList  `db:"turns"`  // this field is for the DB storage with a type that implements JSONB
+	OrdersDB OrderList `db:"orders"` // ditto
 }
 
 type ReadyPlayers []bool
