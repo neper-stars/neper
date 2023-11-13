@@ -18,6 +18,7 @@ import (
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nkeys"
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/cmd/neper/cmd"
 	"github.com/neper-stars/neper/lib/embeddednats"
@@ -84,25 +85,15 @@ func (a *APITesterConfigUpdater) UpdateConfig(config restapi.Config) restapi.Con
 	config.OnShutdown(restapi.Callback(shutdownCB))
 
 	// NATS setup
-
-	// TODO: create a test key on the fly instead of using a predefined one
-	// create a test key for this run
-	/*
-		kp, err := nkeys.CreateUser()
-		if err != nil {
-			t.Fatal(err)
-		}
-		pk, err := kp.PrivateKey()
-		if err != nil {
-			t.Fatal(err)
-		}
-		epk, err := nkeys.Encode(nkeys.PrefixByteSeed, pk)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Warn().Str("epk", string(epk)).Msg("XXXXXXXXXXXXXX")
-	*/
-	epk := []byte("SUAKNUB2GZOBIZPVAOL7GUGZA2TZUMPKEHFG6CDO2U3ZPINCSJCNSYMKOA")
+	// create a test key on the fly for this run
+	kp, err := nkeys.CreateUser()
+	if err != nil {
+		a.t.Fatal(err)
+	}
+	epk, err := kp.Seed()
+	if err != nil {
+		a.t.Fatal(err)
+	}
 
 	signatureHandler, err := embeddednats.NewClientSigHandler(epk)
 	if err != nil {
