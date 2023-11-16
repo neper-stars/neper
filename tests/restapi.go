@@ -127,6 +127,12 @@ func (a *APITesterConfigUpdater) UpdateConfig(config restapi.Config) restapi.Con
 	}
 	config.NatsClientConn = nc
 
+	// create the turn generator
+	config.TurnGenerator = stars.NewTurnGenerator(a.log, config.NatsClientConn, config.DB, config.StarsRunner)
+	// run in background mode ... shutdown is configured in the restapi/configure_neper.go file
+	go config.TurnGenerator.Run(context.Background())
+	config.OnShutdown(config.TurnGenerator.Shutdown)
+
 	return config
 }
 

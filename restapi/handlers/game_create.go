@@ -84,7 +84,7 @@ func (h *GameCreateHandler) handle(
 	}
 
 	var sfDB models.SessionFilesDB
-	if err := gameFiles.HydrateSessionFilesDB(&sfDB); err != nil {
+	if err := gameFiles.HydrateSessionFiles(&sfDB.SessionFiles); err != nil {
 		h.log.Err(err).Msg("failed to parse game files")
 		return nil, err
 	}

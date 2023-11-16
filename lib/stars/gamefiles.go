@@ -23,9 +23,62 @@ func b64encode(in []byte) string {
 	return string(dst)
 }
 
-// HydrateSessionFilesDB fills all the SessionFilesDB fields according to the
+func NewGameFilesFromSessionFiles(sessionFiles models.SessionFiles) (*GameFiles, error) {
+	var gf GameFiles
+	universe, err := B64Decode(sessionFiles.Universe)
+	if err != nil {
+		return nil, err
+	}
+	gf.Universe = universe
+
+	hostfile, err := B64Decode(sessionFiles.HostFile)
+	if err != nil {
+		return nil, err
+	}
+	gf.HostFile = hostfile
+
+	turns, err := TurnListToBytes(sessionFiles.Turns)
+	if err != nil {
+		return nil, err
+	}
+	gf.Turns = turns
+
+	orders, err := OrderListToBytes(sessionFiles.Orders)
+	if err != nil {
+		return nil, err
+	}
+	gf.Orders = orders
+
+	return &gf, nil
+}
+
+func TurnListToBytes(tl types.TurnList) ([][]byte, error) {
+	var res [][]byte
+	for _, t := range tl {
+		turn, err := B64Decode(t.B64Data)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, turn)
+	}
+	return res, nil
+}
+
+func OrderListToBytes(ol types.OrderList) ([][]byte, error) {
+	var res [][]byte
+	for _, o := range ol {
+		order, err := B64Decode(o.B64Data)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, order)
+	}
+	return res, nil
+}
+
+// HydrateSessionFiles fills all the SessionFiles fields according to the
 // current GameFiles
-func (g GameFiles) HydrateSessionFilesDB(s *models.SessionFilesDB) error {
+func (g GameFiles) HydrateSessionFiles(s *models.SessionFiles) error {
 	header, err := hs.FileData(g.HostFile).FileHeader()
 	if err != nil {
 		return err

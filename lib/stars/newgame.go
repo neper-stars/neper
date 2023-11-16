@@ -49,9 +49,9 @@ func (r *Runner) closeDeferred(closer io.ReadCloser) {
 	}
 }
 
-// newGameFilesForTurn will return a *GameFiles struct with all files for neper saving and redistributing
+// gameFilesForTurn will return a *GameFiles struct with all files for neper saving and redistributing
 // this *GamesFiles struct will contain only Turns and nothing in Orders. (hence the name)
-func (r *Runner) newGameFilesForTurn(sessionID string, players []models.SessionPlayerRace) (*GameFiles, error) {
+func (r *Runner) gameFilesForTurn(sessionID string, players []models.SessionPlayerRace) (*GameFiles, error) {
 	gf := GameFiles{}
 	sessionDir := r.localSessionSaveDir(sessionID)
 	// here we go, first read the .xy file which should be named game.xy (universeBaseFilename)
@@ -147,7 +147,7 @@ func (r *Runner) NewGame(ctx context.Context, log *zerolog.Logger, sessionID str
 	if err := r.newGame(ctx, sessionID, content); err != nil {
 		return nil, err
 	}
-	return r.newGameFilesForTurn(sessionID, players)
+	return r.gameFilesForTurn(sessionID, players)
 }
 
 func (r *Runner) newRaceFiles(players []models.SessionPlayerRace, races []models.Race) (RaceFiles, error) {

@@ -6,6 +6,8 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/nats-io/nats.go"
 
+	"context"
+
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/stars"
@@ -50,13 +52,12 @@ func setupServeConfig(config *restapi.Config) error {
 	config.BaseURL = InfoOptions.BaseURL
 	// This is where the api config can be customized at will
 	config.TokenOptions = *TokenOptions
-	{
-		runner, err := stars.NewRunner(&config.Log, StarsRunnerOptions)
-		if err != nil {
-			return err
-		}
-		config.StarsRunner = runner
+
+	runner, err := stars.NewRunner(&config.Log, StarsRunnerOptions)
+	if err != nil {
+		return err
 	}
+	config.StarsRunner = runner
 	if err := config.StarsRunner.Init(); err != nil {
 		return err
 	}
@@ -103,6 +104,11 @@ func setupServeConfig(config *restapi.Config) error {
 	// config.Log.Info().Str("natsConnStatus", nc.Status().String()).Msg("nats status")
 	config.NatsClientConn = nc
 	// NATS out ------------------------------------
+
+	// start the turn generator
+	tg := stars.NewTurnGenerator(&config.Log, config.NatsClientConn, config.DB, runner)
+	config.TurnGenerator = tg
+	go config.TurnGenerator.Run(context.Background())
 
 	return nil
 }

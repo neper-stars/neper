@@ -39,6 +39,7 @@ type Config struct {
 	TokenOptions        auth.TokenOptions
 	Authenticator       *auth.Auth // Authentication
 	StarsRunner         *stars.Runner
+	TurnGenerator       *stars.TurnGenerator
 	EmbeddedNatsOptions embeddednats.ServerOptions
 	NatsServer          *embeddednats.EmbeddedNats
 	NatsClientOptions   *embeddednats.ClientOptions
@@ -110,6 +111,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.KeyAuth = apiAuth.Auth
 	config.OnShutdown(apiAuth.Close)
 	config.OnShutdown(config.StarsRunner.Shutdown)
+	config.OnShutdown(config.TurnGenerator.Shutdown)
 	config.OnShutdown(config.NatsServer.Shutdown)
 
 	// Authenticate
