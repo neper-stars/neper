@@ -21,7 +21,7 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 )
 
-// NewTurnResponder asks for an http.Request because it will upgrade it to a websocket
+// NewTurnResponder asks for a http.Request because it will upgrade it to a websocket
 func NewTurnResponder(req *http.Request, db *sqlx.DB, details *TurnDetails) *TurnResponder {
 	return &TurnResponder{details, db, req}
 }

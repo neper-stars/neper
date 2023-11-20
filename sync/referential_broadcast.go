@@ -26,6 +26,8 @@ func guessDataType(data []byte) (datatype DataTypeEnum, err error) {
 		switch value {
 		case "session":
 			datatype = DataTypeEnumSession
+		case "session_files":
+			datatype = DataTypeEnumSessionFiles
 		case "race":
 			datatype = DataTypeEnumRace
 		case "user_profile":
@@ -146,6 +148,12 @@ func (w *Worker) handleNeperReferentialBroadcast(ctx context.Context, data io.Re
 							return err
 						}
 						return w.syncSessionPlayerRace(ctx, sql, op, &data)
+					case DataTypeEnumSessionFiles:
+						var data SessionFiles
+						if err := data.UnmarshalJSON(buf); err != nil {
+							return err
+						}
+						return w.syncSessionFiles(ctx, sql, op, &data)
 					case DataTypeEnumRuleset:
 						var data Ruleset
 						if err := data.UnmarshalJSON(buf); err != nil {

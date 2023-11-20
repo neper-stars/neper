@@ -17,7 +17,7 @@ type GameFiles struct {
 	Orders   [][]byte // one .rX file for each player (only for the non computer players) X should be the player number +1
 }
 
-func b64encode(in []byte) string {
+func B64Encode(in []byte) string {
 	dst := make([]byte, base64.StdEncoding.EncodedLen(len(in)))
 	base64.StdEncoding.Encode(dst, in)
 	return string(dst)
@@ -85,18 +85,18 @@ func (g GameFiles) HydrateSessionFiles(s *models.SessionFiles) error {
 	}
 
 	s.Year = int64(header.Year())
-	s.Universe = b64encode(g.Universe)
-	s.HostFile = b64encode(g.HostFile)
+	s.Universe = B64Encode(g.Universe)
+	s.HostFile = B64Encode(g.HostFile)
 
 	var turns []types.Turn
 	for i := range g.Turns {
-		turns = append(turns, types.Turn{B64Data: b64encode(g.Turns[i])})
+		turns = append(turns, types.Turn{B64Data: B64Encode(g.Turns[i])})
 	}
 	s.Turns = turns
 
 	var orders []types.Order
 	for i := range g.Orders {
-		orders = append(orders, types.Order{B64Data: b64encode(g.Orders[i])})
+		orders = append(orders, types.Order{B64Data: B64Encode(g.Orders[i])})
 	}
 	s.Orders = orders
 	return nil

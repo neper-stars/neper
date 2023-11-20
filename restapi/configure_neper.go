@@ -17,6 +17,7 @@ import (
 
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
+	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi/handlers"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -151,7 +152,9 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.GameCreateHandler = handlers.NewGameCreateHandler(&config.Log, config.DB, config.StarsRunner)
 	// turn get (each player its own call to get its own files)
 	api.TurnGetHandler = handlers.NewTurnGetHandler(&config.Log, config.DB)
-	api.TurnSubmitHandler = handlers.NewTurnSubmitHandler(&config.Log, config.DB)
+
+	turnSubmitter := sessionSubmitter.NewSessionSubmitter(&config.Log, config.NatsClientConn)
+	api.TurnSubmitHandler = handlers.NewTurnSubmitHandler(&config.Log, config.DB, turnSubmitter)
 
 	// for user to be able to find its own ID
 	api.UserinfoHandler = handlers.NewUserinfoHandler(config.DB)

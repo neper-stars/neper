@@ -528,6 +528,7 @@ const (
 	DataTypeEnumUserProfile
 	DataTypeEnumInvitation
 	DataTypeEnumSessionPlayerRace
+	DataTypeEnumSessionFiles
 	DataTypeEnumRuleset
 )
 
@@ -601,6 +602,18 @@ func (o *DataType) SetSessionPlayerRace(v *SessionPlayerRace) {
 	o.Type = DataTypeEnumSessionPlayerRace
 }
 
+func (o DataType) IsSessionFiles() bool {
+	return o.Type == DataTypeEnumSessionFiles
+}
+func (o DataType) SessionFiles() *SessionFiles {
+	return o.value.(*SessionFiles)
+}
+
+func (o *DataType) SetSessionFiles(v *SessionFiles) {
+	o.value = v
+	o.Type = DataTypeEnumSessionFiles
+}
+
 func (o DataType) IsRuleset() bool {
 	return o.Type == DataTypeEnumRuleset
 }
@@ -636,6 +649,8 @@ func (o DataType) MarshalJSONStream(stream *jsoniter.Stream) {
 	case DataTypeEnumInvitation:
 		stream.WriteVal(o.value)
 	case DataTypeEnumSessionPlayerRace:
+		stream.WriteVal(o.value)
+	case DataTypeEnumSessionFiles:
 		stream.WriteVal(o.value)
 	case DataTypeEnumRuleset:
 		stream.WriteVal(o.value)
@@ -720,6 +735,18 @@ func (o *DataType) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			}
 		}
 
+		{ // attempt to read a *SessionFiles
+			subIter := jsoniter.ConfigDefault.BorrowIterator(buf)
+			var value SessionFiles
+			subIter.ReadVal(&value)
+			lastError = subIter.Error
+			jsoniter.ConfigDefault.ReturnIterator(subIter)
+			if lastError == nil {
+				o.SetSessionFiles(&value)
+				return
+			}
+		}
+
 		{ // attempt to read a *Ruleset
 			subIter := jsoniter.ConfigDefault.BorrowIterator(buf)
 			var value Ruleset
@@ -800,6 +827,12 @@ type Location struct {
 
 	// Type The location type
 	Type string `json:"type,omitempty"`
+}
+
+// Order
+type Order struct {
+	// B64Data The file content in base64 encoded form
+	B64Data string `json:"b64_data,omitempty"`
 }
 
 // Race race
@@ -946,6 +979,33 @@ type Session struct {
 	Type string `json:"__type__"`
 }
 
+// SessionFiles represents all the files for either a turn that as just been generated or a turn that will be generated (orders)
+type SessionFiles struct {
+	// Hostfile the host file content (game.hst) stored in base64
+	Hostfile string `json:"hostfile"`
+
+	// Id id
+	Id string `json:"id"`
+
+	// Orders
+	Orders []*Order `json:"orders"`
+
+	// SessionId id of the session
+	SessionId string `json:"session_id"`
+
+	// Turns
+	Turns []*Turn `json:"turns"`
+
+	// Type data type
+	Type string `json:"__type__"`
+
+	// Universe the universe file content (game.xy) stored in base64
+	Universe string `json:"universe"`
+
+	// Year the year those files are for (this is kind of like the turn number)
+	Year int `json:"year"`
+}
+
 // SessionPlayerRace setup for a session of a player and its race
 type SessionPlayerRace struct {
 	// BotLevel if is_bot is true, we need a level between 0 and 4
@@ -971,6 +1031,12 @@ type SessionPlayerRace struct {
 
 	// UserProfileId id of the user
 	UserProfileId string `json:"user_profile_id"`
+}
+
+// Turn
+type Turn struct {
+	// B64Data The file content in base64 encoded form
+	B64Data string `json:"b64_data,omitempty"`
 }
 
 // UserProfile user profile
@@ -2365,6 +2431,245 @@ func (s *Session) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 
 	if !TypeReceived {
 		iter.ReportError("validating Session", "\"__type__\" is required but was not present")
+	}
+}
+
+// MarshalJSON serializes to JSON
+func (s *SessionFiles) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer(nil)
+	stream := jsoniter.ConfigDefault.BorrowStream(buf)
+	s.MarshalJSONStream(stream)
+	stream.Flush()
+	err := stream.Error
+	jsoniter.ConfigDefault.ReturnStream(stream)
+
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (s SessionFiles) MarshalJSONStream(stream *jsoniter.Stream) {
+	stream.WriteObjectStart()
+	ct := commaTracker{stream: stream}
+
+	// Marshal the Hostfile field
+	ct.More()
+	stream.WriteObjectField("hostfile")
+	stream.WriteString(s.Hostfile)
+
+	// Marshal the Id field
+	ct.More()
+	stream.WriteObjectField("id")
+	stream.WriteString(s.Id)
+
+	// Marshal the Orders field
+	ct.More()
+	stream.WriteObjectField("orders")
+	stream.WriteVal(s.Orders)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the SessionId field
+	ct.More()
+	stream.WriteObjectField("session_id")
+	stream.WriteString(s.SessionId)
+
+	// Marshal the Turns field
+	ct.More()
+	stream.WriteObjectField("turns")
+	stream.WriteVal(s.Turns)
+	if stream.Error != nil {
+		return
+	}
+
+	// Marshal the Type field
+	ct.More()
+	stream.WriteObjectField("__type__")
+	stream.WriteString(s.Type)
+
+	// Marshal the Universe field
+	ct.More()
+	stream.WriteObjectField("universe")
+	stream.WriteString(s.Universe)
+
+	// Marshal the Year field
+	ct.More()
+	stream.WriteObjectField("year")
+	stream.WriteVal(s.Year)
+	if stream.Error != nil {
+		return
+	}
+	stream.WriteObjectEnd()
+}
+
+func (s *SessionFiles) UnmarshalJSON(data []byte) error {
+	iter := jsoniter.ConfigDefault.BorrowIterator(data)
+	s.UnmarshalJSONIterator(iter)
+	err := iter.Error
+	jsoniter.ConfigDefault.ReturnIterator(iter)
+	return err
+}
+
+func (s *SessionFiles) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
+	HostfileReceived := false
+	IdReceived := false
+	OrdersReceived := false
+	SessionIdReceived := false
+	TurnsReceived := false
+	TypeReceived := false
+	UniverseReceived := false
+	YearReceived := false
+
+	for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
+		switch field {
+		case "hostfile":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field hostfile", "hostfile is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.Hostfile = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			HostfileReceived = true
+		case "id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field id", "id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.Id = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			IdReceived = true
+		case "orders":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field orders", "orders is 'true', but the expected type is []*Order")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.Orders)
+			if iter.Error != nil {
+				return
+			}
+			OrdersReceived = true
+		case "session_id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field session_id", "session_id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.SessionId = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			SessionIdReceived = true
+		case "turns":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field turns", "turns is 'true', but the expected type is []*Turn")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.Turns)
+			if iter.Error != nil {
+				return
+			}
+			TurnsReceived = true
+		case "__type__":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field __type__", "__type__ is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.Type = iter.ReadString()
+			if s.Type != "session_files" {
+				iter.ReportError(
+					"__type__",
+					fmt.Sprintf("Expected %s, got \"%s\"", "session_files", s.Type),
+				)
+			}
+			if iter.Error != nil {
+				return
+			}
+			TypeReceived = true
+		case "universe":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field universe", "universe is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.Universe = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			UniverseReceived = true
+		case "year":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field year", "year is 'true', but the expected type is int")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			iter.ReadVal(&s.Year)
+			if iter.Error != nil {
+				return
+			}
+			YearReceived = true
+		default:
+			// Ignore the additional property
+			iter.Skip()
+		}
+	}
+
+	if !HostfileReceived {
+		iter.ReportError("validating SessionFiles", "\"hostfile\" is required but was not present")
+	}
+
+	if !IdReceived {
+		iter.ReportError("validating SessionFiles", "\"id\" is required but was not present")
+	}
+
+	if !OrdersReceived {
+		iter.ReportError("validating SessionFiles", "\"orders\" is required but was not present")
+	}
+
+	if !SessionIdReceived {
+		iter.ReportError("validating SessionFiles", "\"session_id\" is required but was not present")
+	}
+
+	if !TurnsReceived {
+		iter.ReportError("validating SessionFiles", "\"turns\" is required but was not present")
+	}
+
+	if !TypeReceived {
+		iter.ReportError("validating SessionFiles", "\"__type__\" is required but was not present")
+	}
+
+	if !UniverseReceived {
+		iter.ReportError("validating SessionFiles", "\"universe\" is required but was not present")
+	}
+
+	if !YearReceived {
+		iter.ReportError("validating SessionFiles", "\"year\" is required but was not present")
 	}
 }
 

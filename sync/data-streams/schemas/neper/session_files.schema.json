@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-09/schema#",
+  "$id": "https://neper.io/messages/schemas/v1/neper/session_files.schema.json",
+  "$$target": "https://neper.io/messages/schemas/v1/neper/session_files.schema.json",
+  "title": "SessionFiles",
+  "description": "represents all the files for either a turn that as just been generated or a turn that will be generated (orders)",
+  "version": "0.1.0",
+  "type": "object",
+  "properties": {
+    "__type__": {
+      "description": "data type",
+      "type": "string",
+      "enum": [
+        "session_files"
+      ]
+    },
+    "id": {
+      "description": "id",
+      "type": "string"
+    },
+    "session_id": {
+      "description": "id of the session",
+      "type": "string"
+    },
+    "year": {
+      "description": "the year those files are for (this is kind of like the turn number)",
+      "type": "integer"
+    },
+    "universe": {
+      "description": "the universe file content (game.xy) stored in base64",
+      "type": "string"
+    },
+    "hostfile": {
+      "description": "the host file content (game.hst) stored in base64",
+      "type": "string"
+    },
+    "turns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/turn"
+      }
+    },
+    "orders": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/order"
+      }
+    }
+  },
+  "required": [
+    "__type__",
+    "id",
+    "session_id",
+    "year",
+    "universe",
+    "hostfile",
+    "turns",
+    "orders"
+  ],
+  "definitions": {
+    "order": {
+      "type": "object",
+      "properties": {
+        "b64_data": {
+          "type": "string",
+          "description": "The file content in base64 encoded form"
+        }
+      }
+    },
+    "turn": {
+      "type": "object",
+      "properties": {
+        "b64_data": {
+          "type": "string",
+          "description": "The file content in base64 encoded form"
+        }
+      }
+    }
+  }
+}

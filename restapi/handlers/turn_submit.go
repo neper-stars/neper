@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
@@ -13,9 +14,8 @@ import (
 	hs "github.com/neper-stars/houston"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"strings"
-
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/models/types"
@@ -23,15 +23,16 @@ import (
 )
 
 // NewTurnSubmitHandler ...
-func NewTurnSubmitHandler(log *zerolog.Logger, db *sqlx.DB) *TurnSubmitHandler {
+func NewTurnSubmitHandler(log *zerolog.Logger, db *sqlx.DB, submitter sessionSubmitter.SessionSubmitter) *TurnSubmitHandler {
 	configuredLogger := log.With().Str("handler", "TurnSubmitHandler").Logger()
-	return &TurnSubmitHandler{db, &configuredLogger}
+	return &TurnSubmitHandler{db, &configuredLogger, submitter}
 }
 
 // TurnSubmitHandler handles /session
 type TurnSubmitHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db        *sqlx.DB
+	log       *zerolog.Logger
+	submitter sessionSubmitter.SessionSubmitter
 }
 
 type TurnDetails struct {
@@ -111,6 +112,7 @@ func (h *TurnSubmitHandler) handle(
 
 	numPlayers := len(sessionFilesDB.Turns)
 	if len(sessionFilesDB.Orders) == 0 {
+		fmt.Println("********* initialize orders")
 		// initialize the orders
 		for i := 0; i < numPlayers; i++ {
 			if int64(i) == playerOrder {
@@ -146,25 +148,37 @@ func (h *TurnSubmitHandler) handle(
 	var allPlayersReady = true
 	if len(readyPlayers) == 0 {
 		allPlayersReady = false
-	}
-	for i, race := range sessionPlayerRaces {
-		if race.IsBot {
-			// bot are never "ready", the game engine
-			// plays their turn when all other players are ready
-			// and we ask it to generate a turn
-			continue
+	} else {
+		for i, race := range sessionPlayerRaces {
+			if race.IsBot {
+				// bot are never "ready", the game engine
+				// plays their turn when all other players are ready,
+				// and we ask it to generate a turn
+				continue
+			}
+			if !readyPlayers[i] {
+				allPlayersReady = false
+				break
+			}
 		}
-		if !readyPlayers[i] {
-			allPlayersReady = false
-			break
-		}
 	}
+
+	if err := tx.Commit(); err != nil {
+		h.log.Err(err).Str("sessionID", params.SessionID).Msg("failed save turn into DB")
+		return nil, err
+	}
+
 	if allPlayersReady {
-		// TODO, we will mark the session as to be generated, and a goroutine dedicated to generating
-		// turns will do its work and update the sessionFiles with a new year
-		// the client will be able to subscribe to a websocket and ask to be pushed his new turn
-		// when the next year becomes available
-		h.log.Debug().Msg("we will launch the turn generation because all players are ready")
+		// here we want to submit our database transaction to allow the turn generator to find our updated session
+
+		// then try to warn turm generator it has job to do
+		if err := h.submitter.Sub(params.SessionID, params.Year); err != nil {
+			// here we failed to publish our message.
+			// This should not be a big issue because in the long run the
+			// turn generator should auto find sessions that need generation
+			// let's just log this error
+			h.log.Err(err).Str("sessionID", params.SessionID).Msg("failed to signal the turn generator, our session is ready")
+		}
 	}
 
 	return &TurnDetails{
