@@ -67,22 +67,27 @@ type APITester struct {
 
 type RestAPIConfigUpdate func(restapi.Config) restapi.Config
 
-func NewAPITesterConfigUpdater(t *testing.T, log *zerolog.Logger) *APITesterConfigUpdater {
+func NewAPITesterConfigUpdater(t *testing.T, log *zerolog.Logger, autoDelete bool) *APITesterConfigUpdater {
 	return &APITesterConfigUpdater{
-		t:   t,
-		log: log,
+		t:          t,
+		log:        log,
+		autoDelete: autoDelete,
 	}
 }
 
 type APITesterConfigUpdater struct {
-	t   *testing.T
-	log *zerolog.Logger
+	t          *testing.T
+	log        *zerolog.Logger
+	autoDelete bool
 }
 
 func (a *APITesterConfigUpdater) UpdateConfig(config restapi.Config) restapi.Config {
 	runner, shutdownCB := stars.GetTestStarsRunner(a.t, a.log)
 	config.StarsRunner = runner
-	config.OnShutdown(restapi.Callback(shutdownCB))
+	if a.autoDelete {
+		// we call the shutdown callback only if autodelete is true
+		config.OnShutdown(restapi.Callback(shutdownCB))
+	}
 
 	// NATS setup
 	// create a test key on the fly for this run

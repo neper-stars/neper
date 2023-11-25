@@ -12,7 +12,7 @@ import (
 
 func TestAuthentication(t *testing.T) {
 	log := testutils.GetLogger(t)
-	apiTesterConfigUpdater := NewAPITesterConfigUpdater(t, &log)
+	apiTesterConfigUpdater := NewAPITesterConfigUpdater(t, &log, true)
 	tester := NewAPITester(t, apiTesterConfigUpdater.UpdateConfig)
 	defer tester.Close()
 	/*

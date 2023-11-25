@@ -32,6 +32,10 @@ const (
 	SubjectTurnNotifyBase      = "Turn.Notify." // this will be appended with the sessionID
 )
 
+func SubjectTurnNotifyForSession(sessionID string) string {
+	return SubjectTurnNotifyBase + sessionID
+}
+
 type TurnGenerator struct {
 	log    *zerolog.Logger
 	runner *Runner
@@ -130,7 +134,8 @@ func (g *TurnGenerator) needsGeneration(msg *nats.Msg) error {
 		return err
 	}
 
-	newTurnMsg := nats.NewMsg(SubjectTurnNotifyBase + needsGenerationMsg.SessionID)
+	subject := SubjectTurnNotifyForSession(SubjectTurnNotifyBase + needsGenerationMsg.SessionID)
+	newTurnMsg := nats.NewMsg(subject)
 	newTurnMsg.Data = sfData
 	if err := g.natsConn.PublishMsg(newTurnMsg); err != nil {
 		return err
@@ -297,7 +302,7 @@ func (r *Runner) saveOrderFilesToSessionDir(sessionID string, orderFiles [][]byt
 }
 
 func saveOrderFile(log *zerolog.Logger, sessionDir string, content []byte, playerOrder int) error {
-	targetFileName := filepath.Join(sessionDir, fmt.Sprintf("%s%d", turnBaseFilename, playerOrder))
+	targetFileName := filepath.Join(sessionDir, fmt.Sprintf("%s%d", turnBaseFilename, playerOrder+1))
 	targetFile, err := os.OpenFile(targetFileName, os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
 		log.Err(err).Str("filename", targetFileName).Msg("failed to open turn file for creation")

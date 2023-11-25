@@ -215,12 +215,12 @@ func (r *Runner) devicesDir() (string, error) {
 }
 
 func (r *Runner) ensureDriveLetters() error {
-	r.log.Debug().Str("letter", saveDirDriveLetter).Msg("checking drive letter")
+	r.log.Debug().Str("letter", saveDirDriveLetter).Str("actualDir", r.SaveDir).Msg("checking drive letter")
 	if err := r.ensureDriveLetter(saveDirDriveLetter, r.SaveDir); err != nil {
 		r.log.Err(err).Str("letter", saveDirDriveLetter).Msg("failed")
 		return err
 	}
-	r.log.Debug().Str("letter", executableDirDriveLetter).Msg("checking drive letter")
+	r.log.Debug().Str("letter", executableDirDriveLetter).Str("actualDir", r.ExecutableDir).Msg("checking drive letter")
 	if err := r.ensureDriveLetter(executableDirDriveLetter, r.ExecutableDir); err != nil {
 		r.log.Err(err).Str("letter", executableDirDriveLetter).Msg("failed")
 		return err

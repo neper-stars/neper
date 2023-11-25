@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
@@ -112,7 +111,6 @@ func (h *TurnSubmitHandler) handle(
 
 	numPlayers := len(sessionFilesDB.Turns)
 	if len(sessionFilesDB.Orders) == 0 {
-		fmt.Println("********* initialize orders")
 		// initialize the orders
 		for i := 0; i < numPlayers; i++ {
 			if int64(i) == playerOrder {
@@ -192,7 +190,7 @@ func (h *TurnSubmitHandler) handle(
 func (h *TurnSubmitHandler) Handle(
 	params operations.TurnSubmitParams, principal *models.Principal,
 ) middleware.Responder {
-	result, err := h.handle(params.HTTPRequest.Context(), params, principal)
+	_, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrForbidden):
@@ -208,29 +206,7 @@ func (h *TurnSubmitHandler) Handle(
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
-	if wantsWebSocket(params.HTTPRequest) {
-		// if the client wants a websocket upgrade let's give it a turn responder
-		// this will open a websocket that will push a new turn when it becomes available
-		return NewTurnResponder(params.HTTPRequest, h.db, result)
-	}
 	return operations.NewTurnSubmitOK()
-}
-
-func wantsWebSocket(r *http.Request) bool {
-	var connection string
-	var upgrade string
-
-	for k, v := range r.Header {
-		if strings.ToLower(k) == "connection" { // Connection header
-			connection = strings.Join(v, "")
-		} else if strings.ToLower(k) == "upgrade" { // Upgrade header
-			upgrade = strings.Join(v, "")
-		}
-	}
-	if strings.ToLower(connection) == "upgrade" && upgrade == "websocket" {
-		return true
-	}
-	return false
 }
 
 func (h *TurnSubmitHandler) Authorize(

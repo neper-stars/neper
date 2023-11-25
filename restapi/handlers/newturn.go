@@ -1,29 +1,45 @@
 package handlers
 
 import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime"
 	"github.com/gorilla/websocket"
-	"github.com/rs/zerolog"
-
-	"context"
-	"database/sql"
-	"errors"
-
-	"encoding/json"
-
-	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	errs "github.com/neper-stars/neper/lib/errors"
-	"github.com/neper-stars/neper/models"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
+
+	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/stars"
+	"github.com/neper-stars/neper/models"
 )
 
 // NewTurnResponder asks for a http.Request because it will upgrade it to a websocket
-func NewTurnResponder(req *http.Request, db *sqlx.DB, details *TurnDetails) *TurnResponder {
-	return &TurnResponder{details, db, req}
+func NewTurnResponder(req *http.Request, db *sqlx.DB, details *TurnDetails, natsConn *nats.Conn) (*TurnResponder, error) {
+	newTurnChan := make(chan *nats.Msg)
+	sub, err := natsConn.ChanSubscribe(stars.SubjectTurnNotifyForSession(details.SessionID), newTurnChan)
+	if err != nil {
+		return nil, err
+	}
+	ctx := req.Context()
+	logger := zerolog.Ctx(ctx)
+	tr := &TurnResponder{
+		details:     details,
+		db:          db,
+		req:         req,
+		natsSub:     sub,
+		newTurnChan: newTurnChan,
+		logger:      logger,
+	}
+	return tr, nil
 }
 
 // TurnResponder is responsible to upgrade a http.Request to a websocket and then
@@ -32,8 +48,17 @@ func NewTurnResponder(req *http.Request, db *sqlx.DB, details *TurnDetails) *Tur
 type TurnResponder struct {
 	details *TurnDetails
 
-	db  *sqlx.DB
-	req *http.Request
+	db          *sqlx.DB
+	req         *http.Request
+	natsSub     *nats.Subscription
+	newTurnChan chan *nats.Msg
+	logger      *zerolog.Logger
+}
+
+func (r *TurnResponder) Shutdown() {
+	if err := r.natsSub.Unsubscribe(); err != nil {
+		r.logger.Err(err).Msg("failed to unsubscribe from nats subject")
+	}
 }
 
 func (r *TurnResponder) Logger() *zerolog.Logger {
@@ -47,26 +72,27 @@ type NewTurnChan chan *models.TurnFiles
 // WriteResponse will upgrade the connection to websocket
 func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 	ctx := r.req.Context()
-	logger := zerolog.Ctx(ctx)
 
 	c, err := upgrader.Upgrade(rw, r.req, nil)
 	if err != nil {
-		logger.Err(err).Msg("turn responder failed to upgrade connection to websocket")
+		r.logger.Err(err).Msg("turn responder failed to upgrade connection to websocket")
 		return
 	}
 	defer func() {
 		if err := c.Close(); err != nil {
-			logger.Err(err).Msg("failed to close connection")
+			r.logger.Err(err).Msg("failed to close connection")
 		}
+		// unsubscribe
+		r.Shutdown()
 	}()
 
 	ctx, ctxCancel := context.WithCancel(ctx)
 	defer ctxCancel()
-	newTurnChan := make(NewTurnChan)
+	newSQLTurnChan := make(NewTurnChan)
 	errChan := make(chan error)
 	// this should become waitForNewTurn
 	// a NATS client waiting on a newturn for this session
-	go r.scanForNewTurn(ctx, newTurnChan, errChan)
+	go r.scanForNewTurn(ctx, newSQLTurnChan, errChan)
 
 	pingTicker := time.NewTicker(time.Second * 30)
 	defer pingTicker.Stop()
@@ -76,21 +102,51 @@ func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.P
 		case <-pingTicker.C:
 			if err := c.WriteMessage(websocket.PingMessage, []byte("ping")); err != nil {
 				// failed to send a ping
-				logger.Err(err).Msg("failed to send a ping the ws client")
+				r.logger.Err(err).Msg("failed to send a ping the ws client")
 				return
 			}
-		case t := <-newTurnChan:
+		case msg := <-r.newTurnChan:
+			// we got an explicit message from the turn generator that our turn is ready
+			// let's use this message data
+			var sf *models.SessionFiles
+			if err := jsoniter.Unmarshal(msg.Data, sf); err != nil {
+				r.logger.Err(err).Msg("failed to unmarshal sessionFile from nats message: someone sent an invalid message into this subject ?")
+				return
+			}
+			sfdb := &models.SessionFilesDB{SessionFiles: *sf}
+			t := sfdb.ToTurnFiles(r.details.PlayerOrder)
+
 			jsonTurn, err := json.Marshal(t)
 			if err != nil {
-				logger.Err(err).Msg("failed to marshal newTurn to json")
+				r.logger.Err(err).Msg("failed to marshal newTurn to json")
 				return
 			}
 			if err := c.WriteMessage(websocket.TextMessage, jsonTurn); err != nil {
-				logger.Err(err).Msg("failed to send turn into websocket")
+				r.logger.Err(err).Msg("failed to send turn into websocket")
 				return
 			}
+			// we finished our job
+			return
+
+		case t := <-newSQLTurnChan:
+			// we cannot wait eternally on our turn generator because something may have
+			// happened, like a reboot and our message could have long been lost
+			// and the turn could be ready in the database
+			// so from time to time a goroutine awakes and scans the db to find a turn
+			// if it finds something it will send it in this newSQLTurnChan
+			jsonTurn, err := json.Marshal(t)
+			if err != nil {
+				r.logger.Err(err).Msg("failed to marshal newTurn to json")
+				return
+			}
+			if err := c.WriteMessage(websocket.TextMessage, jsonTurn); err != nil {
+				r.logger.Err(err).Msg("failed to send turn into websocket")
+				return
+			}
+			// we finished the job
+			return
 		case err := <-errChan:
-			logger.Err(err).Msg("failed to obtain a new turn")
+			r.logger.Err(err).Msg("failed to obtain a new turn")
 			return
 		}
 	}
@@ -107,9 +163,8 @@ func (r *TurnResponder) scanForNewTurn(ctx context.Context, newTurnChan NewTurnC
 				errChan <- ctx.Err()
 			}
 			return
-		default:
+		case <-ticker.C:
 			// only scan the DB once in 30 s
-			<-ticker.C
 			t, err := r.getNewTurn(ctx)
 			if err != nil {
 				r.Logger().Err(ctx.Err()).Msg("scan for new turn: failed to query for new turn availability")
