@@ -99,8 +99,7 @@ func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.P
 	defer ctxCancel()
 	newSQLTurnChan := make(NewTurnChan)
 	errChan := make(chan error)
-	// this should become waitForNewTurn
-	// a NATS client waiting on a newturn for this session
+	// This scan indefinitely on the SQL database to find the new turn from time to time
 	go r.scanForNewTurn(ctx, newSQLTurnChan, errChan)
 
 	pingTicker := time.NewTicker(time.Second * 30)
@@ -161,7 +160,7 @@ func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.P
 	}
 }
 
-func (r *TurnResponder) scanForNewTurn(ctx context.Context, newTurnChan NewTurnChan, errChan chan error) {
+func (r *TurnResponder) scanForNewTurn(ctx context.Context, newSQLTurnChan NewTurnChan, errChan chan error) {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 	for {
@@ -181,7 +180,7 @@ func (r *TurnResponder) scanForNewTurn(ctx context.Context, newTurnChan NewTurnC
 				errChan <- err
 				return
 			}
-			newTurnChan <- t
+			newSQLTurnChan <- t
 		}
 	}
 }

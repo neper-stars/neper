@@ -84,6 +84,7 @@ func (g *TurnGenerator) Run(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			// context is done, goodbye cruel world.
+			g.log.Debug().Msg("turnNeedsGeneration subscription shutting down as context has been cancelled")
 			return
 		case msg := <-needsGenerationChan:
 			g.log.Debug().Str("data", string(msg.Data)).Msg("turnNeedsGeneration message received")
@@ -98,7 +99,7 @@ func (g *TurnGenerator) Run(ctx context.Context) {
 // Shutdown cancels the goroutine that is Run()ing
 func (g *TurnGenerator) Shutdown() {
 	if !g.running {
-		g.log.Error().Msg("you should not call TurnGenerator.Shutdown on a not running generator")
+		g.log.Error().Msg("you should not call TurnGenerator.Shutdown on a non-running generator")
 		return
 	}
 	g.cancelFunc()
@@ -129,10 +130,14 @@ func (g *TurnGenerator) needsGeneration(msg *nats.Msg) error {
 		return err
 	}
 
+	g.log.Debug().Msg("turn generated, will now marshal")
+
 	sfData, err := json.Marshal(newTurnSessionFiles)
 	if err != nil {
 		return err
 	}
+
+	g.log.Debug().Msg("turn marshalled, will now send over NATS to handler")
 
 	subject := SubjectTurnNotifyForSession(SubjectTurnNotifyBase + needsGenerationMsg.SessionID)
 	newTurnMsg := nats.NewMsg(subject)
@@ -140,6 +145,9 @@ func (g *TurnGenerator) needsGeneration(msg *nats.Msg) error {
 	if err := g.natsConn.PublishMsg(newTurnMsg); err != nil {
 		return err
 	}
+
+	g.log.Debug().Msg("turn sent over NATS, returning")
+
 	return nil
 }
 
