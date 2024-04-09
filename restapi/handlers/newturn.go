@@ -15,6 +15,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
+	"github.com/zenazn/goji/web/mutil"
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
@@ -73,7 +74,15 @@ type NewTurnChan chan *models.TurnFiles
 func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 	ctx := r.req.Context()
 
-	c, err := upgrader.Upgrade(rw, r.req, nil)
+	// t := reflect.TypeOf(rw).String()
+	// r.logger.Info().Str("rw type", t).Msg("")
+	// here we know that the response writer is wrapped by zerolog,
+	// so we type assert on the interface used by zerolog
+	rw_ := rw.(mutil.WriterProxy)
+	// then we use the Unwrap method to get to the original ResponseWriter
+	// this one implements Hijacker
+	// once this is done we can pass it down the Upgrade method that requires the Hijacker interface
+	c, err := upgrader.Upgrade(rw_.Unwrap(), r.req, nil)
 	if err != nil {
 		r.logger.Err(err).Msg("turn responder failed to upgrade connection to websocket")
 		return
@@ -166,7 +175,8 @@ func (r *TurnResponder) scanForNewTurn(ctx context.Context, newTurnChan NewTurnC
 		case <-ticker.C:
 			// only scan the DB once in 30 s
 			t, err := r.getNewTurn(ctx)
-			if err != nil {
+			// only log errors for something else than we did not find your turn (yet)
+			if err != nil && !errors.Is(err, errs.ErrNotFound) {
 				r.Logger().Err(ctx.Err()).Msg("scan for new turn: failed to query for new turn availability")
 				errChan <- err
 				return

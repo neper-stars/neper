@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"net/http"
@@ -34,26 +33,9 @@ type TurnGetHandler struct {
 }
 
 func (h *TurnGetHandler) handle(
-	ctx context.Context, params operations.TurnGetParams, principal *models.Principal,
-) (*models.TurnFiles, int64, error) {
+	sqlH database.SQLHelper, params operations.TurnGetParams, principal *models.Principal, playerOrder int64,
+) (*models.TurnFiles, error) {
 	sessionID := params.SessionID
-
-	log := *zerolog.Ctx(ctx)
-	tx, err := database.Begin(ctx, h.db)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer tx.RollbackIfOpened(log)
-	sqlH := database.NewSQLHelper(ctx, tx, log)
-
-	// ** Authorization **
-	authorized, err := h.Authorize(sqlH, params, principal)
-	if err != nil {
-		return nil, 0, err
-	}
-	if !authorized {
-		return nil, 0, errs.ErrForbidden
-	}
 
 	var sessionFiles models.SessionFilesDB
 	whereClause := sq.And{
@@ -63,27 +45,82 @@ func (h *TurnGetHandler) handle(
 
 	if err := sqlH.GetWhere(&sessionFiles, whereClause); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, 0, errs.NewErrSomethingNotFound("session files not found with session ID: " + sessionID)
+			return nil, errs.NewErrSomethingNotFound("session files not found with session ID: " + sessionID)
 		}
-		return nil, 0, err
+		return nil, err
 	}
 
 	var userSessionSetup models.SessionPlayerRaceDB
 	query := sessionPlayerRaceQuery(principal.Subject, params.SessionID)
 	if err := sqlH.Get(&userSessionSetup, query); err != nil {
 		h.log.Err(err).Msg("failed to fetch user profile session relation")
-		return nil, 0, err
+		return nil, err
 	}
-	turnFiles := sessionFiles.ToTurnFiles(userSessionSetup.PlayerOrder)
+	turnFiles := sessionFiles.ToTurnFiles(playerOrder)
 
-	return &turnFiles, userSessionSetup.PlayerOrder, nil
+	return &turnFiles, nil
+}
+
+func (h *TurnGetHandler) getSessionPlayerRace(sqlH database.SQLHelper, userProfileID, sessionID string) (*models.SessionPlayerRaceDB, error) {
+	var sessionPlayerRaceDB models.SessionPlayerRaceDB
+	query := sessionPlayerRaceQuery(userProfileID, sessionID)
+	if err := sqlH.Get(&sessionPlayerRaceDB, query); err != nil {
+		h.log.Err(err).Msg("failed to fetch user profile session relation")
+		return nil, err
+	}
+	return &sessionPlayerRaceDB, nil
 }
 
 // Handle handles the request
 func (h *TurnGetHandler) Handle(
 	params operations.TurnGetParams, principal *models.Principal,
 ) middleware.Responder {
-	turn, playerOrder, err := h.handle(params.HTTPRequest.Context(), params, principal)
+	wsRequested := wantsWebSocket(params.HTTPRequest)
+	ctx := params.HTTPRequest.Context()
+	log := *zerolog.Ctx(ctx)
+	tx, err := database.Begin(ctx, h.db)
+	if err != nil {
+		return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
+	}
+
+	defer tx.RollbackIfOpened(log)
+	sqlH := database.NewSQLHelper(ctx, tx, log)
+
+	// ** Authorization **
+	authorized, err := h.Authorize(sqlH, params, principal)
+	if err != nil {
+		return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
+	}
+	if !authorized {
+		return operations.NewTurnGetForbidden().WithPayload(&models.Error{
+			Code:    http.StatusForbidden,
+			Message: &verbotten,
+		})
+	}
+
+	spr, err := h.getSessionPlayerRace(sqlH, principal.Subject, params.SessionID)
+	if err != nil {
+		// TODO: handle the case when the session ID is not found
+		// by returning a not found error
+		return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
+	}
+
+	if wantsWebSocket(params.HTTPRequest) {
+		// if the client wants a websocket upgrade let's give it a turn responder
+		// this will open a websocket that will push a new turn when it becomes available
+		details := TurnDetails{
+			SessionID:   params.SessionID,
+			Year:        int(params.Year),
+			PlayerOrder: spr.PlayerOrder,
+		}
+		tr, err := NewTurnResponder(params.HTTPRequest, h.db, &details, h.natsConn)
+		if err != nil {
+			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
+		}
+		return tr
+	}
+
+	turn, err := h.handle(sqlH, params, principal, spr.PlayerOrder)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrForbidden):
@@ -91,27 +128,14 @@ func (h *TurnGetHandler) Handle(
 				Code:    http.StatusForbidden,
 				Message: &verbotten,
 			})
-		case errors.Is(err, errs.ErrNotFound):
+		case errors.Is(err, errs.ErrNotFound) && !wsRequested:
+			// Websocket was not requested and the file is not found...
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):
 			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
-	}
-	if wantsWebSocket(params.HTTPRequest) {
-		// if the client wants a websocket upgrade let's give it a turn responder
-		// this will open a websocket that will push a new turn when it becomes available
-		details := TurnDetails{
-			SessionID:   turn.SessionID,
-			Year:        int(turn.Year),
-			PlayerOrder: playerOrder,
-		}
-		tr, err := NewTurnResponder(params.HTTPRequest, h.db, &details, h.natsConn)
-		if err != nil {
-			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
-		}
-		return tr
 	}
 	return operations.NewTurnGetOK().WithPayload(turn)
 }

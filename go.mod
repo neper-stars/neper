@@ -1,6 +1,6 @@
 module github.com/neper-stars/neper
 
-go 1.20
+go 1.22
 
 replace orus.io/orus-io/go-orusapi => ./dependencies/go-orusapi
 
@@ -39,6 +39,7 @@ require (
 	github.com/steinfletcher/apitest v1.5.15
 	github.com/stretchr/testify v1.8.4
 	github.com/ulikunitz/xz v0.5.11
+	github.com/zenazn/goji v0.9.0
 	golang.org/x/sys v0.13.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 	github.com/neper-stars/houston v0.0.0-00010101000000-000000000000
@@ -76,6 +77,7 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/posener/wstest v1.2.0 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/prometheus/procfs v0.11.1 // indirect

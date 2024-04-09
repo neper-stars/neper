@@ -11,7 +11,12 @@ import (
 	"io"
 	"os"
 
+	"github.com/posener/wstest"
+
+	"time"
+
 	"github.com/neper-stars/neper/lib/stars"
+	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/models/types"
 	"orus.io/orus-io/go-orusapi/testutils"
 )
@@ -53,14 +58,41 @@ func TestTurnSubmit(t *testing.T) {
 		}, &token))
 		tester.SetHeader("Authorization", "Bearer "+token)
 
-		// submit turn
-		// but first ask for a connection upgrade to websocket in order
-		// to receive the turn when it is ready
-		// tester.SetHeader("Connection", "upgrade")
-		// tester.SetHeader("Upgrade", "websocket")
-
 		submitURL := fmt.Sprintf("/api/v1/sessions/%s/turn/%d", sessionID, year)
 		turn := types.Order{B64Data: gollumOrderContentB64}
 		require.Equal(t, http.StatusOK, tester.MustPutJSON(submitURL, &turn, &token))
+
+		d := wstest.NewDialer(tester.handler)
+
+		getURL := fmt.Sprintf("/api/v1/sessions/%s/turn/%d", sessionID, year+1)
+		// var newTurn models.TurnFiles
+
+		// tester.SetHeader("Connection", "upgrade")
+		// tester.SetHeader("Upgrade", "websocket")
+		// tester.SetHeader("Sec-WebSocket-Version", "13")
+		// uid, err := uuid.V4()
+		// require.NoError(t, err)
+		// key := uid.String()
+		// tester.SetHeader("Sec-WebSocket-Key", key)
+
+		header := make(http.Header)
+		// authorize our dialer
+		header.Set("Authorization", "Bearer "+token)
+
+		c, resp, err := d.Dial("ws://"+"whatever"+getURL, header)
+		// tester.MustGetJSON(getURL, &newTurn)
+		// require.Equal(t, int64(2401), newTurn.Year)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
+
+		// here we should wait for our new turn
+		var tf models.TurnFiles
+		var ti time.Time
+		require.NoError(t, c.SetReadDeadline(ti))
+		err = c.ReadJSON(tf)
+		require.NoError(t, err)
+
+		// returned turn should be for year 2401
+		require.Equal(t, 2401, tf.Year)
 	})
 }

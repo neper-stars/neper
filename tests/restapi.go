@@ -293,6 +293,10 @@ func (tester *APITester) EndCallsCapture() []APICall {
 	return r
 }
 
+func (tester *APITester) TestServer() *httptest.Server {
+	return httptest.NewServer(tester.handler)
+}
+
 // HandleRequest pass a request through the handler
 func (tester *APITester) HandleRequest(req *http.Request) *httptest.ResponseRecorder {
 	for key, value := range tester.headers {
