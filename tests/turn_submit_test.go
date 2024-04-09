@@ -89,10 +89,10 @@ func TestTurnSubmit(t *testing.T) {
 		var tf models.TurnFiles
 		var ti time.Time
 		require.NoError(t, c.SetReadDeadline(ti))
-		err = c.ReadJSON(tf)
+		err = c.ReadJSON(&tf)
 		require.NoError(t, err)
 
 		// returned turn should be for year 2401
-		require.Equal(t, 2401, tf.Year)
+		require.Equal(t, int64(2401), tf.Year)
 	})
 }

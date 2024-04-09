@@ -114,14 +114,15 @@ func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.P
 				return
 			}
 		case msg := <-r.newTurnChan:
+			r.logger.Debug().Msg("got a new turn from the nats channel, processing")
 			// we got an explicit message from the turn generator that our turn is ready
 			// let's use this message data
-			var sf *models.SessionFiles
-			if err := jsoniter.Unmarshal(msg.Data, sf); err != nil {
+			var sf models.SessionFiles
+			if err := jsoniter.Unmarshal(msg.Data, &sf); err != nil {
 				r.logger.Err(err).Msg("failed to unmarshal sessionFile from nats message: someone sent an invalid message into this subject ?")
 				return
 			}
-			sfdb := &models.SessionFilesDB{SessionFiles: *sf}
+			sfdb := &models.SessionFilesDB{SessionFiles: sf}
 			t := sfdb.ToTurnFiles(r.details.PlayerOrder)
 
 			jsonTurn, err := json.Marshal(t)
@@ -137,6 +138,7 @@ func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.P
 			return
 
 		case t := <-newSQLTurnChan:
+			r.logger.Debug().Msg("got a new turn from the SQL channel, processing")
 			// we cannot wait eternally on our turn generator because something may have
 			// happened, like a reboot and our message could have long been lost
 			// and the turn could be ready in the database
@@ -147,10 +149,12 @@ func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.P
 				r.logger.Err(err).Msg("failed to marshal newTurn to json")
 				return
 			}
+			r.logger.Debug().Msg("new turn from the SQL channel marshalled, will send over websocket")
 			if err := c.WriteMessage(websocket.TextMessage, jsonTurn); err != nil {
 				r.logger.Err(err).Msg("failed to send turn into websocket")
 				return
 			}
+			r.logger.Debug().Msg("new turn from the SQL channel sent over websocket. Done")
 			// we finished the job
 			return
 		case err := <-errChan:
@@ -161,15 +165,16 @@ func (r *TurnResponder) WriteResponse(rw http.ResponseWriter, producer runtime.P
 }
 
 func (r *TurnResponder) scanForNewTurn(ctx context.Context, newSQLTurnChan NewTurnChan, errChan chan error) {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			if ctx.Err() != nil {
-				r.Logger().Err(ctx.Err()).Msg("scan for new turn: context returned an error")
-				errChan <- ctx.Err()
-			}
+			// if we are done, we are done, no need to scan for errors here
+			// if ctx.Err() != nil {
+			// 	r.Logger().Err(ctx.Err()).Msg("scan for new turn: context returned an error")
+			// 	errChan <- ctx.Err()
+			// }
 			return
 		case <-ticker.C:
 			// only scan the DB once in 30 s

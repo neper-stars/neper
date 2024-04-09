@@ -72,7 +72,8 @@ func (g *TurnGenerator) Run(ctx context.Context) {
 	}
 	defer func() {
 		if err := turnNeedsGenerationSub.Unsubscribe(); err != nil {
-			g.log.Err(err).Str("subject", SubjectTurnNeedsGeneration).Msg("failed to unsubscribe from subject")
+			// TODO: here the nats connection is already closed, so we cannot unsubscribe
+			// g.log.Err(err).Str("subject", SubjectTurnNeedsGeneration).Msg("failed to unsubscribe from subject")
 		}
 		// make ourselves as not running just before getting out
 		g.running = false
@@ -139,7 +140,7 @@ func (g *TurnGenerator) needsGeneration(msg *nats.Msg) error {
 
 	g.log.Debug().Msg("turn marshalled, will now send over NATS to handler")
 
-	subject := SubjectTurnNotifyForSession(SubjectTurnNotifyBase + needsGenerationMsg.SessionID)
+	subject := SubjectTurnNotifyForSession(needsGenerationMsg.SessionID)
 	newTurnMsg := nats.NewMsg(subject)
 	newTurnMsg.Data = sfData
 	if err := g.natsConn.PublishMsg(newTurnMsg); err != nil {

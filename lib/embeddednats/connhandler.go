@@ -30,6 +30,7 @@ func (ch *ConnHandlers) ConnErrHandler(conn *nats.Conn, err error) {
 func (ch *ConnHandlers) ErrHandler(conn *nats.Conn, sub *nats.Subscription, err error) {
 	ch.logger.Err(err).
 		Str("connStatus", conn.Status().String()).
-		Str("subject", sub.Subject).
+		// sub is not always non-nil ...
+		// Str("subject", sub.Subject).
 		Msg("nats client error")
 }
