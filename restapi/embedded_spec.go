@@ -501,6 +501,35 @@ func init() {
       ]
     },
     "/v1/sessions/{session_id}/rules": {
+      "get": {
+        "description": "Return the session rules.\n",
+        "operationId": "rulesRead",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the session rules",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/ruleset"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
       "post": {
         "description": "if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint.",
         "summary": "create rules for your session",
@@ -1542,6 +1571,44 @@ func init() {
       ]
     },
     "/v1/sessions/{session_id}/rules": {
+      "get": {
+        "description": "Return the session rules.\n",
+        "operationId": "rulesRead",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the session rules",
+            "schema": {
+              "$ref": "#/definitions/ruleset"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "description": "if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint.",
         "summary": "create rules for your session",
@@ -2278,7 +2345,7 @@ func init() {
           "x-go-custom-tag": "db:\"vc_have_highest_score_after_x_years_value\""
         },
         "vc_owns_x_capital_ships": {
-          "description": "Owns \"X\" capital ships (Defensive startegy)\nThis really lends itself to keeping out of trouble for the player.\nEven though one can build capital ships, it is another thing to keep them intact in order to win the game.\nAlso, because of the long time necessary in order to achieve the technology to build these ships,\ngames will run a long time.\n",
+          "description": "Owns \"X\" capital ships (Defensive strategy)\nThis really lends itself to keeping out of trouble for the player.\nEven though one can build capital ships, it is another thing to keep them intact in order to win the game.\nAlso, because of the long time necessary in order to achieve the technology to build these ships,\ngames will run a long time.\n",
           "type": "boolean",
           "x-go-custom-tag": "db:\"vc_owns_x_capital_ships\"",
           "x-nullable": false

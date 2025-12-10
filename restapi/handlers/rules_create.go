@@ -55,6 +55,49 @@ func (h *RulesCreateHandler) handle(
 	}
 	rulesetDB.ID = uid.String()
 	rulesetDB.SessionID = params.SessionID
+	rulesetDB.AcceleratedBbsPlay = params.Ruleset.AcceleratedBbsPlay
+	rulesetDB.ComputerPlayersFormAlliances = params.Ruleset.ComputerPlayersFormAlliances
+	rulesetDB.Density = params.Ruleset.Density
+	rulesetDB.GalaxyClumping = params.Ruleset.GalaxyClumping
+	rulesetDB.MaximumMinerals = params.Ruleset.MaximumMinerals
+	rulesetDB.NoRandomEvents = params.Ruleset.NoRandomEvents
+	rulesetDB.PublicPlayerScores = params.Ruleset.PublicPlayerScores
+	rulesetDB.SlowerTechAdvances = params.Ruleset.SlowerTechAdvances
+	rulesetDB.StartingDistance = params.Ruleset.StartingDistance
+	rulesetDB.UniverseSize = params.Ruleset.UniverseSize
+	rulesetDB.RandomSeed = params.Ruleset.RandomSeed
+
+	rulesetDB.VcAttainTechXInYField = params.Ruleset.VcAttainTechXInYField
+	rulesetDB.VcAttainTechXInYFieldFieldsValue = params.Ruleset.VcAttainTechXInYFieldFieldsValue
+	rulesetDB.VcAttainTechXInYFieldTechValue = params.Ruleset.VcAttainTechXInYFieldTechValue
+
+	rulesetDB.VcExceedNextPlayerScoreByx = params.Ruleset.VcExceedNextPlayerScoreByx
+	rulesetDB.VcExceedNextPlayerScoreByxValue = params.Ruleset.VcExceedNextPlayerScoreByxValue
+
+	rulesetDB.VcExceedScoreOfx = params.Ruleset.VcExceedScoreOfx
+	rulesetDB.VcExceedScoreOfxValue = params.Ruleset.VcExceedScoreOfxValue
+
+	rulesetDB.VcHasProductionCapacityOfxThousand = params.Ruleset.VcHasProductionCapacityOfxThousand
+	rulesetDB.VcHasProductionCapacityOfxThousandValue = params.Ruleset.VcHasProductionCapacityOfxThousandValue
+
+	rulesetDB.VcHaveHighestScoreAfterxYears = params.Ruleset.VcHaveHighestScoreAfterxYears
+	rulesetDB.VcHaveHighestScoreAfterxYearsValue = params.Ruleset.VcHaveHighestScoreAfterxYearsValue
+
+	rulesetDB.VcOwnsxCapitalShips = params.Ruleset.VcOwnsxCapitalShips
+
+	capitalShipsValue := params.Ruleset.VcOwnsxCapitalShipsValue
+	if params.Ruleset.VcOwnsxCapitalShipsValue < 10 {
+		capitalShipsValue = 10
+	} else if params.Ruleset.VcOwnsxCapitalShipsValue > 300 {
+		capitalShipsValue = 300
+	}
+	rulesetDB.VcOwnsxCapitalShipsValue = capitalShipsValue
+
+	rulesetDB.VcOwnsxPercentOfPlanets = params.Ruleset.VcOwnsxPercentOfPlanets
+	rulesetDB.VcOwnsxPercentOfPlanetsValue = params.Ruleset.VcOwnsxPercentOfPlanetsValue
+
+	rulesetDB.VcWinnerMustMeetxOfTheAbove = params.Ruleset.VcWinnerMustMeetxOfTheAbove
+	rulesetDB.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared = params.Ruleset.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared
 
 	_, err = sqlH.Insert(&rulesetDB)
 	if err != nil {

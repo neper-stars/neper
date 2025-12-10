@@ -466,7 +466,7 @@ definitions:
         x-go-custom-tag: db:"vc_owns_x_capital_ships"
         x-nullable: false
         description: |
-          Owns "X" capital ships (Defensive startegy)
+          Owns "X" capital ships (Defensive strategy)
           This really lends itself to keeping out of trouble for the player.
           Even though one can build capital ships, it is another thing to keep them intact in order to win the game.
           Also, because of the long time necessary in order to achieve the technology to build these ships,

@@ -57,11 +57,11 @@ Then you can start your Neper server with the command line:
 neper serve --scheme=http --nkey=SUAKNUB2...SYMKOA --no-nats-server --nats-url=https://mynatsserver:4222
 ```
 
-We added two more options the command line:
+We added two more options to the command line:
   - `--no-nats-server` to make sure neper does not try to start a NATS server
   - `--nats-url` to point the client code of Neper to the external NATS server you want to use
  
-Note: This option is for heavy lifting when you want to host numerous sessions with many clients, and it not needed
+Note: This option is for heavy lifting when you want to host numerous sessions with many clients, and is not needed
 if you just want to host your own stars! sessions and play with a few friends.
 
 ## Player Requirements

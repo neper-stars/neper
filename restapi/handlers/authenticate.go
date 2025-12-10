@@ -36,7 +36,7 @@ func (h *Authenticate) handle(
 		log.Debug().Msg("failed to auth")
 		return "", err
 	}
-	log.Debug().Msg("auth succeeded")
+	log.Debug().Str("user", principal.NickName).Msg("auth succeeded")
 	return h.auth.MakeToken(*principal)
 }
 

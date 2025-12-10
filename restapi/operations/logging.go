@@ -69,6 +69,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "rulesCreate",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/rules"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/rules"] = LogOperation(
+		"", "rulesRead",
+	)(o.handlers["GET"]["/v1/sessions/{session_id}/rules"])
+
 	o.handlers["POST"]["/v1/sessions"] = LogOperation(
 		"", "sessionCreate",
 	)(o.handlers["POST"]["/v1/sessions"])

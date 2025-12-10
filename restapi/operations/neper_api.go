@@ -77,6 +77,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		RulesCreateHandler: RulesCreateHandlerFunc(func(params RulesCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RulesCreate has not yet been implemented")
 		}),
+		RulesReadHandler: RulesReadHandlerFunc(func(params RulesReadParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation RulesRead has not yet been implemented")
+		}),
 		SessionCreateHandler: SessionCreateHandlerFunc(func(params SessionCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionCreate has not yet been implemented")
 		}),
@@ -189,6 +192,8 @@ type NeperAPI struct {
 	ReorderPlayersHandler ReorderPlayersHandler
 	// RulesCreateHandler sets the operation handler for the rules create operation
 	RulesCreateHandler RulesCreateHandler
+	// RulesReadHandler sets the operation handler for the rules read operation
+	RulesReadHandler RulesReadHandler
 	// SessionCreateHandler sets the operation handler for the session create operation
 	SessionCreateHandler SessionCreateHandler
 	// SessionJoinHandler sets the operation handler for the session join operation
@@ -328,6 +333,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.RulesCreateHandler == nil {
 		unregistered = append(unregistered, "RulesCreateHandler")
+	}
+	if o.RulesReadHandler == nil {
+		unregistered = append(unregistered, "RulesReadHandler")
 	}
 	if o.SessionCreateHandler == nil {
 		unregistered = append(unregistered, "SessionCreateHandler")
@@ -511,6 +519,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions/{session_id}/rules"] = NewRulesCreate(o.context, o.RulesCreateHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/sessions/{session_id}/rules"] = NewRulesRead(o.context, o.RulesReadHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

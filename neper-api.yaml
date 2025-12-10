@@ -332,6 +332,26 @@ paths:
           $ref: "#/responses/default"
 
   /v1/sessions/{session_id}/rules:
+    get:
+      operationId: rulesRead
+      description: |
+        Return the session rules.
+      parameters:
+        - name: "session_id"
+          in: "path"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: the session rules
+          schema:
+            $ref: "neper-types.yaml#/definitions/ruleset"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
     post:
       operationId: rulesCreate
       summary: "create rules for your session"

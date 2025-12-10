@@ -53,6 +53,9 @@ func setupServeConfig(config *restapi.Config) error {
 	// This is where the api config can be customized at will
 	config.TokenOptions = *TokenOptions
 
+	// Initialize the authenticator
+	config.Authenticator = auth.NewAuth(config.TokenOptions, config.DB, config.Now, config.Log)
+
 	runner, err := stars.NewRunner(&config.Log, StarsRunnerOptions)
 	if err != nil {
 		return err

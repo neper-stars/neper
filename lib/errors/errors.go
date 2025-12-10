@@ -85,6 +85,30 @@ func (e ErrUserProfileNotFound) Is(target error) bool {
 	return errors.Is(target, ErrNotFound)
 }
 
+// Rules
+
+// ErrRulesNotFound no event found matching the criterions
+type ErrRulesNotFound struct {
+	GivenMessage string
+}
+
+// NewErrRulesNotFound is the constructor to obtain an ErrRaceNotFound error
+func NewErrRulesNotFound(msg string) *ErrRulesNotFound {
+	return &ErrRulesNotFound{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrRulesNotFound) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrRulesNotFound) Is(target error) bool {
+	return errors.Is(target, ErrNotFound)
+}
+
+// Race error
+
 // ErrRaceNotFound no event found matching the criterions
 type ErrRaceNotFound struct {
 	GivenMessage string

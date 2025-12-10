@@ -1,5 +1,6 @@
 syntax: glob
 
+stars.exe
 # task cache files should not be versionned ever
 .task/
 

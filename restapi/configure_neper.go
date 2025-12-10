@@ -108,15 +108,15 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "Authorization" header is set
-	apiAuth := auth.NewAuth(config.TokenOptions, config.DB, config.Now, config.Log)
-	api.KeyAuth = apiAuth.Auth
-	config.OnShutdown(apiAuth.Close)
+	// Use the pre-initialized authenticator from config
+	api.KeyAuth = config.Authenticator.Auth
+	config.OnShutdown(config.Authenticator.Close)
 	config.OnShutdown(config.StarsRunner.Shutdown)
 	config.OnShutdown(config.TurnGenerator.Shutdown)
 	config.OnShutdown(config.NatsServer.Shutdown)
 
 	// Authenticate
-	api.AuthenticateHandler = handlers.NewAuthenticateHandler(config.DB, apiAuth)
+	api.AuthenticateHandler = handlers.NewAuthenticateHandler(config.DB, config.Authenticator)
 	api.RefreshTokenHandler = handlers.NewRefreshTokenHandler(&config.Log, config.DB, config.Authenticator)
 
 	// Sessions
@@ -147,6 +147,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.ReorderPlayersHandler = handlers.NewReorderPlayersHandler(&config.Log, config.DB)
 	// ruleset
 	api.RulesCreateHandler = handlers.NewRulesCreateHandler(&config.Log, config.DB)
+	api.RulesReadHandler = handlers.NewRulesReadHandler(&config.Log, config.DB)
 
 	// game creation
 	api.GameCreateHandler = handlers.NewGameCreateHandler(&config.Log, config.DB, config.StarsRunner)

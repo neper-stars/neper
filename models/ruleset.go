@@ -213,7 +213,7 @@ type Ruleset struct {
 	// Minimum: 30
 	VcHaveHighestScoreAfterxYearsValue int64 `json:"vc_have_highest_score_after_x_years_value,omitempty" db:"vc_have_highest_score_after_x_years_value"`
 
-	// Owns "X" capital ships (Defensive startegy)
+	// Owns "X" capital ships (Defensive strategy)
 	// This really lends itself to keeping out of trouble for the player.
 	// Even though one can build capital ships, it is another thing to keep them intact in order to win the game.
 	// Also, because of the long time necessary in order to achieve the technology to build these ships,
