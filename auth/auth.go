@@ -84,6 +84,8 @@ func NewAuth(options TokenOptions, db *sqlx.DB, now func() time.Time, log zerolo
 	// this singleton avoid multi register panics on prometheus during tests
 	if authSingleton != nil {
 		authSingleton.db = db
+		authSingleton.now = now
+		authSingleton.log = log
 		return authSingleton
 	}
 	var secret []byte
