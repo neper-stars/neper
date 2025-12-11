@@ -20,7 +20,7 @@ func TestAuth(t *testing.T) {
 	t.Run("cache full log message", func(t *testing.T) {
 		t.Run("small cache", func(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
-			log := zerolog.New(buf)
+			log := zerolog.New(buf).Level(zerolog.WarnLevel)
 			ctx := log.WithContext(context.Background())
 			testdb := database.GetTestDB(ctx, t, migration.Source)
 			defer testdb.Close()

@@ -1,0 +1,19 @@
+{
+    "changes": [
+        {
+            "operation": "create",
+            "data": {
+                "__type__": "user_profile",
+                "id": "saroumanID",
+                "nickname": "Sarouman",
+                "email": "sarouman@isengard.com",
+                "api_key": "apikeySarouman",
+                "is_active": true,
+                "is_manager": false,
+                "session_list": [
+                    {"session_id":  "isengardID", "is_manager":  true}
+                ]
+            }
+        }
+    ]
+}

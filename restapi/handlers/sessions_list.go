@@ -45,22 +45,19 @@ func (h *SessionsList) handle(
 	if !principal.IsGlobalManager {
 		// filter using the sessions membership if the user is not a global manager
 		upsr := models.Schema.UserProfileSessionRelDB.As("upsr")
-		query = query.InnerJoin(s.ID.Join(upsr.SessionID).Sql())
+		// Use LEFT JOIN so public sessions without any members are still returned
+		query = query.LeftJoin(s.ID.Join(upsr.SessionID).Sql())
 
 		filter := sq.Or{
+			// public sessions: visible to everyone
+			sq.Eq{models.SessionDBPrivateColumn: false},
+			// private sessions: only if I am a member
 			sq.And{
-				sq.Eq{models.SessionDBPrivateColumn: false},
-				sq.Or{
-					upsr.UserProfileID.Eq(principal.Subject),
-					upsr.UserProfileID.Eq(nil),
-				},
-			}, // session is public, and (I am already in it or not, but not someone else)
-			sq.Or{
 				sq.Eq{models.SessionDBPrivateColumn: true},
 				upsr.UserProfileID.Eq(principal.Subject),
-			}, // session is private and I am a member
+			},
 		}
-		query = query.Where(filter)
+		query = query.Where(filter).Distinct()
 	}
 
 	var list []*models.SessionDB
