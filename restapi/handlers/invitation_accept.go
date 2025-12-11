@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -90,6 +91,24 @@ func (h *InvitationAcceptHandler) handle(
 		return nil, err
 	}
 
+	// Once everything else is done we remove invite from db
+	deleteQuery := sq.Delete(models.InvitationDBTable).
+		Where(sq.Eq{models.InvitationDBIDColumn: params.InvitationID})
+
+	result, err := sqlH.Exec(deleteQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if rowsAffected == 0 {
+		return nil, errs.ErrNotFound
+	}
+
+	// and finally commit the whole transaction as a whole
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dgrijalva/jwt-go.v3"
 	"orus.io/orus-io/go-orusapi/database"
@@ -89,5 +90,12 @@ func TestInvitationAcceptHandler(t *testing.T) {
 			}
 		}
 		require.True(t, merryIsMember)
+
+		// verify invitation is removed from DB
+		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
+		var count int
+		err = sqlH.Get(&count, sq.Select("COUNT(*)").From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: returnedInvitation.ID}))
+		require.NoError(t, err)
+		require.Equal(t, 0, count)
 	})
 }
