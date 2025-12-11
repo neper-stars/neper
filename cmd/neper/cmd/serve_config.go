@@ -3,10 +3,11 @@
 package cmd
 
 import (
+	"context"
+	"time"
+
 	"github.com/go-openapi/swag"
 	"github.com/nats-io/nats.go"
-
-	"context"
 
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
@@ -52,6 +53,11 @@ func setupServeConfig(config *restapi.Config) error {
 	config.BaseURL = InfoOptions.BaseURL
 	// This is where the api config can be customized at will
 	config.TokenOptions = *TokenOptions
+
+	// Set default Now function if not provided (tests can override this)
+	if config.Now == nil {
+		config.Now = time.Now
+	}
 
 	// Initialize the authenticator
 	config.Authenticator = auth.NewAuth(config.TokenOptions, config.DB, config.Now, config.Log)
