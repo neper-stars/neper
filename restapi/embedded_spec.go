@@ -856,20 +856,6 @@ func init() {
       "get": {
         "description": "Return the asked race from your profile.\n",
         "operationId": "raceRead",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "user_profile_id",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "race_id",
-            "in": "path",
-            "required": true
-          }
-        ],
         "responses": {
           "200": {
             "description": "the race definition, including the datafile",
@@ -884,7 +870,45 @@ func init() {
             "$ref": "#/responses/forbidden"
           }
         }
-      }
+      },
+      "delete": {
+        "description": "Delete a race from your profile.\nYou can only delete races that belong to you,\nunless you are a global manager.\nReturns 409 Conflict if the race is currently in use in a session.\n",
+        "operationId": "raceDelete",
+        "responses": {
+          "204": {
+            "$ref": "#/responses/nocontent"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "409": {
+            "$ref": "#/responses/conflict"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "user_profile_id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "name": "race_id",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
@@ -2049,20 +2073,6 @@ func init() {
       "get": {
         "description": "Return the asked race from your profile.\n",
         "operationId": "raceRead",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "user_profile_id",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "race_id",
-            "in": "path",
-            "required": true
-          }
-        ],
         "responses": {
           "200": {
             "description": "the race definition, including the datafile",
@@ -2083,7 +2093,60 @@ func init() {
             }
           }
         }
-      }
+      },
+      "delete": {
+        "description": "Delete a race from your profile.\nYou can only delete races that belong to you,\nunless you are a global manager.\nReturns 409 Conflict if the race is currently in use in a session.\n",
+        "operationId": "raceDelete",
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "409": {
+            "description": "Resource already exists",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "user_profile_id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "name": "race_id",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {

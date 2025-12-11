@@ -39,6 +39,18 @@ func BadRequestErr(err error, log *zerolog.Logger) *ErrorResponder {
 	return &ErrorResponder{code: http.StatusBadRequest, err: models.FromError(err)}
 }
 
+// Conflict is a helper function to log and reply a conflict error
+func Conflict(msg string, log *zerolog.Logger) *ErrorResponder {
+	log.Warn().Str("message", msg).Msg("conflict error")
+	return &ErrorResponder{
+		code: http.StatusConflict,
+		err: &models.Error{
+			Code:    http.StatusConflict,
+			Message: &msg,
+		},
+	}
+}
+
 type ErrorResponder struct {
 	code int
 	err  *models.Error

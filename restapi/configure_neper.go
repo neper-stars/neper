@@ -135,6 +135,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.RaceCreateHandler = handlers.NewRaceCreateHandler(&config.Log, config.DB)
 	api.RacesListHandler = handlers.NewRacesListHandler(config.DB)
 	api.RaceReadHandler = handlers.NewRaceReadHandler(config.DB)
+	api.RaceDeleteHandler = handlers.NewRaceDeleteHandler(config.DB)
 
 	// Invitations
 	api.InvitationCreateHandler = handlers.NewInvitationCreateHandler(&config.Log, config.DB)

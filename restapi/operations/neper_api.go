@@ -65,6 +65,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		RaceCreateHandler: RaceCreateHandlerFunc(func(params RaceCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RaceCreate has not yet been implemented")
 		}),
+		RaceDeleteHandler: RaceDeleteHandlerFunc(func(params RaceDeleteParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation RaceDelete has not yet been implemented")
+		}),
 		RaceReadHandler: RaceReadHandlerFunc(func(params RaceReadParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RaceRead has not yet been implemented")
 		}),
@@ -187,6 +190,8 @@ type NeperAPI struct {
 	InvitationListHandler InvitationListHandler
 	// RaceCreateHandler sets the operation handler for the race create operation
 	RaceCreateHandler RaceCreateHandler
+	// RaceDeleteHandler sets the operation handler for the race delete operation
+	RaceDeleteHandler RaceDeleteHandler
 	// RaceReadHandler sets the operation handler for the race read operation
 	RaceReadHandler RaceReadHandler
 	// RacesListHandler sets the operation handler for the races list operation
@@ -326,6 +331,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.RaceCreateHandler == nil {
 		unregistered = append(unregistered, "RaceCreateHandler")
+	}
+	if o.RaceDeleteHandler == nil {
+		unregistered = append(unregistered, "RaceDeleteHandler")
 	}
 	if o.RaceReadHandler == nil {
 		unregistered = append(unregistered, "RaceReadHandler")
@@ -511,6 +519,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"] = NewRaceCreate(o.context, o.RaceCreateHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"] = NewRaceDelete(o.context, o.RaceDeleteHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

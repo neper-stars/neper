@@ -30,6 +30,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"] = RaceCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"])
 
+	o.handlers["DELETE"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"] = RaceDeleteInstrumentHandler(
+		o.handlers["DELETE"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"])
+
 	o.handlers["GET"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"] = RaceReadInstrumentHandler(
 		o.handlers["GET"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"])
 

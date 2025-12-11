@@ -612,19 +612,19 @@ paths:
           $ref: "#/responses/default"
 
   /v1/user_profiles/{user_profile_id}/races/{race_id}:
+    parameters:
+      - name: "user_profile_id"
+        in: "path"
+        type: "string"
+        required: true
+      - name: "race_id"
+        in: "path"
+        type: "string"
+        required: true
     get:
       operationId: raceRead
       description: |
         Return the asked race from your profile.
-      parameters:
-        - name: "user_profile_id"
-          in: "path"
-          type: "string"
-          required: true
-        - name: "race_id"
-          in: "path"
-          type: "string"
-          required: true
       responses:
         200:
           description: the race definition, including the datafile
@@ -634,6 +634,26 @@ paths:
           $ref: "#/responses/unauthorized"
         403:
           $ref: "#/responses/forbidden"
+    delete:
+      operationId: raceDelete
+      description: |
+        Delete a race from your profile.
+        You can only delete races that belong to you,
+        unless you are a global manager.
+        Returns 409 Conflict if the race is currently in use in a session.
+      responses:
+        204:
+          $ref: "#/responses/nocontent"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        409:
+          $ref: "#/responses/conflict"
+        default:
+          $ref: "#/responses/default"
 
 responses:
   nocontent:

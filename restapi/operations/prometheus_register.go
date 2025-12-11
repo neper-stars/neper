@@ -36,6 +36,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		raceCreateHandlerInFlight,
 	)
 	reg.MustRegister(
+		raceDeleteHandlerDuration,
+		raceDeleteHandlerInFlight,
+	)
+	reg.MustRegister(
 		raceReadHandlerDuration,
 		raceReadHandlerInFlight,
 	)

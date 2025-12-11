@@ -53,6 +53,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "raceCreate",
 	)(o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"])
 
+	o.handlers["DELETE"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"] = LogOperation(
+		"", "raceDelete",
+	)(o.handlers["DELETE"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"])
+
 	o.handlers["GET"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"] = LogOperation(
 		"", "raceRead",
 	)(o.handlers["GET"]["/v1/user_profiles/{user_profile_id}/races/{race_id}"])

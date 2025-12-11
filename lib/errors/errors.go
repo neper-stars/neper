@@ -251,3 +251,23 @@ func (e ErrInvalidRace) Error() string {
 func (e ErrInvalidRace) Is(target error) bool {
 	return errors.Is(target, ErrInvalid)
 }
+
+// ErrRaceInUse ...
+type ErrRaceInUse struct {
+	GivenMessage string
+}
+
+// NewErrRaceInUse ...
+func NewErrRaceInUse(msg string) *ErrRaceInUse {
+	return &ErrRaceInUse{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrRaceInUse) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrRaceInUse) Is(target error) bool {
+	return errors.Is(target, ErrConflict)
+}
