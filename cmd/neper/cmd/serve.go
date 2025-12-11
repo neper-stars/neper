@@ -3,8 +3,6 @@
 package cmd
 
 import (
-	"time"
-
 	"github.com/dlmiddlecote/sqlstats"
 	"github.com/go-openapi/loads"
 	"github.com/prometheus/client_golang/prometheus"
@@ -92,7 +90,6 @@ func (cmd *ServeCmd) Execute([]string) error {
 	config := restapi.Config{
 		Log: Logger,
 		DB:  db,
-		Now: time.Now,
 	}
 	if err := setupServeConfig(&config); err != nil {
 		return err

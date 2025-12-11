@@ -140,6 +140,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.InvitationCreateHandler = handlers.NewInvitationCreateHandler(&config.Log, config.DB)
 	api.InvitationListHandler = handlers.NewInvitationListHandler(&config.Log, config.DB)
 	api.InvitationAcceptHandler = handlers.NewInvitationAcceptHandler(&config.Log, config.DB)
+	api.InvitationDeclineHandler = handlers.NewInvitationDeclineHandler(&config.Log, config.DB)
 
 	// Session Player Race mapping (once player is in a session, he sets his race for this session)
 	api.SessionPlayerRaceCreateHandler = handlers.NewSessionPlayerRaceCreateHandler(&config.Log, config.DB)

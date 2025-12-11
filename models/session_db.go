@@ -124,7 +124,7 @@ func (c *SessionDB) Ruleset(sql *database.SQLHelper) (*Ruleset, error) {
 	return &rulesetDB.Ruleset, nil
 }
 
-// FromDB loads the data stored in other tables than 'user_profile' in the API
+// FromDB loads the data stored in other tables than 'session' in the API
 // facing attributes
 func (c *SessionDB) FromDB(db *database.SQLHelper) error {
 	ids, err := c.MembersID(db)

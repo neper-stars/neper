@@ -189,6 +189,23 @@ paths:
           $ref: "#/responses/conflict"
         default:
           $ref: "#/responses/default"
+    delete:
+      operationId: invitationDecline
+      description: |
+        Decline an invitation and remove it from the system.
+        You can only decline an invitation that was addressed to you,
+        otherwise you will receive a 403 response.
+      responses:
+        204:
+          $ref: "#/responses/nocontent"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
 
   /v1/sessions/{session_id}/join:
     parameters:

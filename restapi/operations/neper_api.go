@@ -56,6 +56,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		InvitationCreateHandler: InvitationCreateHandlerFunc(func(params InvitationCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation InvitationCreate has not yet been implemented")
 		}),
+		InvitationDeclineHandler: InvitationDeclineHandlerFunc(func(params InvitationDeclineParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation InvitationDecline has not yet been implemented")
+		}),
 		InvitationListHandler: InvitationListHandlerFunc(func(params InvitationListParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation InvitationList has not yet been implemented")
 		}),
@@ -178,6 +181,8 @@ type NeperAPI struct {
 	InvitationAcceptHandler InvitationAcceptHandler
 	// InvitationCreateHandler sets the operation handler for the invitation create operation
 	InvitationCreateHandler InvitationCreateHandler
+	// InvitationDeclineHandler sets the operation handler for the invitation decline operation
+	InvitationDeclineHandler InvitationDeclineHandler
 	// InvitationListHandler sets the operation handler for the invitation list operation
 	InvitationListHandler InvitationListHandler
 	// RaceCreateHandler sets the operation handler for the race create operation
@@ -312,6 +317,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.InvitationCreateHandler == nil {
 		unregistered = append(unregistered, "InvitationCreateHandler")
+	}
+	if o.InvitationDeclineHandler == nil {
+		unregistered = append(unregistered, "InvitationDeclineHandler")
 	}
 	if o.InvitationListHandler == nil {
 		unregistered = append(unregistered, "InvitationListHandler")
@@ -491,6 +499,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions/{session_id}/invite"] = NewInvitationCreate(o.context, o.InvitationCreateHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/v1/invitations/{invitation_id}"] = NewInvitationDecline(o.context, o.InvitationDeclineHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

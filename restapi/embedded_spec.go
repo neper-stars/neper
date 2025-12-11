@@ -162,6 +162,27 @@ func init() {
           }
         }
       },
+      "delete": {
+        "description": "Decline an invitation and remove it from the system.\nYou can only decline an invitation that was addressed to you,\notherwise you will receive a 403 response.\n",
+        "operationId": "invitationDecline",
+        "responses": {
+          "204": {
+            "$ref": "#/responses/nocontent"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
       "parameters": [
         {
           "type": "string",
@@ -1124,6 +1145,39 @@ func init() {
           },
           "409": {
             "description": "Resource already exists",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Decline an invitation and remove it from the system.\nYou can only decline an invitation that was addressed to you,\notherwise you will receive a 403 response.\n",
+        "operationId": "invitationDecline",
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
             "schema": {
               "$ref": "#/definitions/error"
             }

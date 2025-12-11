@@ -105,6 +105,9 @@ func TestSessionsListHandler(t *testing.T) {
 		require.Equal(t, "isengardID", sessions[1].ID)
 		isengardSession := sessions[1]
 		require.Equal(t, true, isengardSession.Private)
+		// only sarouman is manager of isengard
+		require.Equal(t, 1, len(isengardSession.Managers))
+		require.Equal(t, "saroumanID", isengardSession.Managers[0])
 		require.Equal(t, "shireID", sessions[2].ID)
 	})
 }

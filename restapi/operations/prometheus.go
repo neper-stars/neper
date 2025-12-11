@@ -21,6 +21,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/sessions/{session_id}/invite"] = InvitationCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/invite"])
 
+	o.handlers["DELETE"]["/v1/invitations/{invitation_id}"] = InvitationDeclineInstrumentHandler(
+		o.handlers["DELETE"]["/v1/invitations/{invitation_id}"])
+
 	o.handlers["GET"]["/v1/invitations"] = InvitationListInstrumentHandler(
 		o.handlers["GET"]["/v1/invitations"])
 
