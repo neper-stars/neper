@@ -40,11 +40,7 @@ func TestSessionPlayerRaceCreateHandler(t *testing.T) {
 		sprCreateParams := operations.SessionPlayerRaceCreateParams{
 			SessionID: "gondorID",
 			SessionPlayerRace: &models.SessionPlayerRace{
-				IsBot:         false,
-				PlayerOrder:   0,
-				RaceID:        "hobbitsID", // <-- boromir has no right to use hobbits
-				SessionID:     "gondorID",
-				UserProfileID: "boromirID",
+				RaceID: "hobbitsID", // <-- boromir has no right to use hobbits
 			},
 		}
 		boromirPrincipal := models.Principal{
@@ -63,11 +59,7 @@ func TestSessionPlayerRaceCreateHandler(t *testing.T) {
 		sprCreateParams := operations.SessionPlayerRaceCreateParams{
 			SessionID: "gondorID",
 			SessionPlayerRace: &models.SessionPlayerRace{
-				IsBot:         false,
-				PlayerOrder:   0,
-				RaceID:        "humansID",
-				SessionID:     "gondorID",
-				UserProfileID: "boromirID",
+				RaceID: "humansID",
 			},
 		}
 		boromirPrincipal := models.Principal{

@@ -100,10 +100,6 @@ func (h *SessionPlayerRaceCreateHandler) Authorize(
 	if principal.IsGlobalManager {
 		return true, nil
 	}
-	if params.SessionID != params.SessionPlayerRace.SessionID {
-		// this kind of trick is a nono
-		return false, nil
-	}
 
 	sessionID := params.SessionID
 	raceID := params.SessionPlayerRace.RaceID
@@ -112,7 +108,12 @@ func (h *SessionPlayerRaceCreateHandler) Authorize(
 	if err != nil {
 		return false, err
 	}
-	if !member {
+	manager, err := IsSessionManager(sqlH, principal.Subject, sessionID)
+	if err != nil {
+		return false, err
+	}
+
+	if !member && !manager {
 		return false, nil
 	}
 
