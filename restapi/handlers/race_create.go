@@ -106,7 +106,7 @@ func (h *RaceCreateHandler) Authorize(
 	if principal.IsGlobalManager {
 		return true, nil
 	}
-	if params.UserProfileID == principal.Subject && params.Race.UserID == principal.Subject {
+	if params.UserProfileID == principal.Subject {
 		return true, nil
 	}
 	return false, nil

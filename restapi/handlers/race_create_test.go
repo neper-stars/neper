@@ -58,8 +58,7 @@ func TestRaceCreateHandler(t *testing.T) {
 		}
 
 		race := models.Race{
-			Data:   string(dst),
-			UserID: boromirID,
+			Data: string(dst),
 		}
 
 		params := operations.RaceCreateParams{
