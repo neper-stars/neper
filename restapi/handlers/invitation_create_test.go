@@ -63,6 +63,10 @@ func TestInvitationCreateHandler(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "gondorID", returnedInvitation.SessionID)
 		require.Equal(t, "merryID", returnedInvitation.UserProfileID)
+		// verify new fields
+		require.Equal(t, "boromirID", returnedInvitation.InviterID)
+		require.Equal(t, "Gondor", returnedInvitation.SessionName)
+		require.Equal(t, "BoromirDúnedain", returnedInvitation.InviterNickname)
 
 		// try again and get an error because you can invite the same
 		// person twice on the same session

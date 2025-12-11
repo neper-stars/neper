@@ -24,6 +24,13 @@ type InvitationList struct {
 	log *zerolog.Logger
 }
 
+// invitationWithDetails is used for the JOIN query result
+type invitationWithDetails struct {
+	models.Invitation
+	SessionName     string `db:"session_name"`
+	InviterNickname string `db:"inviter_nickname"`
+}
+
 func (h *InvitationList) handle(
 	ctx context.Context, principal *models.Principal,
 ) ([]*models.Invitation, error) {
@@ -34,21 +41,34 @@ func (h *InvitationList) handle(
 		return nil, err
 	}
 	defer tx.RollbackIfOpened(log)
-	sql := database.NewSQLHelper(ctx, tx, log)
+	sqlH := database.NewSQLHelper(ctx, tx, log)
 
-	q := sq.Select(models.InvitationColumns...).
-		From(models.InvitationDBTable).
-		Where(sq.Eq{models.InvitationDBUserProfileIDColumn: principal.Subject}).
-		OrderBy(models.InvitationDBIDColumn)
+	// Join with session and user_profile tables to get session_name and inviter_nickname
+	q := sq.Select(
+		"i."+models.InvitationDBIDColumn,
+		"i."+models.InvitationDBSessionIDColumn,
+		"i."+models.InvitationDBUserProfileIDColumn,
+		"i."+models.InvitationDBInviterIDColumn,
+		"s.name AS session_name",
+		"u.nickname AS inviter_nickname",
+	).
+		From(models.InvitationDBTable+" AS i").
+		LeftJoin(models.SessionDBTable+" AS s ON i."+models.InvitationDBSessionIDColumn+" = s.id").
+		LeftJoin(models.UserProfileDBTable+" AS u ON i."+models.InvitationDBInviterIDColumn+" = u.id").
+		Where(sq.Eq{"i." + models.InvitationDBUserProfileIDColumn: principal.Subject}).
+		OrderBy("i." + models.InvitationDBIDColumn)
 
-	var list []*models.InvitationDB
-	if err := sql.Select(&list, q); err != nil {
+	var list []invitationWithDetails
+	if err := sqlH.Select(&list, q); err != nil {
 		return nil, err
 	}
 
 	var retList []*models.Invitation
 	for i := range list {
-		retList = append(retList, &list[i].Invitation)
+		inv := list[i].Invitation
+		inv.SessionName = list[i].SessionName
+		inv.InviterNickname = list[i].InviterNickname
+		retList = append(retList, &inv)
 	}
 	return retList, nil
 }

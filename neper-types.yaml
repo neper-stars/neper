@@ -124,6 +124,21 @@ definitions:
         description: "the user profile this invitation is addressed to."
         x-go-custom-tag: db:"user_profile_id"
         x-nullable: false
+      inviter_id:
+        type: string
+        description: "the user profile id of the person who sent the invitation."
+        x-go-custom-tag: db:"inviter_id"
+        x-nullable: false
+      session_name:
+        type: string
+        readOnly: true
+        description: "the name of the session for which this invitation is. Auto-populated by the server."
+        x-nullable: false
+      inviter_nickname:
+        type: string
+        readOnly: true
+        description: "the nickname of the user who sent the invitation. Auto-populated by the server."
+        x-nullable: false
 
   user_profile:
     type: object

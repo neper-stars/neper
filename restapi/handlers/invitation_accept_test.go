@@ -61,6 +61,10 @@ func TestInvitationAcceptHandler(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, sessionID, returnedInvitation.SessionID)
 		require.Equal(t, merryID, returnedInvitation.UserProfileID)
+		// verify new fields
+		require.Equal(t, "boromirID", returnedInvitation.InviterID)
+		require.Equal(t, "Gondor", returnedInvitation.SessionName)
+		require.Equal(t, "BoromirDúnedain", returnedInvitation.InviterNickname)
 
 		// and now merry accepts invitation
 		merryPrincipal := models.Principal{

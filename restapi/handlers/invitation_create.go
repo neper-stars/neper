@@ -63,6 +63,24 @@ func (h *InvitationCreateHandler) handle(
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
+	// Fetch session to get session_name
+	var sessionDB models.SessionDB
+	if err := sqlH.GetByPKey(&sessionDB, sessionID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errs.ErrSessionNotFound{GivenMessage: "session not found"}
+		}
+		return nil, err
+	}
+
+	// Fetch inviter's user profile to get inviter_nickname
+	var inviterDB models.UserProfileDB
+	if err := sqlH.GetByPKey(&inviterDB, principal.Subject); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errs.ErrUserProfileNotFound{GivenMessage: "inviter user profile not found"}
+		}
+		return nil, err
+	}
+
 	var invitationDB models.InvitationDB
 	invitationUID, err := uuid.V4()
 	if err != nil {
@@ -71,6 +89,9 @@ func (h *InvitationCreateHandler) handle(
 	// force our ID not the one from the client
 	invitation.ID = invitationUID.String()
 	invitation.SessionID = sessionID
+	invitation.InviterID = principal.Subject
+	invitation.SessionName = sessionDB.Name
+	invitation.InviterNickname = inviterDB.Nickname
 	invitationDB.Invitation = *invitation
 
 	_, err = sqlH.Insert(&invitationDB)

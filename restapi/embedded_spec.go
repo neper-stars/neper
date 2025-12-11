@@ -2128,11 +2128,29 @@ func init() {
           "x-nullable": false,
           "readOnly": true
         },
+        "inviter_id": {
+          "description": "the user profile id of the person who sent the invitation.",
+          "type": "string",
+          "x-go-custom-tag": "db:\"inviter_id\"",
+          "x-nullable": false
+        },
+        "inviter_nickname": {
+          "description": "the nickname of the user who sent the invitation. Auto-populated by the server.",
+          "type": "string",
+          "x-nullable": false,
+          "readOnly": true
+        },
         "session_id": {
           "description": "the session id for which this invitation is.",
           "type": "string",
           "x-go-custom-tag": "db:\"session_id\"",
           "x-nullable": false
+        },
+        "session_name": {
+          "description": "the name of the session for which this invitation is. Auto-populated by the server.",
+          "type": "string",
+          "x-nullable": false,
+          "readOnly": true
         },
         "user_profile_id": {
           "description": "the user profile this invitation is addressed to.",

@@ -23,8 +23,19 @@ type Invitation struct {
 	// Read Only: true
 	ID string `json:"id,omitempty" db:"id"`
 
+	// the user profile id of the person who sent the invitation.
+	InviterID string `json:"inviter_id,omitempty" db:"inviter_id"`
+
+	// the nickname of the user who sent the invitation. Auto-populated by the server.
+	// Read Only: true
+	InviterNickname string `json:"inviter_nickname,omitempty"`
+
 	// the session id for which this invitation is.
 	SessionID string `json:"session_id,omitempty" db:"session_id"`
+
+	// the name of the session for which this invitation is. Auto-populated by the server.
+	// Read Only: true
+	SessionName string `json:"session_name,omitempty"`
 
 	// the user profile this invitation is addressed to.
 	UserProfileID string `json:"user_profile_id,omitempty" db:"user_profile_id"`
@@ -43,6 +54,14 @@ func (m *Invitation) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateInviterNickname(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSessionName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -52,6 +71,24 @@ func (m *Invitation) ContextValidate(ctx context.Context, formats strfmt.Registr
 func (m *Invitation) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Invitation) contextValidateInviterNickname(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "inviter_nickname", "body", string(m.InviterNickname)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Invitation) contextValidateSessionName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "session_name", "body", string(m.SessionName)); err != nil {
 		return err
 	}
 

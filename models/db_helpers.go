@@ -121,6 +121,9 @@ const (
 	// InvitationIDColumn is the name of the column containing field "ID" data
 	InvitationIDColumn = "id"
 
+	// InvitationInviterIDColumn is the name of the column containing field "InviterID" data
+	InvitationInviterIDColumn = "inviter_id"
+
 	// InvitationSessionIDColumn is the name of the column containing field "SessionID" data
 	InvitationSessionIDColumn = "session_id"
 
@@ -135,6 +138,9 @@ const (
 
 	// InvitationDBIDColumn is the name of the column containing field "ID" data
 	InvitationDBIDColumn = "id"
+
+	// InvitationDBInviterIDColumn is the name of the column containing field "InviterID" data
+	InvitationDBInviterIDColumn = "inviter_id"
 
 	// InvitationDBSessionIDColumn is the name of the column containing field "SessionID" data
 	InvitationDBSessionIDColumn = "session_id"
@@ -557,11 +563,13 @@ var (
 	// InvitationColumns is the list of the columns for the Invitation structure
 	InvitationColumns = []string{
 		InvitationIDColumn,
+		InvitationInviterIDColumn,
 		InvitationSessionIDColumn,
 		InvitationUserProfileIDColumn,
 	}
 	// InvitationDBDataColumns is the list of the columns for the InvitationDB structure, expect its primary key
 	InvitationDBDataColumns = []string{
+		InvitationDBInviterIDColumn,
 		InvitationDBSessionIDColumn,
 		InvitationDBUserProfileIDColumn,
 	}
@@ -785,6 +793,8 @@ func (s Invitation) Values(columns ...string) []interface{} {
 		switch column {
 		case "id":
 			values[i] = s.ID
+		case "inviter_id":
+			values[i] = s.InviterID
 		case "session_id":
 			values[i] = s.SessionID
 		case "user_profile_id":
@@ -802,6 +812,8 @@ func (s Invitation) ValuesMap(columns ...string) map[string]interface{} {
 		switch column {
 		case "id":
 			values["id"] = s.ID
+		case "inviter_id":
+			values["inviter_id"] = s.InviterID
 		case "session_id":
 			values["session_id"] = s.SessionID
 		case "user_profile_id":
@@ -837,6 +849,8 @@ func (s InvitationDB) Values(columns ...string) []interface{} {
 		switch column {
 		case "id":
 			values[i] = s.ID
+		case "inviter_id":
+			values[i] = s.InviterID
 		case "session_id":
 			values[i] = s.SessionID
 		case "user_profile_id":
@@ -854,6 +868,8 @@ func (s InvitationDB) ValuesMap(columns ...string) map[string]interface{} {
 		switch column {
 		case "id":
 			values["id"] = s.ID
+		case "inviter_id":
+			values["inviter_id"] = s.InviterID
 		case "session_id":
 			values["session_id"] = s.SessionID
 		case "user_profile_id":
@@ -866,6 +882,7 @@ func (s InvitationDB) ValuesMap(columns ...string) map[string]interface{} {
 func NewInvitationDBTableSchema() *InvitationDBTableSchema {
 	t := InvitationDBTableSchema{}
 	t.ID = NewColumn(&t, "id")
+	t.InviterID = NewColumn(&t, "inviter_id")
 	t.SessionID = NewColumn(&t, "session_id")
 	t.UserProfileID = NewColumn(&t, "user_profile_id")
 	return &t
@@ -874,6 +891,7 @@ func NewInvitationDBTableSchema() *InvitationDBTableSchema {
 type InvitationDBTableSchema struct {
 	alias string
 	ID Column
+	InviterID Column
 	SessionID Column
 	UserProfileID Column
 }
@@ -905,6 +923,7 @@ func (t InvitationDBTableSchema) FQColumns(withPKey bool) []string {
 func (t InvitationDBTableSchema) As(name string) *InvitationDBTableSchema {
 	t.alias = name
 	t.ID = NewColumn(&t, "id")
+	t.InviterID = NewColumn(&t, "inviter_id")
 	t.SessionID = NewColumn(&t, "session_id")
 	t.UserProfileID = NewColumn(&t, "user_profile_id")
 	return &t
