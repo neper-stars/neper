@@ -39,6 +39,7 @@ func (h *SessionsList) handle(
 	query := database.SQ.Select().
 		Column(s.ID.Sql()).
 		Column(s.Name.Sql()).
+		Column(s.Private.Sql()).
 		From(s.Sql()).
 		OrderBy(s.ID.Sql())
 

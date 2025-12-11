@@ -103,6 +103,8 @@ func TestSessionsListHandler(t *testing.T) {
 		require.Equal(t, 3, len(sessions))
 		require.Equal(t, "gondorID", sessions[0].ID)
 		require.Equal(t, "isengardID", sessions[1].ID)
+		isengardSession := sessions[1]
+		require.Equal(t, true, isengardSession.Private)
 		require.Equal(t, "shireID", sessions[2].ID)
 	})
 }
