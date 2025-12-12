@@ -310,7 +310,7 @@ func init() {
     },
     "/v1/sessions/{session_id}/game": {
       "post": {
-        "description": "Generate the first turn for this session, using the previously uploaded ruleset\nand all the player races.\nThis means all players must have uploaded a valid race file\nAND the rules must be set.\nYou must be the session owner/manager to be able to use this endpoint.\n",
+        "description": "Generate the first turn for this session, using the previously uploaded ruleset\nand all the player races.\nThis means all players must have uploaded a valid race file,\nthe rules must be set, AND all players must be marked as ready.\nYou must be the session owner/manager to be able to use this endpoint.\n",
         "summary": "initialize the game for this session",
         "operationId": "gameCreate",
         "parameters": [
@@ -336,6 +336,9 @@ func init() {
           },
           "403": {
             "$ref": "#/responses/forbidden"
+          },
+          "412": {
+            "$ref": "#/responses/preconditionfailed"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -1031,6 +1034,12 @@ func init() {
         "$ref": "neper-types.yaml#/definitions/error"
       }
     },
+    "preconditionfailed": {
+      "description": "Precondition not met",
+      "schema": {
+        "$ref": "neper-types.yaml#/definitions/error"
+      }
+    },
     "unauthorized": {
       "description": "Invalid credentials",
       "schema": {
@@ -1422,7 +1431,7 @@ func init() {
     },
     "/v1/sessions/{session_id}/game": {
       "post": {
-        "description": "Generate the first turn for this session, using the previously uploaded ruleset\nand all the player races.\nThis means all players must have uploaded a valid race file\nAND the rules must be set.\nYou must be the session owner/manager to be able to use this endpoint.\n",
+        "description": "Generate the first turn for this session, using the previously uploaded ruleset\nand all the player races.\nThis means all players must have uploaded a valid race file,\nthe rules must be set, AND all players must be marked as ready.\nYou must be the session owner/manager to be able to use this endpoint.\n",
         "summary": "initialize the game for this session",
         "operationId": "gameCreate",
         "parameters": [
@@ -1454,6 +1463,12 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Precondition not met",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -2929,6 +2944,12 @@ func init() {
     },
     "notfound": {
       "description": "Resource not found",
+      "schema": {
+        "$ref": "#/definitions/error"
+      }
+    },
+    "preconditionfailed": {
+      "description": "Precondition not met",
       "schema": {
         "$ref": "#/definitions/error"
       }

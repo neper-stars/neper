@@ -178,5 +178,5 @@ tasks:
     desc: generate messages from json schema definitions (see sync/data-streams/schemas/neper for more info)
     deps: []
     cmds:
-      - (cd ./dependencies/json-schema-generate && go build -o ../../tools/bin/schema-generate ./cmd/schema-generate)
+      - (cd ./dependencies/json-schema-generate && go build -buildvcs=false -o ../../tools/bin/schema-generate ./cmd/schema-generate)
       - go generate ./sync

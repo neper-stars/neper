@@ -51,6 +51,18 @@ func Conflict(msg string, log *zerolog.Logger) *ErrorResponder {
 	}
 }
 
+// PreconditionFailed is a helper function to log and reply a precondition failed error
+func PreconditionFailed(msg string, log *zerolog.Logger) *ErrorResponder {
+	log.Warn().Str("message", msg).Msg("precondition failed error")
+	return &ErrorResponder{
+		code: http.StatusPreconditionFailed,
+		err: &models.Error{
+			Code:    http.StatusPreconditionFailed,
+			Message: &msg,
+		},
+	}
+}
+
 type ErrorResponder struct {
 	code int
 	err  *models.Error

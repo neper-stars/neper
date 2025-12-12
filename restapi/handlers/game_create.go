@@ -64,6 +64,14 @@ func (h *GameCreateHandler) handle(
 		h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get player races for session")
 		return nil, err
 	}
+
+	// Check that all players are ready
+	for _, spr := range sessionPlayerRaces {
+		if !spr.Ready {
+			return nil, errs.NewErrPlayersNotReady("all players must be ready before starting the game")
+		}
+	}
+
 	ruleset, err := sessionDB.Ruleset(&sqlH)
 	if err != nil {
 		h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get ruleset for session")
@@ -130,6 +138,8 @@ func (h *GameCreateHandler) Handle(
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):
 			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrPreconditionFailed):
+			return PreconditionFailed(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}

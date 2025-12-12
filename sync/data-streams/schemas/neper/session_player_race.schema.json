@@ -41,6 +41,10 @@
     "player_order" : {
       "description": "in which slot the player is. ranges from 0 to 15",
       "type": "integer"
+    },
+    "ready" : {
+      "description": "whether the player has marked their race as ready",
+      "type": "boolean"
     }
   },
   "required": [

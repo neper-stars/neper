@@ -436,8 +436,8 @@ paths:
       description: |
         Generate the first turn for this session, using the previously uploaded ruleset
         and all the player races.
-        This means all players must have uploaded a valid race file
-        AND the rules must be set.
+        This means all players must have uploaded a valid race file,
+        the rules must be set, AND all players must be marked as ready.
         You must be the session owner/manager to be able to use this endpoint.
       parameters:
         - name: "session_id"
@@ -455,6 +455,8 @@ paths:
           $ref: "#/responses/unauthorized"
         403:
           $ref: "#/responses/forbidden"
+        412:
+          $ref: "#/responses/preconditionfailed"
         default:
           $ref: "#/responses/default"
 
@@ -719,6 +721,11 @@ responses:
 
   forbidden:
     description: Access forbidden
+    schema:
+      $ref: "neper-types.yaml#/definitions/error"
+
+  preconditionfailed:
+    description: Precondition not met
     schema:
       $ref: "neper-types.yaml#/definitions/error"
 

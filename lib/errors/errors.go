@@ -20,6 +20,9 @@ var ErrForbidden = errors.New("forbidden")
 // ErrConflict (409)
 var ErrConflict = errors.New("conflict")
 
+// ErrPreconditionFailed (412)
+var ErrPreconditionFailed = errors.New("precondition failed")
+
 // *********************
 // error implementations
 // *********************
@@ -270,4 +273,24 @@ func (e ErrRaceInUse) Error() string {
 // Is ...
 func (e ErrRaceInUse) Is(target error) bool {
 	return errors.Is(target, ErrConflict)
+}
+
+// ErrPlayersNotReady ...
+type ErrPlayersNotReady struct {
+	GivenMessage string
+}
+
+// NewErrPlayersNotReady ...
+func NewErrPlayersNotReady(msg string) *ErrPlayersNotReady {
+	return &ErrPlayersNotReady{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrPlayersNotReady) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrPlayersNotReady) Is(target error) bool {
+	return errors.Is(target, ErrPreconditionFailed)
 }

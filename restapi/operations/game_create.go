@@ -37,8 +37,8 @@ initialize the game for this session
 
 Generate the first turn for this session, using the previously uploaded ruleset
 and all the player races.
-This means all players must have uploaded a valid race file
-AND the rules must be set.
+This means all players must have uploaded a valid race file,
+the rules must be set, AND all players must be marked as ready.
 You must be the session owner/manager to be able to use this endpoint.
 
 

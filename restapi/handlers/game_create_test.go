@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/fixtures"
+	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
@@ -86,5 +88,35 @@ func TestGameCreateHandler(t *testing.T) {
 				t.Fail()
 			}
 		}
+	})
+}
+
+func TestGameCreateHandler_PlayersNotReady(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+	// Load fixture without ready flags set
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_not_ready.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_vs_gollum_ruleset.json")
+
+	runner, shutdown := stars.GetTestStarsRunner(t, &log)
+	defer shutdown()
+	createHandler := NewGameCreateHandler(&log, testdb.DB, runner)
+
+	t.Run("cannot_start_game_when_players_not_ready", func(t *testing.T) {
+		sessionID := "merryvsgollumID"
+		merryID := "merryID"
+		merryPrincipal := getTestPrincipal(merryID, false)
+
+		params := operations.NewGameCreateParams()
+		params.SessionID = sessionID
+
+		_, err := createHandler.handle(ctx, params, &merryPrincipal)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, errs.ErrPreconditionFailed), "should get precondition failed when players not ready")
 	})
 }

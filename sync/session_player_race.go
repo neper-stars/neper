@@ -16,6 +16,7 @@ func (w *Worker) syncSessionPlayerRace(ctx context.Context, sql database.SQLHelp
 				IsBot:         data.IsBot,
 				PlayerOrder:   int64(data.PlayerOrder),
 				RaceID:        data.RaceId,
+				Ready:         data.Ready,
 				SessionID:     data.SessionId,
 				UserProfileID: data.UserProfileId,
 			},

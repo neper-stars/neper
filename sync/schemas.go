@@ -1023,6 +1023,9 @@ type SessionPlayerRace struct {
 	// RaceId id of the race. If is bot, the race_id should be between 0 and 6
 	RaceId string `json:"race_id"`
 
+	// Ready whether the player has marked their race as ready
+	Ready bool `json:"ready,omitempty"`
+
 	// SessionId id of the session
 	SessionId string `json:"session_id"`
 
@@ -2728,6 +2731,16 @@ func (s SessionPlayerRace) MarshalJSONStream(stream *jsoniter.Stream) {
 	stream.WriteObjectField("race_id")
 	stream.WriteString(s.RaceId)
 
+	// Marshal the Ready field
+	if !IsEmpty(s.Ready) {
+		ct.More()
+		stream.WriteObjectField("ready")
+		stream.WriteVal(s.Ready)
+		if stream.Error != nil {
+			return
+		}
+	}
+
 	// Marshal the SessionId field
 	ct.More()
 	stream.WriteObjectField("session_id")
@@ -2821,6 +2834,11 @@ func (s *SessionPlayerRace) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 				return
 			}
 			RaceIdReceived = true
+		case "ready":
+			s.Ready = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
 		case "session_id":
 			if iter.WhatIsNext() == jsoniter.BoolValue {
 				if iter.ReadBool() {
