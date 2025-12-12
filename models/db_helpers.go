@@ -373,6 +373,9 @@ const (
 	// SessionPrivateColumn is the name of the column containing field "Private" data
 	SessionPrivateColumn = "private"
 
+	// SessionStartedColumn is the name of the column containing field "Started" data
+	SessionStartedColumn = "started"
+
 	// SessionDBTable is the name of the table where SessionDB are stored
 	SessionDBTable = "session"
 
@@ -387,6 +390,9 @@ const (
 
 	// SessionDBPrivateColumn is the name of the column containing field "Private" data
 	SessionDBPrivateColumn = "private"
+
+	// SessionDBStartedColumn is the name of the column containing field "Started" data
+	SessionDBStartedColumn = "started"
 
 	// SessionFilesHostFileColumn is the name of the column containing field "HostFile" data
 	SessionFilesHostFileColumn = "hostfile"
@@ -674,11 +680,13 @@ var (
 		SessionIDColumn,
 		SessionNameColumn,
 		SessionPrivateColumn,
+		SessionStartedColumn,
 	}
 	// SessionDBDataColumns is the list of the columns for the SessionDB structure, expect its primary key
 	SessionDBDataColumns = []string{
 		SessionDBNameColumn,
 		SessionDBPrivateColumn,
+		SessionDBStartedColumn,
 	}
 
 	// SessionDBColumns is the list of the columns for the SessionDB structure
@@ -1599,6 +1607,8 @@ func (s Session) Values(columns ...string) []interface{} {
 			values[i] = s.Name
 		case "private":
 			values[i] = s.Private
+		case "started":
+			values[i] = s.Started
 		}
 	}
 	return values
@@ -1616,6 +1626,8 @@ func (s Session) ValuesMap(columns ...string) map[string]interface{} {
 			values["name"] = s.Name
 		case "private":
 			values["private"] = s.Private
+		case "started":
+			values["started"] = s.Started
 		}
 	}
 	return values
@@ -1651,6 +1663,8 @@ func (s SessionDB) Values(columns ...string) []interface{} {
 			values[i] = s.Name
 		case "private":
 			values[i] = s.Private
+		case "started":
+			values[i] = s.Started
 		}
 	}
 	return values
@@ -1668,6 +1682,8 @@ func (s SessionDB) ValuesMap(columns ...string) map[string]interface{} {
 			values["name"] = s.Name
 		case "private":
 			values["private"] = s.Private
+		case "started":
+			values["started"] = s.Started
 		}
 	}
 	return values
@@ -1678,6 +1694,7 @@ func NewSessionDBTableSchema() *SessionDBTableSchema {
 	t.ID = NewColumn(&t, "id")
 	t.Name = NewColumn(&t, "name")
 	t.Private = NewColumn(&t, "private")
+	t.Started = NewColumn(&t, "started")
 	return &t
 }
 
@@ -1686,6 +1703,7 @@ type SessionDBTableSchema struct {
 	ID Column
 	Name Column
 	Private Column
+	Started Column
 }
 
 // Columns returns the database table column names
@@ -1717,6 +1735,7 @@ func (t SessionDBTableSchema) As(name string) *SessionDBTableSchema {
 	t.ID = NewColumn(&t, "id")
 	t.Name = NewColumn(&t, "name")
 	t.Private = NewColumn(&t, "private")
+	t.Started = NewColumn(&t, "started")
 	return &t
 }
 

@@ -56,7 +56,7 @@ func (h *SessionUpdateHandler) handle(
 		return session, err
 	}
 
-	// make sure the session sets its members/managers in keto AND in database
+	// make sure the session sets its members/managers in database
 	if err := neper.InitSession(
 		ctx, sqlH, &sessionDB,
 		models.ToUserProfileSessionRelDB(session.ID, session.Members, session.Managers),

@@ -92,6 +92,11 @@ definitions:
         description: array of manager ids
         items:
           type: string
+      started:
+        type: boolean
+        description: if the game is started, this flag is true, this will disallow users to modify their race file
+        x-go-custom-tag: db:"started"
+        x-nullable: false
       players:
         type: array
         description: |

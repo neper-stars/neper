@@ -2560,6 +2560,12 @@ func init() {
           "type": "boolean",
           "x-go-custom-tag": "db:\"private\"",
           "x-nullable": false
+        },
+        "started": {
+          "description": "if the game is started, this flag is true, this will disallow users to modify their race file",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"started\"",
+          "x-nullable": false
         }
       }
     },

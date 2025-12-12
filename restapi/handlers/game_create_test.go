@@ -63,6 +63,12 @@ func TestGameCreateHandler(t *testing.T) {
 		require.True(t, len(returnedFiles.HostFile) > 0)
 		print(returnedFiles.HostFile)
 
+		// Verify the session is marked as started
+		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
+		var sessionDB models.SessionDB
+		require.NoError(t, sqlH.GetByPKey(&sessionDB, sessionID))
+		require.True(t, sessionDB.Started, "session should be marked as started after game creation")
+
 		var rawData []byte
 		_, err = stars.B64Decode(returnedFiles.HostFile)
 		require.NoError(t, err)

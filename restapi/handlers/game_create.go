@@ -101,6 +101,13 @@ func (h *GameCreateHandler) handle(
 		return nil, err
 	}
 
+	// Mark the session as started
+	sessionDB.Started = true
+	if err := sqlH.Update(&sessionDB); err != nil {
+		h.log.Err(err).Msg("failed to update session started flag")
+		return nil, err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}

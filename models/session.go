@@ -44,6 +44,9 @@ type Session struct {
 
 	// if the session is private only the managers can add new members
 	Private bool `json:"private,omitempty" db:"private"`
+
+	// if the game is started, this flag is true, this will disallow users to modify their race file
+	Started bool `json:"started,omitempty" db:"started"`
 }
 
 // Validate validates this session
