@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http"
 
@@ -48,12 +49,43 @@ func (h *RulesCreateHandler) handle(
 	}
 	// ** AUTHORIZATION END **
 
-	var rulesetDB models.RulesetDB
-	uid, err := uuid.V4()
-	if err != nil {
+	// Check if the session exists and is not started
+	var sessionDB models.SessionDB
+	if err := sqlH.GetByPKey(&sessionDB, params.SessionID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errs.NewErrSessionNotFound("session not found with ID: " + params.SessionID)
+		}
 		return nil, err
 	}
-	rulesetDB.ID = uid.String()
+	if sessionDB.Started {
+		return nil, errs.NewErrSessionAlreadyStarted("cannot modify rules for a session that has already started")
+	}
+
+	// Check if rules already exist for this session
+	var existingRuleset models.RulesetDB
+	r := models.Schema.RulesetDB.As("r")
+	existingQuery := database.SQ.Select().
+		Columns(r.FQColumns(true)...).
+		From(r.Sql()).
+		Where(r.SessionID.Eq(params.SessionID))
+	err = sqlH.Get(&existingRuleset, existingQuery)
+	rulesExist := err == nil
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+
+	var rulesetDB models.RulesetDB
+	if rulesExist {
+		// Update existing ruleset
+		rulesetDB.ID = existingRuleset.ID
+	} else {
+		// Create new ruleset
+		uid, err := uuid.V4()
+		if err != nil {
+			return nil, err
+		}
+		rulesetDB.ID = uid.String()
+	}
 	rulesetDB.SessionID = params.SessionID
 	rulesetDB.AcceleratedBbsPlay = params.Ruleset.AcceleratedBbsPlay
 	rulesetDB.ComputerPlayersFormAlliances = params.Ruleset.ComputerPlayersFormAlliances
@@ -99,19 +131,20 @@ func (h *RulesCreateHandler) handle(
 	rulesetDB.VcWinnerMustMeetxOfTheAbove = params.Ruleset.VcWinnerMustMeetxOfTheAbove
 	rulesetDB.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared = params.Ruleset.VcAtLeastxYearsMustPassBeforeaWinnerIsDeclared
 
-	_, err = sqlH.Insert(&rulesetDB)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update session to mark rules as set
-	var sessionDB models.SessionDB
-	if err := sqlH.GetByPKey(&sessionDB, params.SessionID); err != nil {
-		return nil, err
-	}
-	sessionDB.RulesIsSet = true
-	if err := sqlH.Update(&sessionDB); err != nil {
-		return nil, err
+	if rulesExist {
+		if err := sqlH.Update(&rulesetDB); err != nil {
+			return nil, err
+		}
+	} else {
+		if _, err := sqlH.Insert(&rulesetDB); err != nil {
+			return nil, err
+		}
+		// Update session to mark rules as set and set the FK (only needed on first creation)
+		sessionDB.RulesIsSet = true
+		sessionDB.RulesetID = &rulesetDB.ID
+		if err := sqlH.Update(&sessionDB); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -136,6 +169,8 @@ func (h *RulesCreateHandler) Handle(
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):
 			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrPreconditionFailed):
+			return PreconditionFailed(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}

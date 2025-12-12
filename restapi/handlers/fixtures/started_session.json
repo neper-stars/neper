@@ -1,0 +1,28 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session",
+        "id": "startedSessionID",
+        "name": "Started Session",
+        "started": true
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "managerID",
+        "nickname": "manager",
+        "email": "manager@test.com",
+        "api_key": "apikeyManager",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [
+          {"session_id": "startedSessionID", "is_manager": true}
+        ]
+      }
+    }
+  ]
+}

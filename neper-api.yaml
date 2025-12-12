@@ -404,8 +404,11 @@ paths:
           $ref: "#/responses/default"
     post:
       operationId: rulesCreate
-      summary: "create rules for your session"
-      description: "if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint."
+      summary: "create or update rules for your session"
+      description: |
+        Set the rules for this session. If rules already exist, they will be updated.
+        You must be the session owner/manager to use this endpoint.
+        Rules cannot be modified once the session has started (returns 412).
       parameters:
         - name: "session_id"
           in: "path"
@@ -426,6 +429,8 @@ paths:
           $ref: "#/responses/unauthorized"
         403:
           $ref: "#/responses/forbidden"
+        412:
+          $ref: "#/responses/preconditionfailed"
         default:
           $ref: "#/responses/default"
 

@@ -33,9 +33,12 @@ func NewRulesCreate(ctx *middleware.Context, handler RulesCreateHandler) *RulesC
 
 /* RulesCreate swagger:route POST /v1/sessions/{session_id}/rules rulesCreate
 
-create rules for your session
+create or update rules for your session
 
-if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint.
+Set the rules for this session. If rules already exist, they will be updated.
+You must be the session owner/manager to use this endpoint.
+Rules cannot be modified once the session has started (returns 412).
+
 
 */
 type RulesCreate struct {

@@ -189,6 +189,50 @@ func (o *RulesCreateForbidden) WriteResponse(rw http.ResponseWriter, producer ru
 	}
 }
 
+// RulesCreatePreconditionFailedCode is the HTTP code returned for type RulesCreatePreconditionFailed
+const RulesCreatePreconditionFailedCode int = 412
+
+/*RulesCreatePreconditionFailed Precondition not met
+
+swagger:response rulesCreatePreconditionFailed
+*/
+type RulesCreatePreconditionFailed struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewRulesCreatePreconditionFailed creates RulesCreatePreconditionFailed with default headers values
+func NewRulesCreatePreconditionFailed() *RulesCreatePreconditionFailed {
+
+	return &RulesCreatePreconditionFailed{}
+}
+
+// WithPayload adds the payload to the rules create precondition failed response
+func (o *RulesCreatePreconditionFailed) WithPayload(payload *models.Error) *RulesCreatePreconditionFailed {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the rules create precondition failed response
+func (o *RulesCreatePreconditionFailed) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *RulesCreatePreconditionFailed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(412)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*RulesCreateDefault Generic error response
 
 swagger:response rulesCreateDefault

@@ -15,6 +15,7 @@
 // scripts/0011_add_started_to_session.up.sql
 // scripts/0012_add_ready_to_session_player_race.up.sql
 // scripts/0013_add_rules_is_set_to_session.up.sql
+// scripts/0014_add_ruleset_id_to_session.up.sql
 package migration
 
 import (
@@ -351,6 +352,26 @@ func _0013_add_rules_is_set_to_sessionUpSql() (*asset, error) {
 	return a, nil
 }
 
+var __0014_add_ruleset_id_to_sessionUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\xf4\x09\x71\x0d\x52\x08\x71\x74\xf2\x71\x55\x28\x4e\x2d\x2e\xce\xcc\xcf\x53\x70\x74\x71\x51\x70\xf6\xf7\x09\xf5\xf5\x53\x28\x2a\xcd\x49\x2d\x4e\x2d\x89\xcf\x4c\x51\x08\x73\x0c\x72\xf6\x70\x0c\xd2\x30\x36\xd3\x54\x08\x72\x75\x73\x0d\x72\xf5\x73\x76\x0d\x86\xa9\xd0\xc8\x4c\xd1\xb4\xe6\x02\x04\x00\x00\xff\xff\x9b\xaa\x9e\xb8\x4e\x00\x00\x00")
+
+func _0014_add_ruleset_id_to_sessionUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__0014_add_ruleset_id_to_sessionUpSql,
+		"0014_add_ruleset_id_to_session.up.sql",
+	)
+}
+
+func _0014_add_ruleset_id_to_sessionUpSql() (*asset, error) {
+	bytes, err := _0014_add_ruleset_id_to_sessionUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "0014_add_ruleset_id_to_session.up.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -416,6 +437,7 @@ var _bindata = map[string]func() (*asset, error){
 	"0011_add_started_to_session.up.sql":             _0011_add_started_to_sessionUpSql,
 	"0012_add_ready_to_session_player_race.up.sql":   _0012_add_ready_to_session_player_raceUpSql,
 	"0013_add_rules_is_set_to_session.up.sql":        _0013_add_rules_is_set_to_sessionUpSql,
+	"0014_add_ruleset_id_to_session.up.sql":          _0014_add_ruleset_id_to_sessionUpSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -472,6 +494,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"0011_add_started_to_session.up.sql":             &bintree{_0011_add_started_to_sessionUpSql, map[string]*bintree{}},
 	"0012_add_ready_to_session_player_race.up.sql":   &bintree{_0012_add_ready_to_session_player_raceUpSql, map[string]*bintree{}},
 	"0013_add_rules_is_set_to_session.up.sql":        &bintree{_0013_add_rules_is_set_to_sessionUpSql, map[string]*bintree{}},
+	"0014_add_ruleset_id_to_session.up.sql":          &bintree{_0014_add_ruleset_id_to_sessionUpSql, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory

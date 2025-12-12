@@ -9,6 +9,8 @@ import (
 // dbtable:"session" dbpkey:"id"
 type SessionDB struct {
 	Session
+	// RulesetID is the FK to the ruleset table, only stored in DB (not exposed in API)
+	RulesetID *string `db:"ruleset_id"`
 }
 
 // MembersID returns the list of Member ids

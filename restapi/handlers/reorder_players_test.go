@@ -49,8 +49,8 @@ func TestPlayerOrderUpdateHandler(t *testing.T) {
 		originalSession, err := sessionReadHandler.handle(ctx, sessionReadParams, &merryPrincipal)
 		require.NoError(t, err)
 		require.Equal(t, 2, len(originalSession.Players))
-		require.Equal(t, merryID, originalSession.Players[0])
-		require.Equal(t, gollumID, originalSession.Players[1])
+		require.Equal(t, merryID, originalSession.Players[0].UserProfileID)
+		require.Equal(t, gollumID, originalSession.Players[1].UserProfileID)
 
 		reorderParams := operations.ReorderPlayersParams{
 			SessionID: merryVSGollumSessionID,
@@ -72,7 +72,7 @@ func TestPlayerOrderUpdateHandler(t *testing.T) {
 		reorderedSession, err := sessionReadHandler.handle(ctx, sessionReadParams, &merryPrincipal)
 		require.NoError(t, err)
 		require.Equal(t, 2, len(reorderedSession.Players))
-		require.Equal(t, gollumID, reorderedSession.Players[0]) // <-- players have been re-ordered !!
-		require.Equal(t, merryID, reorderedSession.Players[1])
+		require.Equal(t, gollumID, reorderedSession.Players[0].UserProfileID) // <-- players have been re-ordered !!
+		require.Equal(t, merryID, reorderedSession.Players[1].UserProfileID)
 	})
 }

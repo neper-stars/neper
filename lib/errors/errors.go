@@ -294,3 +294,23 @@ func (e ErrPlayersNotReady) Error() string {
 func (e ErrPlayersNotReady) Is(target error) bool {
 	return errors.Is(target, ErrPreconditionFailed)
 }
+
+// ErrSessionAlreadyStarted ...
+type ErrSessionAlreadyStarted struct {
+	GivenMessage string
+}
+
+// NewErrSessionAlreadyStarted ...
+func NewErrSessionAlreadyStarted(msg string) *ErrSessionAlreadyStarted {
+	return &ErrSessionAlreadyStarted{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrSessionAlreadyStarted) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrSessionAlreadyStarted) Is(target error) bool {
+	return errors.Is(target, ErrPreconditionFailed)
+}

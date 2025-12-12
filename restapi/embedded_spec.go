@@ -600,8 +600,8 @@ func init() {
         }
       },
       "post": {
-        "description": "if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint.",
-        "summary": "create rules for your session",
+        "description": "Set the rules for this session. If rules already exist, they will be updated.\nYou must be the session owner/manager to use this endpoint.\nRules cannot be modified once the session has started (returns 412).\n",
+        "summary": "create or update rules for your session",
         "operationId": "rulesCreate",
         "parameters": [
           {
@@ -633,6 +633,9 @@ func init() {
           },
           "403": {
             "$ref": "#/responses/forbidden"
+          },
+          "412": {
+            "$ref": "#/responses/preconditionfailed"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -1805,8 +1808,8 @@ func init() {
         }
       },
       "post": {
-        "description": "if the session does not yet have rules you can set the rules by posting them here. You must be the session owner to be able to use this endpoint.",
-        "summary": "create rules for your session",
+        "description": "Set the rules for this session. If rules already exist, they will be updated.\nYou must be the session owner/manager to use this endpoint.\nRules cannot be modified once the session has started (returns 412).\n",
+        "summary": "create or update rules for your session",
         "operationId": "rulesCreate",
         "parameters": [
           {
@@ -1844,6 +1847,12 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Precondition not met",
             "schema": {
               "$ref": "#/definitions/error"
             }
