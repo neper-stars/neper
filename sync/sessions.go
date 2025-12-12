@@ -16,6 +16,7 @@ func (w *Worker) syncSession(ctx context.Context, sql database.SQLHelper, op Ope
 				ID:      data.Id,
 				Name:    data.Name,
 				Private: data.Private,
+				Started: data.Started,
 			},
 		}
 		if err := sql.Upsert(&sessionDB); err != nil {

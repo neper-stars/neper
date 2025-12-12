@@ -801,6 +801,9 @@ type Invitation struct {
 	// Id unique record id
 	Id string `json:"id"`
 
+	// InviterId user profile id of the person who sent the invitation
+	InviterId string `json:"inviter_id,omitempty"`
+
 	// SessionId session on which the invitation is
 	SessionId string `json:"session_id"`
 
@@ -974,6 +977,9 @@ type Session struct {
 
 	// Private if the session is private only managers can add new members. The session will not be publicly listed.
 	Private bool `json:"private,omitempty"`
+
+	// Started whether the game has been started for this session
+	Started bool `json:"started,omitempty"`
 
 	// Type data type
 	Type string `json:"__type__"`
@@ -1194,6 +1200,13 @@ func (s Invitation) MarshalJSONStream(stream *jsoniter.Stream) {
 	stream.WriteObjectField("id")
 	stream.WriteString(s.Id)
 
+	// Marshal the InviterId field
+	if !IsEmpty(s.InviterId) {
+		ct.More()
+		stream.WriteObjectField("inviter_id")
+		stream.WriteString(s.InviterId)
+	}
+
 	// Marshal the SessionId field
 	ct.More()
 	stream.WriteObjectField("session_id")
@@ -1240,6 +1253,18 @@ func (s *Invitation) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 				return
 			}
 			IdReceived = true
+		case "inviter_id":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field inviter_id", "inviter_id is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.InviterId = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
 		case "session_id":
 			if iter.WhatIsNext() == jsoniter.BoolValue {
 				if iter.ReadBool() {
@@ -2334,6 +2359,16 @@ func (s Session) MarshalJSONStream(stream *jsoniter.Stream) {
 		}
 	}
 
+	// Marshal the Started field
+	if !IsEmpty(s.Started) {
+		ct.More()
+		stream.WriteObjectField("started")
+		stream.WriteVal(s.Started)
+		if stream.Error != nil {
+			return
+		}
+	}
+
 	// Marshal the Type field
 	ct.More()
 	stream.WriteObjectField("__type__")
@@ -2396,6 +2431,11 @@ func (s *Session) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			NameReceived = true
 		case "private":
 			s.Private = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+		case "started":
+			s.Started = iter.ReadBool()
 			if iter.Error != nil {
 				return
 			}

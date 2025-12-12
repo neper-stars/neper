@@ -25,6 +25,10 @@
     "session_id": {
       "description": "session on which the invitation is",
       "type": "string"
+    },
+    "inviter_id": {
+      "description": "user profile id of the person who sent the invitation",
+      "type": "string"
     }
   },
   "required": [

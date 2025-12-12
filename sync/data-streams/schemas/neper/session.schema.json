@@ -26,6 +26,10 @@
       "description": "if the session is private only managers can add new members. The session will not be publicly listed.",
       "type": "boolean"
     },
+    "started": {
+      "description": "whether the game has been started for this session",
+      "type": "boolean"
+    },
     "members": {
       "description": "list of member IDs represented as a user_profile_session_rel, sessionID is optional",
       "type": "array",
