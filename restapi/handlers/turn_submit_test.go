@@ -1,20 +1,19 @@
 package handlers
 
 import (
-	"net/http"
-	"testing"
-
 	"context"
-
-	"os"
-
 	"io"
-
+	"net/http"
+	"os"
+	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dgrijalva/jwt-go.v3"
+	"orus.io/orus-io/go-orusapi/database"
+	"orus.io/orus-io/go-orusapi/testutils"
+
 	"github.com/neper-stars/neper/fixtures"
 	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
@@ -23,8 +22,6 @@ import (
 	"github.com/neper-stars/neper/models/types"
 	"github.com/neper-stars/neper/restapi/operations"
 	"github.com/neper-stars/neper/sync"
-	"orus.io/orus-io/go-orusapi/database"
-	"orus.io/orus-io/go-orusapi/testutils"
 )
 
 type wantsWebSocketTestCase struct {

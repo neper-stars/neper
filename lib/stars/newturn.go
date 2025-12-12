@@ -2,19 +2,12 @@ package stars
 
 import (
 	"context"
-
-	"encoding/json"
-
-	"os"
-
-	"errors"
-
-	"path/filepath"
-
-	"fmt"
-
 	"database/sql"
-
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
@@ -22,9 +15,10 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
+	"orus.io/orus-io/go-orusapi/database"
+
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
-	"orus.io/orus-io/go-orusapi/database"
 )
 
 const (
@@ -71,10 +65,7 @@ func (g *TurnGenerator) Run(ctx context.Context) {
 		return
 	}
 	defer func() {
-		if err := turnNeedsGenerationSub.Unsubscribe(); err != nil {
-			// TODO: here the nats connection is already closed, so we cannot unsubscribe
-			// g.log.Err(err).Str("subject", SubjectTurnNeedsGeneration).Msg("failed to unsubscribe from subject")
-		}
+		_ = turnNeedsGenerationSub.Unsubscribe() // nats connection may already be closed
 		// make ourselves as not running just before getting out
 		g.running = false
 	}()
@@ -215,7 +206,7 @@ func sessionFilesQueryByYear(sessionID string, year int) sq.SelectBuilder {
 
 func (r *Runner) GenTurn(ctx context.Context, log *zerolog.Logger, sessionID string, gameFiles *GameFiles, players []models.SessionPlayerRace) (*GameFiles, error) {
 	sessionDir := r.localSessionSaveDir(sessionID)
-	if err := os.MkdirAll(sessionDir, 0770); err != nil {
+	if err := os.MkdirAll(sessionDir, 0770); err != nil { // #nosec G301 -- dir needs group write for wine
 		r.log.Err(err).Str("sessionID", sessionID).Msg("failed to create session dir")
 		return nil, err
 	}
@@ -301,7 +292,7 @@ func saveHostFile(log *zerolog.Logger, sessionDir string, content []byte) error 
 func (r *Runner) saveOrderFilesToSessionDir(sessionID string, orderFiles [][]byte) error {
 	sessionDir := r.localSessionSaveDir(sessionID)
 	for idx, orderFile := range orderFiles {
-		if orderFile != nil && len(orderFile) != 0 {
+		if len(orderFile) != 0 {
 			if err := saveOrderFile(r.log, sessionDir, orderFile, idx); err != nil {
 				return err
 			}

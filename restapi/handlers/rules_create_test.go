@@ -115,7 +115,7 @@ func TestRulesCreateHandler_UpdatesExistingRules(t *testing.T) {
 
 		// Count rulesets for this session
 		var count int
-		err = testdb.DB.Get(&count, "SELECT COUNT(*) FROM ruleset WHERE session_id = $1", sessionID)
+		err = testdb.Get(&count, "SELECT COUNT(*) FROM ruleset WHERE session_id = $1", sessionID)
 		require.NoError(t, err)
 		require.Equal(t, 1, count, "should have exactly 1 ruleset after first creation")
 
@@ -128,7 +128,7 @@ func TestRulesCreateHandler_UpdatesExistingRules(t *testing.T) {
 		require.Equal(t, int64(3), secondRuleset.Density)
 
 		// Count rulesets again - should still be 1
-		err = testdb.DB.Get(&count, "SELECT COUNT(*) FROM ruleset WHERE session_id = $1", sessionID)
+		err = testdb.Get(&count, "SELECT COUNT(*) FROM ruleset WHERE session_id = $1", sessionID)
 		require.NoError(t, err)
 		require.Equal(t, 1, count, "should still have exactly 1 ruleset after update")
 

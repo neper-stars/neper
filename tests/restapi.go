@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nkeys"
 	"github.com/rs/zerolog"
 	"github.com/steinfletcher/apitest"
 	"github.com/stretchr/testify/assert"
@@ -17,8 +19,6 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 	"orus.io/orus-io/go-orusapi/testutils"
 
-	"github.com/nats-io/nats.go"
-	"github.com/nats-io/nkeys"
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/cmd/neper/cmd"
 	"github.com/neper-stars/neper/lib/embeddednats"
@@ -69,6 +69,7 @@ type APITester struct {
 type RestAPIConfigUpdate func(restapi.Config) restapi.Config
 
 func NewAPITesterConfigUpdater(t *testing.T, log *zerolog.Logger, autoDelete bool) *APITesterConfigUpdater {
+	t.Helper()
 	return &APITesterConfigUpdater{
 		t:          t,
 		log:        log,
@@ -323,7 +324,7 @@ func (tester *APITester) Do(req *http.Request) (*http.Response, error) {
 
 	// We disable bodyclose because it gives a false positive here
 	response := rr.Result() //nolint:bodyclose
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 
 	respBody, err := io.ReadAll(response.Body)
 	if err != nil {

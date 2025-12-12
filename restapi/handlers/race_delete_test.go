@@ -44,7 +44,7 @@ func TestRaceDeleteHandler(t *testing.T) {
 		// First create a race
 		rf, err := os.Open("fixtures/humans.r1")
 		require.NoError(t, err)
-		defer rf.Close()
+		defer func() { _ = rf.Close() }()
 
 		data, err := io.ReadAll(rf)
 		require.NoError(t, err)
@@ -97,7 +97,7 @@ func TestRaceDeleteHandler(t *testing.T) {
 		// First create a race as boromir
 		rf, err := os.Open("fixtures/humans.r1")
 		require.NoError(t, err)
-		defer rf.Close()
+		defer func() { _ = rf.Close() }()
 
 		data, err := io.ReadAll(rf)
 		require.NoError(t, err)
@@ -171,7 +171,7 @@ func TestRaceDeleteHandler(t *testing.T) {
 		// First create a race as boromir
 		rf, err := os.Open("fixtures/humans.r1")
 		require.NoError(t, err)
-		defer rf.Close()
+		defer func() { _ = rf.Close() }()
 
 		data, err := io.ReadAll(rf)
 		require.NoError(t, err)

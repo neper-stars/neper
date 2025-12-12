@@ -39,7 +39,7 @@ func LoadFixtureJSON(tb testing.TB, worker FixtureWorker, data []byte) {
 // LoadFixtureFile loads a json-encoded fixture file
 func LoadFixtureFile(tb testing.TB, consumer FixtureWorker, filename string) {
 	tb.Helper()
-	b, err := os.ReadFile(filename)
+	b, err := os.ReadFile(filename) // #nosec G304 -- test fixtures from trusted source
 	if err != nil {
 		tb.Fatal(err)
 	}

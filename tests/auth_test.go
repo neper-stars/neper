@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/models"
-	"orus.io/orus-io/go-orusapi/testutils"
 )
 
 func TestAuthentication(t *testing.T) {

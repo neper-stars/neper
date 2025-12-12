@@ -40,7 +40,6 @@ func (m *Turn) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Turn) validateB64Data(formats strfmt.Registry) error {
-
 	if err := validate.RequiredString("b64_data", "body", m.B64Data); err != nil {
 		return err
 	}

@@ -28,11 +28,11 @@ func RaceFromString(data string) (*models.Race, error) {
 }
 
 func RaceFromFile(fn string) (*models.Race, error) {
-	f, err := os.Open(fn)
+	f, err := os.Open(fn) // #nosec G304 -- filename comes from trusted source
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	return RaceFromReader(f)
 }
 

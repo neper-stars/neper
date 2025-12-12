@@ -16,6 +16,7 @@ type ShutdownFunc func()
 // Note: Xvfb shutdown and cleanup of directories is registered
 // via t.Cleanup() to ensure cleanup happens even if the test fails or panics.
 func GetTestStarsRunner(t *testing.T, log *zerolog.Logger) *Runner {
+	t.Helper()
 	return GetTestStarsRunnerWithAutoDelete(t, log, true)
 }
 

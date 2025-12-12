@@ -62,7 +62,7 @@ func TestNotificationsFiltering(t *testing.T) {
 
 	// Helper to read notification with timeout
 	readNotification := func(conn *websocket.Conn, timeout time.Duration) (*notify.ResourceChange, error) {
-		conn.SetReadDeadline(time.Now().Add(timeout))
+		_ = conn.SetReadDeadline(time.Now().Add(timeout))
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			return nil, err
@@ -82,13 +82,13 @@ func TestNotificationsFiltering(t *testing.T) {
 
 		// Connect all three users to WebSocket
 		gandalfConn := connectWS(gandalfToken)
-		defer gandalfConn.Close()
+		defer func() { _ = gandalfConn.Close() }()
 
 		merryConn := connectWS(merryToken)
-		defer merryConn.Close()
+		defer func() { _ = merryConn.Close() }()
 
 		boromirConn := connectWS(boromirToken)
-		defer boromirConn.Close()
+		defer func() { _ = boromirConn.Close() }()
 
 		// Use mutex to safely collect notifications
 		var mu sync.Mutex
@@ -175,13 +175,13 @@ func TestNotificationsFiltering(t *testing.T) {
 
 		// Connect all users to WebSocket
 		gandalfConn := connectWS(gandalfToken)
-		defer gandalfConn.Close()
+		defer func() { _ = gandalfConn.Close() }()
 
 		merryConn := connectWS(merryToken)
-		defer merryConn.Close()
+		defer func() { _ = merryConn.Close() }()
 
 		boromirConn := connectWS(boromirToken)
-		defer boromirConn.Close()
+		defer func() { _ = boromirConn.Close() }()
 
 		var mu sync.Mutex
 		gandalfNotifications := make([]*notify.ResourceChange, 0)

@@ -166,7 +166,7 @@ func (auth *Auth) addToCache(token string, principal *models.Principal) {
 	if auth.cache.ItemCount() == auth.cacheMaxSize {
 		return
 	}
-	auth.cache.Set(token, principal, time.Until(time.Unix(principal.StandardClaims.ExpiresAt, 0)))
+	auth.cache.Set(token, principal, time.Until(time.Unix(principal.ExpiresAt, 0)))
 	if auth.cache.ItemCount() == auth.cacheMaxSize {
 		// The cache just got full, sending some information if really full
 		auth.cache.DeleteExpired()
@@ -305,9 +305,9 @@ func (auth *Auth) MakeToken(principal models.Principal) (string, error) {
 	auth.log.Debug().Msg("in auth.MakeToken")
 	auth.log.Debug().
 		Str("nickname", principal.NickName).
-		Int64("expires", principal.StandardClaims.ExpiresAt).
+		Int64("expires", principal.ExpiresAt).
 		Msg("")
-	principal.StandardClaims.ExpiresAt = auth.now().Add(time.Minute * 5).Unix()
+	principal.ExpiresAt = auth.now().Add(time.Minute * 5).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, principal)
 	sToken, err := token.SignedString(auth.secret)
 	if err != nil {

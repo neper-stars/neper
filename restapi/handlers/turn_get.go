@@ -4,16 +4,15 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-
-	"github.com/go-openapi/runtime/middleware"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog"
-	"orus.io/orus-io/go-orusapi/database"
-
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/jmoiron/sqlx"
 	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog"
+	"orus.io/orus-io/go-orusapi/database"
+
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"

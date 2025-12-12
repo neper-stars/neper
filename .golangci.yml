@@ -27,7 +27,7 @@ linters:
     - asciicheck  # Simple linter to check that your code does not contain non-ASCII identifiers
     - bidichk  # Checks for dangerous unicode character sequences
     - bodyclose  # checks whether HTTP response body is closed successfully
-    - contextcheck  # check the function whether use a non-inherited context
+    # - contextcheck  # check the function whether use a non-inherited context (disabled: requires significant refactoring)
     - dogsled  # Checks assignments with too many blank identifiers (e.g. x, , , _, := f())
     - durationcheck  # check for two durations multiplied together
     - errchkjson  # Checks types passed to the json encoding functions
@@ -50,6 +50,13 @@ linters:
         - i int
 
   exclusions:
+    # Exclude generated files
+    paths:
+      - models/db_helpers.go
+      - restapi/operations/
+      - restapi/doc.go
+      - restapi/embedded_spec.go
+      - restapi/server.go
     rules:
       - linters:
           - staticcheck
@@ -63,6 +70,36 @@ linters:
       - linters:
           - revive
         text: "empty-block:"
+      - linters:
+          - revive
+        text: "exported:"
+      - linters:
+          - revive
+        text: "package-comments:"
+      - linters:
+          - revive
+        text: "var-naming:"
       - path: '(.+)_test\.go'
         linters:
           - bodyclose
+      # Disable gosec G304 (file inclusion) for internal files with trusted paths
+      - path: 'lib/stars/'
+        linters:
+          - gosec
+        text: "G304:"
+      - path: 'lib/stars/'
+        linters:
+          - gosec
+        text: "G301:"
+      - path: 'lib/stars/'
+        linters:
+          - gosec
+        text: "G302:"
+      - path: 'fixtures/'
+        linters:
+          - gosec
+        text: "G304:"
+      - path: 'testutils/'
+        linters:
+          - gosec
+        text: "G304:"

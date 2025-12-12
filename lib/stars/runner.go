@@ -266,7 +266,7 @@ var starsBin []byte
 var starsINI []byte
 
 func (r *Runner) ensureSaveDir() error {
-	if err := os.MkdirAll(r.SaveDir, 0770); err != nil {
+	if err := os.MkdirAll(r.SaveDir, 0770); err != nil { // #nosec G301 -- dir needs group write for wine
 		return err
 	}
 	return nil

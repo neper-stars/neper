@@ -8,10 +8,10 @@ const (
 
 // Resource types
 const (
-	TypeSession          = "session"
-	TypeInvitation       = "invitation"
-	TypeRace             = "race"
-	TypeRuleset          = "ruleset"
+	TypeSession           = "session"
+	TypeInvitation        = "invitation"
+	TypeRace              = "race"
+	TypeRuleset           = "ruleset"
 	TypeSessionPlayerRace = "session_player_race"
 )
 

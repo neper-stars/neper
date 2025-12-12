@@ -4,6 +4,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
+
 	"github.com/neper-stars/neper/lib/stars"
 )
 

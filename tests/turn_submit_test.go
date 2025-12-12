@@ -1,24 +1,20 @@
 package tests
 
 import (
-	"net/http"
-	"testing"
-
-	"github.com/stretchr/testify/require"
-
 	"fmt"
-
 	"io"
+	"net/http"
 	"os"
+	"testing"
+	"time"
 
 	"github.com/posener/wstest"
-
-	"time"
+	"github.com/stretchr/testify/require"
+	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/models/types"
-	"orus.io/orus-io/go-orusapi/testutils"
 )
 
 func TestTurnSubmit(t *testing.T) {

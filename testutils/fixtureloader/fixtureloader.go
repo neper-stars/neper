@@ -67,7 +67,7 @@ func (r compressedReader) Close() error {
 func openFile(tb testing.TB, filename string) io.ReadCloser {
 	tb.Helper()
 	var reader io.ReadCloser
-	f, err := os.Open(filename)
+	f, err := os.Open(filename) // #nosec G304 -- test fixtures from trusted source
 	require.NoError(tb, err)
 	reader = f
 	if strings.HasSuffix(filename, ".xz") {
@@ -91,7 +91,7 @@ func (l *Loader) LoadJSON(tb testing.TB, data []byte) {
 func (l *Loader) LoadFile(tb testing.TB, filename string) {
 	tb.Helper()
 	rc := openFile(tb, filename)
-	defer rc.Close()
+	defer func() { _ = rc.Close() }()
 	l.Load(tb, rc)
 }
 

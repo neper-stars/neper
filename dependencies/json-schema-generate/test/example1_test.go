@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"testing"
+
 	"github.com/orus-io/json-schema-generate/test/example1_gen"
 )
 

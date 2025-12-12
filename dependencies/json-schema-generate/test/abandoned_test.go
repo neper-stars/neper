@@ -2,6 +2,7 @@ package test
 
 import (
 	"testing"
+
 	"github.com/orus-io/json-schema-generate/test/abandoned_gen"
 )
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-cmd/cmd"
 	"github.com/rs/zerolog"
+
 	"github.com/neper-stars/neper/models"
 )
 
@@ -55,7 +56,7 @@ func (r *Runner) gameFilesForTurn(sessionID string, players []models.SessionPlay
 	gf := GameFiles{}
 	sessionDir := r.localSessionSaveDir(sessionID)
 	// here we go, first read the .xy file which should be named game.xy (universeBaseFilename)
-	universe, err := os.Open(filepath.Join(sessionDir, universeBaseFilename))
+	universe, err := os.Open(filepath.Join(sessionDir, universeBaseFilename)) // #nosec G304 -- path from internal config
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +129,7 @@ func (r *Runner) NewGame(ctx context.Context, log *zerolog.Logger, sessionID str
 	}
 
 	sessionDir := r.localSessionSaveDir(sessionID)
-	if err := os.MkdirAll(sessionDir, 0770); err != nil {
+	if err := os.MkdirAll(sessionDir, 0770); err != nil { // #nosec G301 -- dir needs group write for wine
 		r.log.Err(err).Str("sessionID", sessionID).Msg("failed to create session dir")
 		return nil, err
 	}

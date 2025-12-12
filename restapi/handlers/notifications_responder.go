@@ -98,9 +98,9 @@ func (r *NotificationsResponder) WriteResponse(rw http.ResponseWriter, producer 
 	defer ctxCancel()
 
 	// Set up pong handler to extend read deadline when pong is received
-	c.SetReadDeadline(time.Now().Add(notifyPongWait))
+	_ = c.SetReadDeadline(time.Now().Add(notifyPongWait))
 	c.SetPongHandler(func(string) error {
-		c.SetReadDeadline(time.Now().Add(notifyPongWait))
+		_ = c.SetReadDeadline(time.Now().Add(notifyPongWait))
 		return nil
 	})
 
@@ -115,7 +115,7 @@ func (r *NotificationsResponder) WriteResponse(rw http.ResponseWriter, producer 
 		case <-ctx.Done():
 			return
 		case <-pingTicker.C:
-			c.SetWriteDeadline(time.Now().Add(notifyWriteWait))
+			_ = c.SetWriteDeadline(time.Now().Add(notifyWriteWait))
 			if err := c.WriteMessage(websocket.PingMessage, nil); err != nil {
 				r.logger.Err(err).Msg("failed to send a ping to the ws client")
 				return
@@ -141,7 +141,7 @@ func (r *NotificationsResponder) WriteResponse(rw http.ResponseWriter, producer 
 			}
 
 			// Send the notification to the client
-			c.SetWriteDeadline(time.Now().Add(notifyWriteWait))
+			_ = c.SetWriteDeadline(time.Now().Add(notifyWriteWait))
 			if err := c.WriteMessage(websocket.TextMessage, msg.Data); err != nil {
 				r.logger.Err(err).Msg("failed to send notification into websocket")
 				return
