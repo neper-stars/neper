@@ -11,10 +11,19 @@ import (
 
 type ShutdownFunc func()
 
-// GetTestStarsRunner is the easiest way to get a runner for testing
-// this returns a test runner and a ShutdownFunc that must be called after your test
-// is done if you want the test Xvfb server to shut down
-func GetTestStarsRunner(t *testing.T, log *zerolog.Logger) (*Runner, ShutdownFunc) {
+// GetTestStarsRunner is the easiest way to get a runner for testing.
+// This returns a test runner
+// Note: Xvfb shutdown and cleanup of directories is registered
+// via t.Cleanup() to ensure cleanup happens even if the test fails or panics.
+func GetTestStarsRunner(t *testing.T, log *zerolog.Logger) *Runner {
+	return GetTestStarsRunnerWithAutoDelete(t, log, true)
+}
+
+// GetTestStarsRunnerWithAutoDelete is like GetTestStarsRunner but allows
+// controlling whether directories are automatically deleted after the test.
+// When autoDelete is false, the wine prefix, executable dir, and save dir
+// will be preserved after the test completes (useful for debugging).
+func GetTestStarsRunnerWithAutoDelete(t *testing.T, log *zerolog.Logger, autoDelete bool) *Runner {
 	t.Helper()
 	// each runner gets its own UID
 	uid, err := uuid.V4()
@@ -39,10 +48,17 @@ func GetTestStarsRunner(t *testing.T, log *zerolog.Logger) (*Runner, ShutdownFun
 	if err := runner.Init(); err != nil {
 		require.NoError(t, err, "failed to initialize runner")
 	}
-	return runner, func() {
-		require.NoError(t, os.RemoveAll(runner.WinePrefix))
-		require.NoError(t, os.RemoveAll(runner.ExecutableDir))
-		require.NoError(t, os.RemoveAll(runner.SaveDir))
-		runner.Shutdown()
+
+	// Register cleanup via t.Cleanup to ensure directories are removed
+	// even if the test fails or panics (only if autoDelete is true)
+	if autoDelete {
+		t.Cleanup(func() {
+			_ = os.RemoveAll(runner.WinePrefix)
+			_ = os.RemoveAll(runner.ExecutableDir)
+			_ = os.RemoveAll(runner.SaveDir)
+			runner.Shutdown()
+		})
 	}
+
+	return runner
 }

@@ -82,12 +82,8 @@ type APITesterConfigUpdater struct {
 }
 
 func (a *APITesterConfigUpdater) UpdateConfig(config restapi.Config) restapi.Config {
-	runner, shutdownCB := stars.GetTestStarsRunner(a.t, a.log)
+	runner := stars.GetTestStarsRunnerWithAutoDelete(a.t, a.log, a.autoDelete)
 	config.StarsRunner = runner
-	if a.autoDelete {
-		// we call the shutdown callback only if autodelete is true
-		config.OnShutdown(restapi.Callback(shutdownCB))
-	}
 
 	// NATS setup
 	// create a test key on the fly for this run

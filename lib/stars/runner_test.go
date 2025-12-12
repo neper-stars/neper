@@ -32,8 +32,7 @@ func TestRunner(t *testing.T) {
 
 	ctx := context.Background()
 
-	runner, shutdown := GetTestStarsRunner(t, &log)
-	defer shutdown()
+	runner := GetTestStarsRunner(t, &log)
 
 	sessionID := "shireID"
 	gameFiles, err := runner.NewGame(ctx, &log, sessionID, gi, testPlayers(t), GetTestRaces(t))
