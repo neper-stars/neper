@@ -40,6 +40,7 @@ func (h *SessionsList) handle(
 		Column(s.ID.Sql()).
 		Column(s.Name.Sql()).
 		Column(s.Private.Sql()).
+		Column(s.RulesIsSet.Sql()).
 		From(s.Sql()).
 		OrderBy(s.ID.Sql())
 

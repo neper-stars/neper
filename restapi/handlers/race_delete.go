@@ -12,18 +12,20 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewRaceDeleteHandler ...
-func NewRaceDeleteHandler(db *sqlx.DB) *RaceDeleteHandler {
-	return &RaceDeleteHandler{db}
+func NewRaceDeleteHandler(db *sqlx.DB, notifyService *notify.Service) *RaceDeleteHandler {
+	return &RaceDeleteHandler{db: db, notifyService: notifyService}
 }
 
 // RaceDeleteHandler handles race deletion
 type RaceDeleteHandler struct {
-	db *sqlx.DB
+	db            *sqlx.DB
+	notifyService *notify.Service
 }
 
 func (h *RaceDeleteHandler) handle(
@@ -79,6 +81,12 @@ func (h *RaceDeleteHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return err
 	}
+
+	// Publish notification after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishRaceDelete(raceID)
+	}
+
 	return nil
 }
 

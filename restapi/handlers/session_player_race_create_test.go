@@ -34,7 +34,7 @@ func TestSessionPlayerRaceCreateHandler(t *testing.T) {
 	// load our races
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/races.json")
 
-	createHandler := NewSessionPlayerRaceCreateHandler(&log, testdb.DB)
+	createHandler := NewSessionPlayerRaceCreateHandler(&log, testdb.DB, nil)
 
 	t.Run("boromir_tries_to_register_with_a_race_he_does_not_own", func(t *testing.T) {
 		sprCreateParams := operations.SessionPlayerRaceCreateParams{

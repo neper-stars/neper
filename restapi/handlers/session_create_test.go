@@ -26,7 +26,7 @@ func TestSessionCreateHandler(t *testing.T) {
 	require.NoError(t, err)
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
-	createHandler := NewSessionCreateHandler(testdb.DB)
+	createHandler := NewSessionCreateHandler(testdb.DB, nil)
 	readHandler := NewSessionReadHandler(&log, testdb.DB)
 
 	t.Run("create shire", func(t *testing.T) {

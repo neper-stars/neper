@@ -13,6 +13,7 @@ import (
 	"github.com/neper-stars/neper/fixtures"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/restapi/operations"
 	"github.com/neper-stars/neper/sync"
 )
 
@@ -48,6 +49,10 @@ func TestSessionsListHandler(t *testing.T) {
 		})
 		require.NoError(t, err)
 		require.Equal(t, 3, len(sessions))
+		// Verify RulesIsSet is returned (should be false by default)
+		for _, session := range sessions {
+			require.False(t, session.RulesIsSet, "RulesIsSet should be false by default for session %s", session.ID)
+		}
 	})
 
 	t.Run("boromir_sees_public_sessions_and_his_memberships", func(t *testing.T) {
@@ -109,5 +114,51 @@ func TestSessionsListHandler(t *testing.T) {
 		require.Equal(t, 1, len(isengardSession.Managers))
 		require.Equal(t, "saroumanID", isengardSession.Managers[0])
 		require.Equal(t, "shireID", sessions[2].ID)
+	})
+
+	t.Run("rules_is_set_is_true_after_creating_rules", func(t *testing.T) {
+		rulesHandler := NewRulesCreateHandler(&log, testdb.DB, nil)
+
+		gandalfPrincipal := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "gandalfID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+
+		// Create rules for gondorID session (gandalf is manager)
+		rulesParams := operations.RulesCreateParams{
+			SessionID: "gondorID",
+			Ruleset: &models.Ruleset{
+				UniverseSize:     3,
+				Density:          2,
+				StartingDistance: 3,
+				RandomSeed:       12345,
+			},
+		}
+		_, err := rulesHandler.handle(ctx, rulesParams, gandalfPrincipal)
+		require.NoError(t, err)
+
+		// Now list sessions and verify RulesIsSet is true for gondorID
+		sessions, err := handler.handle(ctx, &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "gandalfID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: true,
+		})
+		require.NoError(t, err)
+
+		// Find gondorID session and verify RulesIsSet is true
+		var gondorSession *models.Session
+		for _, s := range sessions {
+			if s.ID == "gondorID" {
+				gondorSession = s
+				break
+			}
+		}
+		require.NotNil(t, gondorSession, "gondorID session should be in the list")
+		require.True(t, gondorSession.RulesIsSet, "RulesIsSet should be true after creating rules")
 	})
 }

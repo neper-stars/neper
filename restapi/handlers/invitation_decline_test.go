@@ -32,8 +32,8 @@ func TestInvitationDeclineHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gollum_nosession.json")
 
-	createHandler := NewInvitationCreateHandler(&log, testdb.DB)
-	declineHandler := NewInvitationDeclineHandler(&log, testdb.DB)
+	createHandler := NewInvitationCreateHandler(&log, testdb.DB, nil)
+	declineHandler := NewInvitationDeclineHandler(&log, testdb.DB, nil)
 
 	t.Run("invitee_can_decline_their_own_invitation", func(t *testing.T) {
 		sessionID := "gondorID"

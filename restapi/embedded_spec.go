@@ -192,6 +192,24 @@ func init() {
         }
       ]
     },
+    "/v1/notifications": {
+      "get": {
+        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, invitation, race, ruleset, session_player_race\nActions: created, updated, deleted\n",
+        "summary": "WebSocket endpoint for real-time resource change notifications",
+        "operationId": "notifications",
+        "responses": {
+          "101": {
+            "description": "WebSocket upgrade successful"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
     "/v1/sessions": {
       "get": {
         "operationId": "sessionsList",
@@ -1279,6 +1297,30 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/v1/notifications": {
+      "get": {
+        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, invitation, race, ruleset, session_player_race\nActions: created, updated, deleted\n",
+        "summary": "WebSocket endpoint for real-time resource change notifications",
+        "operationId": "notifications",
+        "responses": {
+          "101": {
+            "description": "WebSocket upgrade successful"
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     },
     "/v1/sessions": {
       "get": {

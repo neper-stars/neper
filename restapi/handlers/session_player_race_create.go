@@ -14,19 +14,21 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewSessionPlayerRaceCreateHandler ...
-func NewSessionPlayerRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB) *SessionPlayerRaceCreateHandler {
-	return &SessionPlayerRaceCreateHandler{db, log}
+func NewSessionPlayerRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *SessionPlayerRaceCreateHandler {
+	return &SessionPlayerRaceCreateHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // SessionPlayerRaceCreateHandler handles /Races
 type SessionPlayerRaceCreateHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *SessionPlayerRaceCreateHandler) handle(
@@ -68,6 +70,12 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	// Publish notification after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishSessionPlayerRaceCreate(sessionPlayerRaceDB.ID)
+	}
+
 	return &sessionPlayerRaceDB.SessionPlayerRace, nil
 }
 

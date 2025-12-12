@@ -33,8 +33,8 @@ func TestInvitationAcceptHandler(t *testing.T) {
 	// hobbits are owned by Merry
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
-	createHandler := NewInvitationCreateHandler(&log, testdb.DB)
-	acceptHandler := NewInvitationAcceptHandler(&log, testdb.DB)
+	createHandler := NewInvitationCreateHandler(&log, testdb.DB, nil)
+	acceptHandler := NewInvitationAcceptHandler(&log, testdb.DB, nil)
 
 	t.Run("boromir_invites_merry_to_gondor_session", func(t *testing.T) {
 		sessionID := "gondorID"

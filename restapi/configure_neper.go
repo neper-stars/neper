@@ -17,6 +17,7 @@ import (
 
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi/handlers"
@@ -45,6 +46,7 @@ type Config struct {
 	NatsServer          *embeddednats.EmbeddedNats
 	NatsClientOptions   *embeddednats.ClientOptions
 	NatsClientConn      *nats.Conn
+	NotifyService       *notify.Service
 }
 
 // OnShutdown add a shutdown callback
@@ -122,7 +124,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	// Sessions
 	api.SessionsListHandler = handlers.NewSessionsListHandler(config.DB)
 	api.SessionReadHandler = handlers.NewSessionReadHandler(&config.Log, config.DB)
-	api.SessionCreateHandler = handlers.NewSessionCreateHandler(config.DB)
+	api.SessionCreateHandler = handlers.NewSessionCreateHandler(config.DB, config.NotifyService)
 	api.SessionUpdateHandler = handlers.NewSessionUpdateHandler(&config.Log, config.DB)
 
 	// UserProfiles
@@ -132,28 +134,28 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.UserProfileUpdateHandler = handlers.NewUserProfileUpdateHandler(config.DB)
 
 	// Races
-	api.RaceCreateHandler = handlers.NewRaceCreateHandler(&config.Log, config.DB)
+	api.RaceCreateHandler = handlers.NewRaceCreateHandler(&config.Log, config.DB, config.NotifyService)
 	api.RacesListHandler = handlers.NewRacesListHandler(config.DB)
 	api.RaceReadHandler = handlers.NewRaceReadHandler(config.DB)
-	api.RaceDeleteHandler = handlers.NewRaceDeleteHandler(config.DB)
+	api.RaceDeleteHandler = handlers.NewRaceDeleteHandler(config.DB, config.NotifyService)
 
 	// Invitations
-	api.InvitationCreateHandler = handlers.NewInvitationCreateHandler(&config.Log, config.DB)
+	api.InvitationCreateHandler = handlers.NewInvitationCreateHandler(&config.Log, config.DB, config.NotifyService)
 	api.InvitationListHandler = handlers.NewInvitationListHandler(&config.Log, config.DB)
-	api.InvitationAcceptHandler = handlers.NewInvitationAcceptHandler(&config.Log, config.DB)
-	api.InvitationDeclineHandler = handlers.NewInvitationDeclineHandler(&config.Log, config.DB)
+	api.InvitationAcceptHandler = handlers.NewInvitationAcceptHandler(&config.Log, config.DB, config.NotifyService)
+	api.InvitationDeclineHandler = handlers.NewInvitationDeclineHandler(&config.Log, config.DB, config.NotifyService)
 
 	// Session Player Race mapping (once player is in a session, he sets his race for this session)
-	api.SessionPlayerRaceCreateHandler = handlers.NewSessionPlayerRaceCreateHandler(&config.Log, config.DB)
-	api.SessionPlayerRaceSetReadyHandler = handlers.NewSessionPlayerRaceSetReadyHandler(&config.Log, config.DB)
+	api.SessionPlayerRaceCreateHandler = handlers.NewSessionPlayerRaceCreateHandler(&config.Log, config.DB, config.NotifyService)
+	api.SessionPlayerRaceSetReadyHandler = handlers.NewSessionPlayerRaceSetReadyHandler(&config.Log, config.DB, config.NotifyService)
 	// player order on a session
-	api.ReorderPlayersHandler = handlers.NewReorderPlayersHandler(&config.Log, config.DB)
+	api.ReorderPlayersHandler = handlers.NewReorderPlayersHandler(&config.Log, config.DB, config.NotifyService)
 	// ruleset
-	api.RulesCreateHandler = handlers.NewRulesCreateHandler(&config.Log, config.DB)
+	api.RulesCreateHandler = handlers.NewRulesCreateHandler(&config.Log, config.DB, config.NotifyService)
 	api.RulesReadHandler = handlers.NewRulesReadHandler(&config.Log, config.DB)
 
 	// game creation
-	api.GameCreateHandler = handlers.NewGameCreateHandler(&config.Log, config.DB, config.StarsRunner)
+	api.GameCreateHandler = handlers.NewGameCreateHandler(&config.Log, config.DB, config.StarsRunner, config.NotifyService)
 	// turn get (each player its own call to get its own files)
 	api.TurnGetHandler = handlers.NewTurnGetHandler(&config.Log, config.DB, config.NatsClientConn)
 
@@ -162,6 +164,9 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 
 	// for user to be able to find its own ID
 	api.UserinfoHandler = handlers.NewUserinfoHandler(config.DB)
+
+	// Notifications (WebSocket)
+	api.NotificationsHandler = handlers.NewNotificationsHandler(&config.Log, config.DB, config.NatsClientConn)
 
 	if server.Prometheus {
 		api.PrometheusInstrumentHandlers()

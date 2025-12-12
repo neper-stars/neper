@@ -14,19 +14,21 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewInvitationAcceptHandler ...
-func NewInvitationAcceptHandler(log *zerolog.Logger, db *sqlx.DB) *InvitationAcceptHandler {
-	return &InvitationAcceptHandler{db, log}
+func NewInvitationAcceptHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *InvitationAcceptHandler {
+	return &InvitationAcceptHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // InvitationAcceptHandler handles /sessions
 type InvitationAcceptHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *InvitationAcceptHandler) handle(
@@ -112,6 +114,13 @@ func (h *InvitationAcceptHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	// Publish notifications after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishInvitationDelete(params.InvitationID)
+		_ = h.notifyService.PublishSessionUpdate(sessionID)
+	}
+
 	return &sessionDB.Session, nil
 }
 

@@ -13,19 +13,21 @@ import (
 
 	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewRaceCreateHandler ...
-func NewRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB) *RaceCreateHandler {
-	return &RaceCreateHandler{db, log}
+func NewRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *RaceCreateHandler {
+	return &RaceCreateHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // RaceCreateHandler handles /Races
 type RaceCreateHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *RaceCreateHandler) handle(
@@ -74,6 +76,12 @@ func (h *RaceCreateHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	// Publish notification after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishRaceCreate(race.ID)
+	}
+
 	return &raceDB.Race, nil
 }
 

@@ -12,19 +12,21 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewSessionPlayerRaceSetReadyHandler ...
-func NewSessionPlayerRaceSetReadyHandler(log *zerolog.Logger, db *sqlx.DB) *SessionPlayerRaceSetReadyHandler {
-	return &SessionPlayerRaceSetReadyHandler{db, log}
+func NewSessionPlayerRaceSetReadyHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *SessionPlayerRaceSetReadyHandler {
+	return &SessionPlayerRaceSetReadyHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // SessionPlayerRaceSetReadyHandler handles setting the ready flag on a player's race for a session
 type SessionPlayerRaceSetReadyHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *SessionPlayerRaceSetReadyHandler) handle(
@@ -73,6 +75,12 @@ func (h *SessionPlayerRaceSetReadyHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	// Publish notification after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishSessionPlayerRaceUpdate(sprDB.ID)
+	}
+
 	return &sprDB.SessionPlayerRace, nil
 }
 

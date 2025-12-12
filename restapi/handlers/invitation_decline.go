@@ -13,19 +13,21 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewInvitationDeclineHandler ...
-func NewInvitationDeclineHandler(log *zerolog.Logger, db *sqlx.DB) *InvitationDeclineHandler {
-	return &InvitationDeclineHandler{db, log}
+func NewInvitationDeclineHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *InvitationDeclineHandler {
+	return &InvitationDeclineHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // InvitationDeclineHandler handles declining invitations
 type InvitationDeclineHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *InvitationDeclineHandler) handle(
@@ -67,6 +69,12 @@ func (h *InvitationDeclineHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return err
 	}
+
+	// Publish notification after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishInvitationDelete(params.InvitationID)
+	}
+
 	return nil
 }
 

@@ -62,6 +62,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		InvitationListHandler: InvitationListHandlerFunc(func(params InvitationListParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation InvitationList has not yet been implemented")
 		}),
+		NotificationsHandler: NotificationsHandlerFunc(func(params NotificationsParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation Notifications has not yet been implemented")
+		}),
 		RaceCreateHandler: RaceCreateHandlerFunc(func(params RaceCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RaceCreate has not yet been implemented")
 		}),
@@ -191,6 +194,8 @@ type NeperAPI struct {
 	InvitationDeclineHandler InvitationDeclineHandler
 	// InvitationListHandler sets the operation handler for the invitation list operation
 	InvitationListHandler InvitationListHandler
+	// NotificationsHandler sets the operation handler for the notifications operation
+	NotificationsHandler NotificationsHandler
 	// RaceCreateHandler sets the operation handler for the race create operation
 	RaceCreateHandler RaceCreateHandler
 	// RaceDeleteHandler sets the operation handler for the race delete operation
@@ -333,6 +338,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.InvitationListHandler == nil {
 		unregistered = append(unregistered, "InvitationListHandler")
+	}
+	if o.NotificationsHandler == nil {
+		unregistered = append(unregistered, "NotificationsHandler")
 	}
 	if o.RaceCreateHandler == nil {
 		unregistered = append(unregistered, "RaceCreateHandler")
@@ -523,6 +531,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/invitations"] = NewInvitationList(o.context, o.InvitationListHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/notifications"] = NewNotifications(o.context, o.NotificationsHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

@@ -28,7 +28,7 @@ func TestPlayerOrderUpdateHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum.json")
 
 	sessionReadHandler := NewSessionReadHandler(&log, testdb.DB)
-	reorderHandler := NewReorderPlayersHandler(&log, testdb.DB)
+	reorderHandler := NewReorderPlayersHandler(&log, testdb.DB, nil)
 
 	t.Run("merry_reorders_players_in_his_session_vs_gollum", func(t *testing.T) {
 		merryVSGollumSessionID := "merryvsgollumID"

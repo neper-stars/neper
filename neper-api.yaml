@@ -73,6 +73,34 @@ paths:
           schema:
             $ref: "neper-types.yaml#/definitions/error"
 
+  /v1/notifications:
+    get:
+      operationId: notifications
+      summary: WebSocket endpoint for real-time resource change notifications
+      description: |
+        Upgrades to WebSocket connection. Sends JSON notifications when
+        resources the user has access to are modified.
+
+        Message format:
+        ```json
+        {
+          "type": "session",
+          "id": "abc123",
+          "action": "updated",
+          "timestamp": 1702400000
+        }
+        ```
+
+        Types: session, invitation, race, ruleset, session_player_race
+        Actions: created, updated, deleted
+      responses:
+        101:
+          description: WebSocket upgrade successful
+        401:
+          $ref: "#/responses/unauthorized"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions:
     get:
       operationId: sessionsList

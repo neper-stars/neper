@@ -45,7 +45,7 @@ func TestGameCreateHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_vs_gollum_ruleset.json")
 
 	runner := stars.GetTestStarsRunner(t, &log)
-	createHandler := NewGameCreateHandler(&log, testdb.DB, runner)
+	createHandler := NewGameCreateHandler(&log, testdb.DB, runner, nil)
 
 	t.Run("merry_generates_the_first_turn", func(t *testing.T) {
 		sessionID := "merryvsgollumID"
@@ -103,7 +103,7 @@ func TestGameCreateHandler_PlayersNotReady(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_vs_gollum_ruleset.json")
 
 	runner := stars.GetTestStarsRunner(t, &log)
-	createHandler := NewGameCreateHandler(&log, testdb.DB, runner)
+	createHandler := NewGameCreateHandler(&log, testdb.DB, runner, nil)
 
 	t.Run("cannot_start_game_when_players_not_ready", func(t *testing.T) {
 		sessionID := "merryvsgollumID"

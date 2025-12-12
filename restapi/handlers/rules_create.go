@@ -13,19 +13,21 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewRulesCreateHandler ...
-func NewRulesCreateHandler(log *zerolog.Logger, db *sqlx.DB) *RulesCreateHandler {
-	return &RulesCreateHandler{db, log}
+func NewRulesCreateHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *RulesCreateHandler {
+	return &RulesCreateHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // RulesCreateHandler handles /Races
 type RulesCreateHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *RulesCreateHandler) handle(
@@ -150,6 +152,12 @@ func (h *RulesCreateHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	// Publish notification after successful commit (session was updated with rules)
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishSessionUpdate(params.SessionID)
+	}
+
 	return &rulesetDB.Ruleset, nil
 }
 

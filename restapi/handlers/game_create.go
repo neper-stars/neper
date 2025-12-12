@@ -13,21 +13,23 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewGameCreateHandler ...
-func NewGameCreateHandler(log *zerolog.Logger, db *sqlx.DB, runner *stars.Runner) *GameCreateHandler {
-	return &GameCreateHandler{log, db, runner}
+func NewGameCreateHandler(log *zerolog.Logger, db *sqlx.DB, runner *stars.Runner, notifyService *notify.Service) *GameCreateHandler {
+	return &GameCreateHandler{log: log, db: db, runner: runner, notifyService: notifyService}
 }
 
 // GameCreateHandler handles /sessions
 type GameCreateHandler struct {
-	log    *zerolog.Logger
-	db     *sqlx.DB
-	runner *stars.Runner
+	log           *zerolog.Logger
+	db            *sqlx.DB
+	runner        *stars.Runner
+	notifyService *notify.Service
 }
 
 func (h *GameCreateHandler) handle(
@@ -119,6 +121,12 @@ func (h *GameCreateHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	// Publish notification after successful commit (session is now started)
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishSessionUpdate(sessionID)
+	}
+
 	return &sfDB.SessionFiles, nil
 }
 

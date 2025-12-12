@@ -11,6 +11,7 @@ import (
 
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi"
 )
@@ -112,6 +113,9 @@ func setupServeConfig(config *restapi.Config) error {
 	}
 	// config.Log.Info().Str("natsConnStatus", nc.Status().String()).Msg("nats status")
 	config.NatsClientConn = nc
+
+	// Initialize the notification service
+	config.NotifyService = notify.NewService(nc, &config.Log)
 	// NATS out ------------------------------------
 
 	// start the turn generator

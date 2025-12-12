@@ -30,7 +30,7 @@ func TestInvitationListHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gollum_nosession.json")
 
-	createHandler := NewInvitationCreateHandler(&log, testdb.DB)
+	createHandler := NewInvitationCreateHandler(&log, testdb.DB, nil)
 	listHandler := NewInvitationListHandler(&log, testdb.DB)
 
 	t.Run("user_sees_only_their_own_invitations", func(t *testing.T) {

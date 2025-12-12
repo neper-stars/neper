@@ -13,19 +13,21 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewReorderPlayersHandler ...
-func NewReorderPlayersHandler(log *zerolog.Logger, db *sqlx.DB) *ReorderPlayersHandler {
-	return &ReorderPlayersHandler{db, log}
+func NewReorderPlayersHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *ReorderPlayersHandler {
+	return &ReorderPlayersHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // ReorderPlayersHandler handles /circles
 type ReorderPlayersHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *ReorderPlayersHandler) handle(
@@ -70,6 +72,12 @@ func (h *ReorderPlayersHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	// Publish notification after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishSessionUpdate(params.SessionID)
+	}
+
 	return params.Players, nil
 }
 

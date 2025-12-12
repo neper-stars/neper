@@ -22,6 +22,7 @@ import (
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/cmd/neper/cmd"
 	"github.com/neper-stars/neper/lib/embeddednats"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
@@ -127,6 +128,9 @@ func (a *APITesterConfigUpdater) UpdateConfig(config restapi.Config) restapi.Con
 		a.t.Fatalf("failed to start client conn to inprocess nats server: %s", err.Error())
 	}
 	config.NatsClientConn = nc
+
+	// Initialize the notification service
+	config.NotifyService = notify.NewService(nc, a.log)
 
 	// create the turn generator
 	config.TurnGenerator = stars.NewTurnGenerator(a.log, config.NatsClientConn, config.DB, config.StarsRunner)

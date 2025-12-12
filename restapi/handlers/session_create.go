@@ -14,18 +14,20 @@ import (
 
 	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewSessionCreateHandler ...
-func NewSessionCreateHandler(db *sqlx.DB) *SessionCreateHandler {
-	return &SessionCreateHandler{db}
+func NewSessionCreateHandler(db *sqlx.DB, notifyService *notify.Service) *SessionCreateHandler {
+	return &SessionCreateHandler{db: db, notifyService: notifyService}
 }
 
 // SessionCreateHandler handles /sessions
 type SessionCreateHandler struct {
-	db *sqlx.DB
+	db            *sqlx.DB
+	notifyService *notify.Service
 }
 
 func (h *SessionCreateHandler) handle(
@@ -94,6 +96,12 @@ func (h *SessionCreateHandler) handle(
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
+
+	// Publish notification after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishSessionCreate(session.ID)
+	}
+
 	return &sessionDB.Session, nil
 }
 

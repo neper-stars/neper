@@ -31,7 +31,7 @@ func TestRulesCreateHandler_SetsRulesIsSet(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gandalf.json")
 
-	rulesHandler := NewRulesCreateHandler(&log, testdb.DB)
+	rulesHandler := NewRulesCreateHandler(&log, testdb.DB, nil)
 	sessionHandler := NewSessionReadHandler(&log, testdb.DB)
 
 	gandalfPrincipal := &models.Principal{
@@ -85,7 +85,7 @@ func TestRulesCreateHandler_UpdatesExistingRules(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gandalf.json")
 
-	rulesHandler := NewRulesCreateHandler(&log, testdb.DB)
+	rulesHandler := NewRulesCreateHandler(&log, testdb.DB, nil)
 	rulesReadHandler := NewRulesReadHandler(&log, testdb.DB)
 
 	gandalfPrincipal := &models.Principal{
@@ -154,7 +154,7 @@ func TestRulesCreateHandler_FailsForStartedSession(t *testing.T) {
 	// Load fixture with started session
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/started_session.json")
 
-	rulesHandler := NewRulesCreateHandler(&log, testdb.DB)
+	rulesHandler := NewRulesCreateHandler(&log, testdb.DB, nil)
 
 	managerPrincipal := &models.Principal{
 		StandardClaims: jwt.StandardClaims{

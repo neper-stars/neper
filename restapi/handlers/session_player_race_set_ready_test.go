@@ -33,8 +33,8 @@ func TestSessionPlayerRaceSetReadyHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/races.json")
 
-	sprCreateHandler := NewSessionPlayerRaceCreateHandler(&log, testdb.DB)
-	setReadyHandler := NewSessionPlayerRaceSetReadyHandler(&log, testdb.DB)
+	sprCreateHandler := NewSessionPlayerRaceCreateHandler(&log, testdb.DB, nil)
+	setReadyHandler := NewSessionPlayerRaceSetReadyHandler(&log, testdb.DB, nil)
 
 	t.Run("user_can_set_their_own_ready_status", func(t *testing.T) {
 		sessionID := "gondorID"
