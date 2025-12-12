@@ -25,7 +25,7 @@ func CheckFileExecutable(file string, usePath bool) error {
 	}
 
 	m := fileInfo.Mode()
-	if !((m.IsRegular()) || (uint32(m&fs.ModeSymlink) == 0)) {
+	if !m.IsRegular() && uint32(m&fs.ModeSymlink) != 0 {
 		return errors.New("File " + absoluteFile + " is not a normal file or symlink.")
 	}
 
