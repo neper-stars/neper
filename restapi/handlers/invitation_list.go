@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
@@ -44,19 +43,22 @@ func (h *InvitationList) handle(
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
 	// Join with session and user_profile tables to get session_name and inviter_nickname
-	q := sq.Select(
-		"i."+models.InvitationDBIDColumn,
-		"i."+models.InvitationDBSessionIDColumn,
-		"i."+models.InvitationDBUserProfileIDColumn,
-		"i."+models.InvitationDBInviterIDColumn,
-		"s.name AS session_name",
-		"u.nickname AS inviter_nickname",
-	).
-		From(models.InvitationDBTable+" AS i").
-		LeftJoin(models.SessionDBTable+" AS s ON i."+models.InvitationDBSessionIDColumn+" = s.id").
-		LeftJoin(models.UserProfileDBTable+" AS u ON i."+models.InvitationDBInviterIDColumn+" = u.id").
-		Where(sq.Eq{"i." + models.InvitationDBUserProfileIDColumn: principal.Subject}).
-		OrderBy("i." + models.InvitationDBIDColumn)
+	i := models.Schema.InvitationDB.As("i")
+	s := models.Schema.SessionDB.As("s")
+	u := models.Schema.UserProfileDB.As("u")
+
+	q := database.SQ.Select().
+		Column(i.ID.Sql()).
+		Column(i.SessionID.Sql()).
+		Column(i.UserProfileID.Sql()).
+		Column(i.InviterID.Sql()).
+		Column(s.Name.Sql() + " AS session_name").
+		Column(u.Nickname.Sql() + " AS inviter_nickname").
+		From(i.Sql()).
+		LeftJoin(i.SessionID.Join(s.ID).Sql()).
+		LeftJoin(i.InviterID.Join(u.ID).Sql()).
+		Where(i.UserProfileID.Eq(principal.Subject)).
+		OrderBy(i.ID.Sql())
 
 	var list []invitationWithDetails
 	if err := sqlH.Select(&list, q); err != nil {
