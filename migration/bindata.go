@@ -13,6 +13,7 @@
 // scripts/0009_add_table_session_file.up.sql
 // scripts/0010_add_inviter_id_to_invitation.up.sql
 // scripts/0011_add_started_to_session.up.sql
+// scripts/0012_add_ready_to_session_player_race.up.sql
 package migration
 
 import (
@@ -309,6 +310,26 @@ func _0011_add_started_to_sessionUpSql() (*asset, error) {
 	return a, nil
 }
 
+var __0012_add_ready_to_session_player_raceUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x34\xc9\x31\x0e\xc2\x30\x0c\x05\xd0\xbd\xa7\xf8\x17\xe8\x09\x98\x5c\xe2\x4e\x26\x91\x20\x99\x2b\x43\x0c\x42\x8a\x28\x4a\xbc\xf4\xf6\x4c\xcc\x6f\x9e\x41\xb5\x62\xb8\x76\xb7\x8a\x67\xd3\x17\x7c\xc7\xb0\x31\xde\xfb\x07\xae\xf7\x66\x13\x49\xe6\x2b\x32\x2d\xc2\x7f\xd9\xbe\x4d\x0f\xeb\x5b\xd7\x87\x81\x42\xc0\x39\x49\xb9\x44\x74\xd3\x7a\x60\x49\x49\x98\x22\x62\xca\x88\x45\x04\x81\x57\x2a\x92\xb1\x92\xdc\xf8\x34\xfd\x02\x00\x00\xff\xff\xb6\x19\x76\xd6\x76\x00\x00\x00")
+
+func _0012_add_ready_to_session_player_raceUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__0012_add_ready_to_session_player_raceUpSql,
+		"0012_add_ready_to_session_player_race.up.sql",
+	)
+}
+
+func _0012_add_ready_to_session_player_raceUpSql() (*asset, error) {
+	bytes, err := _0012_add_ready_to_session_player_raceUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "0012_add_ready_to_session_player_race.up.sql", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -372,6 +393,7 @@ var _bindata = map[string]func() (*asset, error){
 	"0009_add_table_session_file.up.sql":             _0009_add_table_session_fileUpSql,
 	"0010_add_inviter_id_to_invitation.up.sql":       _0010_add_inviter_id_to_invitationUpSql,
 	"0011_add_started_to_session.up.sql":             _0011_add_started_to_sessionUpSql,
+	"0012_add_ready_to_session_player_race.up.sql":   _0012_add_ready_to_session_player_raceUpSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -426,6 +448,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"0009_add_table_session_file.up.sql":             &bintree{_0009_add_table_session_fileUpSql, map[string]*bintree{}},
 	"0010_add_inviter_id_to_invitation.up.sql":       &bintree{_0010_add_inviter_id_to_invitationUpSql, map[string]*bintree{}},
 	"0011_add_started_to_session.up.sql":             &bintree{_0011_add_started_to_sessionUpSql, map[string]*bintree{}},
+	"0012_add_ready_to_session_player_race.up.sql":   &bintree{_0012_add_ready_to_session_player_raceUpSql, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory

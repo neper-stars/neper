@@ -475,6 +475,51 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/player_race/ready": {
+      "put": {
+        "description": "As a player, after setting a race file as the one you want to compete with,\nyou must mark it as ready, to allow for the manager to start the game. This\nallows you to still change your mind as long as you did not tick the ready box.\n",
+        "summary": "set the ready flag on the race you are playing with in this session",
+        "operationId": "sessionPlayerRaceSetReady",
+        "parameters": [
+          {
+            "name": "ready",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the updated session player race mapping",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/session_player_race"
+            }
+          },
+          "400": {
+            "$ref": "#/responses/invalid"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/reorder_players": {
       "put": {
         "description": "Update the session player order\n\nThis is restricted to global managers or\nmanagers of the specific session\n",
@@ -1593,6 +1638,63 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/player_race/ready": {
+      "put": {
+        "description": "As a player, after setting a race file as the one you want to compete with,\nyou must mark it as ready, to allow for the manager to start the game. This\nallows you to still change your mind as long as you did not tick the ready box.\n",
+        "summary": "set the ready flag on the race you are playing with in this session",
+        "operationId": "sessionPlayerRaceSetReady",
+        "parameters": [
+          {
+            "name": "ready",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the updated session player race mapping",
+            "schema": {
+              "$ref": "#/definitions/sessionPlayerRace"
+            }
+          },
+          "400": {
+            "description": "invalid client request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/reorder_players": {
       "put": {
         "description": "Update the session player order\n\nThis is restricted to global managers or\nmanagers of the specific session\n",
@@ -2646,6 +2748,12 @@ func init() {
           "description": "the race ID you will use during this session\nFor a normal player you must use the ID of a race file you previously uploaded\nin your user profile.\n\nIf the host is adding a bot player here is the list of race ids to chose from:\n  \"0\"=Random\n  \"1\"=Robotoids\n  \"2\"=Turndrones\n  \"3\"=Automitrons\n  \"4\"=Rototills\n  \"5\"=Cybertrons\n  \"6\"=Mcinti\n",
           "type": "string",
           "x-go-custom-tag": "db:\"race_id\"",
+          "x-nullable": false
+        },
+        "ready": {
+          "description": "If the player is ready to play with this race in the corresponding session\nthen he should mark this as ready in order to allow for the game to start.\nAs long as this setting is not ready on all races, the game cannot start.\nAs long as this setting is ready on a race, the player cannot change his\nrace file. This allows for session managers to start a game without any\n\"race conditions\".\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"ready\"",
           "x-nullable": false
         },
         "session_id": {

@@ -95,6 +95,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		SessionPlayerRaceCreateHandler: SessionPlayerRaceCreateHandlerFunc(func(params SessionPlayerRaceCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPlayerRaceCreate has not yet been implemented")
 		}),
+		SessionPlayerRaceSetReadyHandler: SessionPlayerRaceSetReadyHandlerFunc(func(params SessionPlayerRaceSetReadyParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation SessionPlayerRaceSetReady has not yet been implemented")
+		}),
 		SessionReadHandler: SessionReadHandlerFunc(func(params SessionReadParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionRead has not yet been implemented")
 		}),
@@ -210,6 +213,8 @@ type NeperAPI struct {
 	SessionJoinHandler SessionJoinHandler
 	// SessionPlayerRaceCreateHandler sets the operation handler for the session player race create operation
 	SessionPlayerRaceCreateHandler SessionPlayerRaceCreateHandler
+	// SessionPlayerRaceSetReadyHandler sets the operation handler for the session player race set ready operation
+	SessionPlayerRaceSetReadyHandler SessionPlayerRaceSetReadyHandler
 	// SessionReadHandler sets the operation handler for the session read operation
 	SessionReadHandler SessionReadHandler
 	// SessionUpdateHandler sets the operation handler for the session update operation
@@ -361,6 +366,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.SessionPlayerRaceCreateHandler == nil {
 		unregistered = append(unregistered, "SessionPlayerRaceCreateHandler")
+	}
+	if o.SessionPlayerRaceSetReadyHandler == nil {
+		unregistered = append(unregistered, "SessionPlayerRaceSetReadyHandler")
 	}
 	if o.SessionReadHandler == nil {
 		unregistered = append(unregistered, "SessionReadHandler")
@@ -559,6 +567,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions/{session_id}/player_race"] = NewSessionPlayerRaceCreate(o.context, o.SessionPlayerRaceCreateHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"] = NewSessionPlayerRaceSetReady(o.context, o.SessionPlayerRaceSetReadyHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

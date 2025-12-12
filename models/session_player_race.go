@@ -62,6 +62,15 @@ type SessionPlayerRace struct {
 	//
 	RaceID string `json:"race_id,omitempty" db:"race_id"`
 
+	// If the player is ready to play with this race in the corresponding session
+	// then he should mark this as ready in order to allow for the game to start.
+	// As long as this setting is not ready on all races, the game cannot start.
+	// As long as this setting is ready on a race, the player cannot change his
+	// race file. This allows for session managers to start a game without any
+	// "race conditions".
+	//
+	Ready bool `json:"ready,omitempty" db:"ready"`
+
 	// the session id on which this race will be used. This value is automatically set by the server.
 	// Read Only: true
 	SessionID string `json:"session_id,omitempty" db:"session_id"`

@@ -245,6 +245,17 @@ definitions:
             "6"=Mcinti
         x-go-custom-tag: db:"race_id"
         x-nullable: false
+      ready:
+        type: boolean
+        description: |
+          If the player is ready to play with this race in the corresponding session
+          then he should mark this as ready in order to allow for the game to start.
+          As long as this setting is not ready on all races, the game cannot start.
+          As long as this setting is ready on a race, the player cannot change his
+          race file. This allows for session managers to start a game without any
+          "race conditions".
+        x-go-custom-tag: db:"ready"
+        x-nullable: false
       is_bot:
         type: boolean
         description: |

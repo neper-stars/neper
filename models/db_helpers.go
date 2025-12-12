@@ -454,6 +454,9 @@ const (
 	// SessionPlayerRaceRaceIDColumn is the name of the column containing field "RaceID" data
 	SessionPlayerRaceRaceIDColumn = "race_id"
 
+	// SessionPlayerRaceReadyColumn is the name of the column containing field "Ready" data
+	SessionPlayerRaceReadyColumn = "ready"
+
 	// SessionPlayerRaceSessionIDColumn is the name of the column containing field "SessionID" data
 	SessionPlayerRaceSessionIDColumn = "session_id"
 
@@ -477,6 +480,9 @@ const (
 
 	// SessionPlayerRaceDBRaceIDColumn is the name of the column containing field "RaceID" data
 	SessionPlayerRaceDBRaceIDColumn = "race_id"
+
+	// SessionPlayerRaceDBReadyColumn is the name of the column containing field "Ready" data
+	SessionPlayerRaceDBReadyColumn = "ready"
 
 	// SessionPlayerRaceDBSessionIDColumn is the name of the column containing field "SessionID" data
 	SessionPlayerRaceDBSessionIDColumn = "session_id"
@@ -725,6 +731,7 @@ var (
 		SessionPlayerRaceIDColumn,
 		SessionPlayerRacePlayerOrderColumn,
 		SessionPlayerRaceRaceIDColumn,
+		SessionPlayerRaceReadyColumn,
 		SessionPlayerRaceSessionIDColumn,
 		SessionPlayerRaceUserProfileIDColumn,
 	}
@@ -733,6 +740,7 @@ var (
 		SessionPlayerRaceDBBotLevelColumn,
 		SessionPlayerRaceDBPlayerOrderColumn,
 		SessionPlayerRaceDBRaceIDColumn,
+		SessionPlayerRaceDBReadyColumn,
 		SessionPlayerRaceDBSessionIDColumn,
 		SessionPlayerRaceDBUserProfileIDColumn,
 	}
@@ -1984,6 +1992,8 @@ func (s SessionPlayerRace) Values(columns ...string) []interface{} {
 			values[i] = s.PlayerOrder
 		case "race_id":
 			values[i] = s.RaceID
+		case "ready":
+			values[i] = s.Ready
 		case "session_id":
 			values[i] = s.SessionID
 		case "user_profile_id":
@@ -2007,6 +2017,8 @@ func (s SessionPlayerRace) ValuesMap(columns ...string) map[string]interface{} {
 			values["player_order"] = s.PlayerOrder
 		case "race_id":
 			values["race_id"] = s.RaceID
+		case "ready":
+			values["ready"] = s.Ready
 		case "session_id":
 			values["session_id"] = s.SessionID
 		case "user_profile_id":
@@ -2048,6 +2060,8 @@ func (s SessionPlayerRaceDB) Values(columns ...string) []interface{} {
 			values[i] = s.PlayerOrder
 		case "race_id":
 			values[i] = s.RaceID
+		case "ready":
+			values[i] = s.Ready
 		case "session_id":
 			values[i] = s.SessionID
 		case "user_profile_id":
@@ -2071,6 +2085,8 @@ func (s SessionPlayerRaceDB) ValuesMap(columns ...string) map[string]interface{}
 			values["player_order"] = s.PlayerOrder
 		case "race_id":
 			values["race_id"] = s.RaceID
+		case "ready":
+			values["ready"] = s.Ready
 		case "session_id":
 			values["session_id"] = s.SessionID
 		case "user_profile_id":
@@ -2086,6 +2102,7 @@ func NewSessionPlayerRaceDBTableSchema() *SessionPlayerRaceDBTableSchema {
 	t.ID = NewColumn(&t, "id")
 	t.PlayerOrder = NewColumn(&t, "player_order")
 	t.RaceID = NewColumn(&t, "race_id")
+	t.Ready = NewColumn(&t, "ready")
 	t.SessionID = NewColumn(&t, "session_id")
 	t.UserProfileID = NewColumn(&t, "user_profile_id")
 	return &t
@@ -2097,6 +2114,7 @@ type SessionPlayerRaceDBTableSchema struct {
 	ID Column
 	PlayerOrder Column
 	RaceID Column
+	Ready Column
 	SessionID Column
 	UserProfileID Column
 }
@@ -2131,6 +2149,7 @@ func (t SessionPlayerRaceDBTableSchema) As(name string) *SessionPlayerRaceDBTabl
 	t.ID = NewColumn(&t, "id")
 	t.PlayerOrder = NewColumn(&t, "player_order")
 	t.RaceID = NewColumn(&t, "race_id")
+	t.Ready = NewColumn(&t, "ready")
 	t.SessionID = NewColumn(&t, "session_id")
 	t.UserProfileID = NewColumn(&t, "user_profile_id")
 	return &t

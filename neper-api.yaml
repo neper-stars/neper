@@ -269,6 +269,39 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/player_race/ready:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+    put:
+      operationId: sessionPlayerRaceSetReady
+      summary: "set the ready flag on the race you are playing with in this session"
+      description: |
+        As a player, after setting a race file as the one you want to compete with,
+        you must mark it as ready, to allow for the manager to start the game. This
+        allows you to still change your mind as long as you did not tick the ready box.
+      parameters:
+        - name: ready
+          in: body
+          required: true
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: the updated session player race mapping
+          schema:
+            $ref: "neper-types.yaml#/definitions/session_player_race"
+        400:
+          $ref: "#/responses/invalid"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}/reorder_players:
     parameters:
       - name: session_id

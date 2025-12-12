@@ -60,6 +60,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/sessions/{session_id}/player_race"] = SessionPlayerRaceCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/player_race"])
 
+	o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"] = SessionPlayerRaceSetReadyInstrumentHandler(
+		o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"])
+
 	o.handlers["GET"]["/v1/sessions/{session_id}"] = SessionReadInstrumentHandler(
 		o.handlers["GET"]["/v1/sessions/{session_id}"])
 
