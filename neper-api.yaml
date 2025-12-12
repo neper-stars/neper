@@ -277,11 +277,11 @@ paths:
         required: true
     put:
       operationId: sessionPlayerRaceSetReady
-      summary: "set the ready flag on the race you are playing with in this session"
+      summary: "set the ready flag on the race you are playing with, in this session"
       description: |
         As a player, after setting a race file as the one you want to compete with,
         you must mark it as ready, to allow for the manager to start the game. This
-        allows you to still change your mind as long as you did not tick the ready box.
+        allows you to still change your mind as long as the ready flag is not set.
       parameters:
         - name: ready
           in: body

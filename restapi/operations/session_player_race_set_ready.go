@@ -33,11 +33,11 @@ func NewSessionPlayerRaceSetReady(ctx *middleware.Context, handler SessionPlayer
 
 /* SessionPlayerRaceSetReady swagger:route PUT /v1/sessions/{session_id}/player_race/ready sessionPlayerRaceSetReady
 
-set the ready flag on the race you are playing with in this session
+set the ready flag on the race you are playing with, in this session
 
 As a player, after setting a race file as the one you want to compete with,
 you must mark it as ready, to allow for the manager to start the game. This
-allows you to still change your mind as long as you did not tick the ready box.
+allows you to still change your mind as long as the ready flag is not set.
 
 
 */

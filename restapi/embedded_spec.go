@@ -480,8 +480,8 @@ func init() {
     },
     "/v1/sessions/{session_id}/player_race/ready": {
       "put": {
-        "description": "As a player, after setting a race file as the one you want to compete with,\nyou must mark it as ready, to allow for the manager to start the game. This\nallows you to still change your mind as long as you did not tick the ready box.\n",
-        "summary": "set the ready flag on the race you are playing with in this session",
+        "description": "As a player, after setting a race file as the one you want to compete with,\nyou must mark it as ready, to allow for the manager to start the game. This\nallows you to still change your mind as long as the ready flag is not set.\n",
+        "summary": "set the ready flag on the race you are playing with, in this session",
         "operationId": "sessionPlayerRaceSetReady",
         "parameters": [
           {
@@ -1655,8 +1655,8 @@ func init() {
     },
     "/v1/sessions/{session_id}/player_race/ready": {
       "put": {
-        "description": "As a player, after setting a race file as the one you want to compete with,\nyou must mark it as ready, to allow for the manager to start the game. This\nallows you to still change your mind as long as you did not tick the ready box.\n",
-        "summary": "set the ready flag on the race you are playing with in this session",
+        "description": "As a player, after setting a race file as the one you want to compete with,\nyou must mark it as ready, to allow for the manager to start the game. This\nallows you to still change your mind as long as the ready flag is not set.\n",
+        "summary": "set the ready flag on the race you are playing with, in this session",
         "operationId": "sessionPlayerRaceSetReady",
         "parameters": [
           {
