@@ -104,6 +104,16 @@ func (h *RulesCreateHandler) handle(
 		return nil, err
 	}
 
+	// Update session to mark rules as set
+	var sessionDB models.SessionDB
+	if err := sqlH.GetByPKey(&sessionDB, params.SessionID); err != nil {
+		return nil, err
+	}
+	sessionDB.RulesIsSet = true
+	if err := sqlH.Update(&sessionDB); err != nil {
+		return nil, err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}

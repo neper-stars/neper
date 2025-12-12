@@ -13,10 +13,11 @@ func (w *Worker) syncSession(ctx context.Context, sql database.SQLHelper, op Ope
 	if op == OpCreate || op == OpUpdate {
 		var sessionDB = models.SessionDB{
 			Session: models.Session{
-				ID:      data.Id,
-				Name:    data.Name,
-				Private: data.Private,
-				Started: data.Started,
+				ID:         data.Id,
+				Name:       data.Name,
+				Private:    data.Private,
+				Started:    data.Started,
+				RulesIsSet: data.RulesIsSet,
 			},
 		}
 		if err := sql.Upsert(&sessionDB); err != nil {

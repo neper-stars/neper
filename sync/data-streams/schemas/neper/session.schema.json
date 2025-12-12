@@ -30,6 +30,10 @@
       "description": "whether the game has been started for this session",
       "type": "boolean"
     },
+    "rules_is_set": {
+      "description": "true if the ruleset has been configured for this session",
+      "type": "boolean"
+    },
     "members": {
       "description": "list of member IDs represented as a user_profile_session_rel, sessionID is optional",
       "type": "array",

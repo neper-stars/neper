@@ -978,6 +978,9 @@ type Session struct {
 	// Private if the session is private only managers can add new members. The session will not be publicly listed.
 	Private bool `json:"private,omitempty"`
 
+	// RulesIsSet true if the ruleset has been configured for this session
+	RulesIsSet bool `json:"rules_is_set,omitempty"`
+
 	// Started whether the game has been started for this session
 	Started bool `json:"started,omitempty"`
 
@@ -2359,6 +2362,16 @@ func (s Session) MarshalJSONStream(stream *jsoniter.Stream) {
 		}
 	}
 
+	// Marshal the RulesIsSet field
+	if !IsEmpty(s.RulesIsSet) {
+		ct.More()
+		stream.WriteObjectField("rules_is_set")
+		stream.WriteVal(s.RulesIsSet)
+		if stream.Error != nil {
+			return
+		}
+	}
+
 	// Marshal the Started field
 	if !IsEmpty(s.Started) {
 		ct.More()
@@ -2431,6 +2444,11 @@ func (s *Session) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			NameReceived = true
 		case "private":
 			s.Private = iter.ReadBool()
+			if iter.Error != nil {
+				return
+			}
+		case "rules_is_set":
+			s.RulesIsSet = iter.ReadBool()
 			if iter.Error != nil {
 				return
 			}

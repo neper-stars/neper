@@ -2678,6 +2678,12 @@ func init() {
           "x-go-custom-tag": "db:\"private\"",
           "x-nullable": false
         },
+        "rules_is_set": {
+          "description": "true if the ruleset has been configured for this session",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"rules_is_set\"",
+          "x-nullable": false
+        },
         "started": {
           "description": "if the game is started, this flag is true, this will disallow users to modify their race file",
           "type": "boolean",

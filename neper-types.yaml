@@ -97,6 +97,11 @@ definitions:
         description: if the game is started, this flag is true, this will disallow users to modify their race file
         x-go-custom-tag: db:"started"
         x-nullable: false
+      rules_is_set:
+        type: boolean
+        description: true if the ruleset has been configured for this session
+        x-go-custom-tag: db:"rules_is_set"
+        x-nullable: false
       players:
         type: array
         description: |

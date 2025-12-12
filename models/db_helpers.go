@@ -373,6 +373,9 @@ const (
 	// SessionPrivateColumn is the name of the column containing field "Private" data
 	SessionPrivateColumn = "private"
 
+	// SessionRulesIsSetColumn is the name of the column containing field "RulesIsSet" data
+	SessionRulesIsSetColumn = "rules_is_set"
+
 	// SessionStartedColumn is the name of the column containing field "Started" data
 	SessionStartedColumn = "started"
 
@@ -390,6 +393,9 @@ const (
 
 	// SessionDBPrivateColumn is the name of the column containing field "Private" data
 	SessionDBPrivateColumn = "private"
+
+	// SessionDBRulesIsSetColumn is the name of the column containing field "RulesIsSet" data
+	SessionDBRulesIsSetColumn = "rules_is_set"
 
 	// SessionDBStartedColumn is the name of the column containing field "Started" data
 	SessionDBStartedColumn = "started"
@@ -558,6 +564,12 @@ const (
 
 	// UserProfileSessionRelDBIsManagerColumn is the name of the column containing field "IsManager" data
 	UserProfileSessionRelDBIsManagerColumn = "is_manager"
+
+	// sessionPlayerInfoUserProfileIDColumn is the name of the column containing field "UserProfileID" data
+	sessionPlayerInfoUserProfileIDColumn = "user_profile_id"
+
+	// sessionPlayerInfoReadyColumn is the name of the column containing field "Ready" data
+	sessionPlayerInfoReadyColumn = "ready"
 )
 
 var (
@@ -686,12 +698,14 @@ var (
 		SessionIDColumn,
 		SessionNameColumn,
 		SessionPrivateColumn,
+		SessionRulesIsSetColumn,
 		SessionStartedColumn,
 	}
 	// SessionDBDataColumns is the list of the columns for the SessionDB structure, expect its primary key
 	SessionDBDataColumns = []string{
 		SessionDBNameColumn,
 		SessionDBPrivateColumn,
+		SessionDBRulesIsSetColumn,
 		SessionDBStartedColumn,
 	}
 
@@ -794,6 +808,11 @@ var (
 		[]string{ UserProfileSessionRelDBUserProfileIDColumn },
 		UserProfileSessionRelDBDataColumns...,
 	)
+	// sessionPlayerInfoColumns is the list of the columns for the sessionPlayerInfo structure
+	sessionPlayerInfoColumns = []string{
+		sessionPlayerInfoUserProfileIDColumn,
+		sessionPlayerInfoReadyColumn,
+	}
 )
 
 // Columns returns the database table column names
@@ -1615,6 +1634,8 @@ func (s Session) Values(columns ...string) []interface{} {
 			values[i] = s.Name
 		case "private":
 			values[i] = s.Private
+		case "rules_is_set":
+			values[i] = s.RulesIsSet
 		case "started":
 			values[i] = s.Started
 		}
@@ -1634,6 +1655,8 @@ func (s Session) ValuesMap(columns ...string) map[string]interface{} {
 			values["name"] = s.Name
 		case "private":
 			values["private"] = s.Private
+		case "rules_is_set":
+			values["rules_is_set"] = s.RulesIsSet
 		case "started":
 			values["started"] = s.Started
 		}
@@ -1671,6 +1694,8 @@ func (s SessionDB) Values(columns ...string) []interface{} {
 			values[i] = s.Name
 		case "private":
 			values[i] = s.Private
+		case "rules_is_set":
+			values[i] = s.RulesIsSet
 		case "started":
 			values[i] = s.Started
 		}
@@ -1690,6 +1715,8 @@ func (s SessionDB) ValuesMap(columns ...string) map[string]interface{} {
 			values["name"] = s.Name
 		case "private":
 			values["private"] = s.Private
+		case "rules_is_set":
+			values["rules_is_set"] = s.RulesIsSet
 		case "started":
 			values["started"] = s.Started
 		}
@@ -1702,6 +1729,7 @@ func NewSessionDBTableSchema() *SessionDBTableSchema {
 	t.ID = NewColumn(&t, "id")
 	t.Name = NewColumn(&t, "name")
 	t.Private = NewColumn(&t, "private")
+	t.RulesIsSet = NewColumn(&t, "rules_is_set")
 	t.Started = NewColumn(&t, "started")
 	return &t
 }
@@ -1711,6 +1739,7 @@ type SessionDBTableSchema struct {
 	ID Column
 	Name Column
 	Private Column
+	RulesIsSet Column
 	Started Column
 }
 
@@ -1743,6 +1772,7 @@ func (t SessionDBTableSchema) As(name string) *SessionDBTableSchema {
 	t.ID = NewColumn(&t, "id")
 	t.Name = NewColumn(&t, "name")
 	t.Private = NewColumn(&t, "private")
+	t.RulesIsSet = NewColumn(&t, "rules_is_set")
 	t.Started = NewColumn(&t, "started")
 	return &t
 }
@@ -2559,6 +2589,41 @@ func (t UserProfileSessionRelDBTableSchema) ToSql() (string, []interface{}, erro
 
 func (t UserProfileSessionRelDBTableSchema) Select() squirrel.SelectBuilder {
 	return squirrel.Select(t.Columns(true)...).From(t.Sql())
+}
+
+// Columns returns the database table column names
+func (s sessionPlayerInfo) Columns() []string {
+	return sessionPlayerInfoColumns
+}
+
+// Values returns the values for a list of columns. If a column does not exits,
+// the corresponding value is left empty
+func (s sessionPlayerInfo) Values(columns ...string) []interface{} {
+	values := make([]interface{}, len(columns))
+	for i, column := range columns {
+		switch column {
+		case "user_profile_id":
+			values[i] = s.UserProfileID
+		case "ready":
+			values[i] = s.Ready
+		}
+	}
+	return values
+}
+
+// ValuesMap returns the values map for a list of columns. If a column does not
+// exits, the corresponding value is left empty
+func (s sessionPlayerInfo) ValuesMap(columns ...string) map[string]interface{} {
+	values := make(map[string]interface{})
+	for _, column := range columns {
+		switch column {
+		case "user_profile_id":
+			values["user_profile_id"] = s.UserProfileID
+		case "ready":
+			values["ready"] = s.Ready
+		}
+	}
+	return values
 }
 
 func NewDBSchema() *DBSchema {
