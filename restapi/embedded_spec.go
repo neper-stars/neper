@@ -2665,10 +2665,10 @@ func init() {
           "x-nullable": false
         },
         "players": {
-          "description": "Array of player ids, sorted by player order.\nThis is read-only.\nIn this array this is normal to not always find all members+managers.\nYou will find in this list only people who have already set the race\nwith which they want to play.\n",
+          "description": "Array of player info, sorted by player order.\nThis is read-only.\nIn this array this is normal to not always find all members+managers.\nYou will find in this list only people who have already set the race\nwith which they want to play.\n",
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/sessionPlayer"
           },
           "readOnly": true
         },
@@ -2725,6 +2725,22 @@ func init() {
           "x-go-custom-tag": "db:\"year\"",
           "x-nullable": false,
           "readOnly": true
+        }
+      }
+    },
+    "sessionPlayer": {
+      "description": "Information about a player in a session",
+      "type": "object",
+      "properties": {
+        "ready": {
+          "description": "whether the player has marked their race as ready",
+          "type": "boolean",
+          "x-nullable": false
+        },
+        "user_profile_id": {
+          "description": "the user profile id of the player",
+          "type": "string",
+          "x-nullable": false
         }
       }
     },

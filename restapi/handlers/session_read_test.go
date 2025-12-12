@@ -88,3 +88,70 @@ func TestSessionReadHandler(t *testing.T) {
 		require.True(t, errors.Is(err, errs.ErrForbidden))
 	})
 }
+
+func TestSessionReadHandler_PlayersReady(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+
+	handler := NewSessionReadHandler(&log, testdb.DB)
+
+	t.Run("players_ready_state_is_returned", func(t *testing.T) {
+		// Load fixture with players that have ready: true
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum.json")
+
+		p := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		params := operations.SessionReadParams{
+			SessionID: "merryvsgollumID",
+		}
+		session, err := handler.handle(ctx, params, p)
+		require.NoError(t, err)
+		require.Equal(t, "MerryVSGollum", session.Name)
+		require.Equal(t, 2, len(session.Players))
+
+		// First player is merry, ready
+		require.Equal(t, "merryID", session.Players[0].UserProfileID)
+		require.True(t, session.Players[0].Ready)
+
+		// Second player is gollum, ready
+		require.Equal(t, "gollumID", session.Players[1].UserProfileID)
+		require.True(t, session.Players[1].Ready)
+	})
+
+	t.Run("players_not_ready_state_is_returned", func(t *testing.T) {
+		// Load fixture with players that have ready: false
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_not_ready.json")
+
+		p := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		params := operations.SessionReadParams{
+			SessionID: "merryvsgollumID",
+		}
+		session, err := handler.handle(ctx, params, p)
+		require.NoError(t, err)
+		require.Equal(t, "MerryVSGollum", session.Name)
+		require.Equal(t, 2, len(session.Players))
+
+		// First player is merry, not ready
+		require.Equal(t, "merryID", session.Players[0].UserProfileID)
+		require.False(t, session.Players[0].Ready)
+
+		// Second player is gollum, not ready
+		require.Equal(t, "gollumID", session.Players[1].UserProfileID)
+		require.False(t, session.Players[1].Ready)
+	})
+}

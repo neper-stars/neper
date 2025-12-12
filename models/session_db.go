@@ -61,6 +61,36 @@ func (c *SessionDB) PlayersID(sql *database.SQLHelper) ([]string, error) {
 	return ids, nil
 }
 
+// sessionPlayerInfo is a helper struct for querying player info
+type sessionPlayerInfo struct {
+	UserProfileID string `db:"user_profile_id"`
+	Ready         bool   `db:"ready"`
+}
+
+// PlayersInfo returns the list of Players with their ready status, sorted by player order
+func (c *SessionDB) PlayersInfo(sql *database.SQLHelper) ([]*SessionPlayer, error) {
+	var infos []sessionPlayerInfo
+
+	if err := sql.Select(&infos,
+		sq.Select(SessionPlayerRaceDBUserProfileIDColumn, SessionPlayerRaceDBReadyColumn).
+			From(SessionPlayerRaceDBTable).
+			Where(sq.And{
+				sq.Eq{SessionPlayerRaceDBSessionIDColumn: c.ID},
+			}).OrderBy(SessionPlayerRaceDBPlayerOrderColumn+" ASC"),
+	); err != nil {
+		return nil, err
+	}
+
+	var players []*SessionPlayer
+	for _, info := range infos {
+		players = append(players, &SessionPlayer{
+			UserProfileID: info.UserProfileID,
+			Ready:         info.Ready,
+		})
+	}
+	return players, nil
+}
+
 func (c *SessionDB) SessionPlayerRaces(sql *database.SQLHelper) ([]SessionPlayerRace, error) {
 	var sessionPlayerRacesDB []SessionPlayerRaceDB
 	if err := sql.Select(&sessionPlayerRacesDB,
@@ -139,11 +169,11 @@ func (c *SessionDB) FromDB(db *database.SQLHelper) error {
 	}
 	c.Managers = ids
 
-	ids, err = c.PlayersID(db)
+	players, err := c.PlayersInfo(db)
 	if err != nil {
 		return err
 	}
-	c.Players = ids
+	c.Players = players
 
 	return nil
 }

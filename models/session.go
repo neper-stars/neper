@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -33,14 +34,14 @@ type Session struct {
 	// Required: true
 	Name string `json:"name" db:"name"`
 
-	// Array of player ids, sorted by player order.
+	// Array of player info, sorted by player order.
 	// This is read-only.
 	// In this array this is normal to not always find all members+managers.
 	// You will find in this list only people who have already set the race
 	// with which they want to play.
 	//
 	// Read Only: true
-	Players []string `json:"players"`
+	Players []*SessionPlayer `json:"players"`
 
 	// if the session is private only the managers can add new members
 	Private bool `json:"private,omitempty" db:"private"`
@@ -57,6 +58,10 @@ func (m *Session) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validatePlayers(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -67,6 +72,30 @@ func (m *Session) validateName(formats strfmt.Registry) error {
 
 	if err := validate.RequiredString("name", "body", m.Name); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Session) validatePlayers(formats strfmt.Registry) error {
+	if swag.IsZero(m.Players) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Players); i++ {
+		if swag.IsZero(m.Players[i]) { // not required
+			continue
+		}
+
+		if m.Players[i] != nil {
+			if err := m.Players[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("players" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil
@@ -101,8 +130,21 @@ func (m *Session) contextValidateID(ctx context.Context, formats strfmt.Registry
 
 func (m *Session) contextValidatePlayers(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "players", "body", []string(m.Players)); err != nil {
+	if err := validate.ReadOnly(ctx, "players", "body", []*SessionPlayer(m.Players)); err != nil {
 		return err
+	}
+
+	for i := 0; i < len(m.Players); i++ {
+
+		if m.Players[i] != nil {
+			if err := m.Players[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("players" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

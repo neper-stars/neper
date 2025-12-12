@@ -100,16 +100,29 @@ definitions:
       players:
         type: array
         description: |
-          Array of player ids, sorted by player order.
+          Array of player info, sorted by player order.
           This is read-only.
           In this array this is normal to not always find all members+managers.
           You will find in this list only people who have already set the race
           with which they want to play.
         readOnly: true
         items:
-          type: string
+          $ref: "#/definitions/session_player"
     required:
       - name
+
+  session_player:
+    type: object
+    description: Information about a player in a session
+    properties:
+      user_profile_id:
+        type: string
+        description: the user profile id of the player
+        x-nullable: false
+      ready:
+        type: boolean
+        description: whether the player has marked their race as ready
+        x-nullable: false
 
   invitation:
     type: object
