@@ -116,6 +116,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		TurnGetHandler: TurnGetHandlerFunc(func(params TurnGetParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation TurnGet has not yet been implemented")
 		}),
+		TurnLatestHandler: TurnLatestHandlerFunc(func(params TurnLatestParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation TurnLatest has not yet been implemented")
+		}),
 		TurnSubmitHandler: TurnSubmitHandlerFunc(func(params TurnSubmitParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation TurnSubmit has not yet been implemented")
 		}),
@@ -233,6 +236,8 @@ type NeperAPI struct {
 	SessionsListHandler SessionsListHandler
 	// TurnGetHandler sets the operation handler for the turn get operation
 	TurnGetHandler TurnGetHandler
+	// TurnLatestHandler sets the operation handler for the turn latest operation
+	TurnLatestHandler TurnLatestHandler
 	// TurnSubmitHandler sets the operation handler for the turn submit operation
 	TurnSubmitHandler TurnSubmitHandler
 	// UserProfileCreateHandler sets the operation handler for the user profile create operation
@@ -397,6 +402,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.TurnGetHandler == nil {
 		unregistered = append(unregistered, "TurnGetHandler")
+	}
+	if o.TurnLatestHandler == nil {
+		unregistered = append(unregistered, "TurnLatestHandler")
 	}
 	if o.TurnSubmitHandler == nil {
 		unregistered = append(unregistered, "TurnSubmitHandler")
@@ -611,6 +619,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/sessions/{session_id}/turn/{year}"] = NewTurnGet(o.context, o.TurnGetHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/sessions/{session_id}/turn/latest"] = NewTurnLatest(o.context, o.TurnLatestHandler)
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}

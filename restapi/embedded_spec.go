@@ -194,7 +194,7 @@ func init() {
     },
     "/v1/notifications": {
       "get": {
-        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, invitation, race, ruleset, session_player_race\nActions: created, updated, deleted\n",
+        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session_turn notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session_turn\",\n  \"id\": \"session-id\",\n  \"action\": \"ready\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, session_turn, invitation, race, ruleset, session_player_race\nActions: created, updated, deleted, ready\n",
         "summary": "WebSocket endpoint for real-time resource change notifications",
         "operationId": "notifications",
         "responses": {
@@ -675,6 +675,41 @@ func init() {
           },
           "412": {
             "$ref": "#/responses/preconditionfailed"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
+    "/v1/sessions/{session_id}/turn/latest": {
+      "get": {
+        "description": "Returns the turn files for the most recent turn (highest year) in this session.\nThis is useful for clients that want to fetch the current turn without knowing the year.\nYou will get a turn_files structure containing the Universe file (.xy) data in a base64 encoded field\nand the Turn file (.mN) data in a base64 encoded field.\n",
+        "summary": "get the latest turn for this session",
+        "operationId": "turnLatest",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the latest turn files",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/turn_files"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -1321,7 +1356,7 @@ func init() {
     },
     "/v1/notifications": {
       "get": {
-        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, invitation, race, ruleset, session_player_race\nActions: created, updated, deleted\n",
+        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session_turn notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session_turn\",\n  \"id\": \"session-id\",\n  \"action\": \"ready\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, session_turn, invitation, race, ruleset, session_player_race\nActions: created, updated, deleted, ready\n",
         "summary": "WebSocket endpoint for real-time resource change notifications",
         "operationId": "notifications",
         "responses": {
@@ -1949,6 +1984,53 @@ func init() {
           },
           "412": {
             "description": "Precondition not met",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/sessions/{session_id}/turn/latest": {
+      "get": {
+        "description": "Returns the turn files for the most recent turn (highest year) in this session.\nThis is useful for clients that want to fetch the current turn without knowing the year.\nYou will get a turn_files structure containing the Universe file (.xy) data in a base64 encoded field\nand the Turn file (.mN) data in a base64 encoded field.\n",
+        "summary": "get the latest turn for this session",
+        "operationId": "turnLatest",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the latest turn files",
+            "schema": {
+              "$ref": "#/definitions/turnFiles"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
             "schema": {
               "$ref": "#/definitions/error"
             }

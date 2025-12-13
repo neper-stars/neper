@@ -104,6 +104,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		turnGetHandlerInFlight,
 	)
 	reg.MustRegister(
+		turnLatestHandlerDuration,
+		turnLatestHandlerInFlight,
+	)
+	reg.MustRegister(
 		turnSubmitHandlerDuration,
 		turnSubmitHandlerInFlight,
 	)

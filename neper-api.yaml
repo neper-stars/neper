@@ -523,6 +523,34 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/turn/latest:
+    get:
+      operationId: turnLatest
+      summary: "get the latest turn for this session"
+      description: |
+        Returns the turn files for the most recent turn (highest year) in this session.
+        This is useful for clients that want to fetch the current turn without knowing the year.
+        You will get a turn_files structure containing the Universe file (.xy) data in a base64 encoded field
+        and the Turn file (.mN) data in a base64 encoded field.
+      parameters:
+        - name: "session_id"
+          in: "path"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: "the latest turn files"
+          schema:
+            $ref: "neper-types.yaml#/definitions/turn_files"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}/turn/{year}:
     get:
       operationId: turnGet

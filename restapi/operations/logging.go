@@ -121,6 +121,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "turnGet",
 	)(o.handlers["GET"]["/v1/sessions/{session_id}/turn/{year}"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/turn/latest"] = LogOperation(
+		"", "turnLatest",
+	)(o.handlers["GET"]["/v1/sessions/{session_id}/turn/latest"])
+
 	o.handlers["PUT"]["/v1/sessions/{session_id}/turn/{year}"] = LogOperation(
 		"", "turnSubmit",
 	)(o.handlers["PUT"]["/v1/sessions/{session_id}/turn/{year}"])

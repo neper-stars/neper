@@ -159,6 +159,8 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.GameCreateHandler = handlers.NewGameCreateHandler(&config.Log, config.DB, config.StarsRunner, config.NotifyService)
 	// turn get (each player its own call to get its own files)
 	api.TurnGetHandler = handlers.NewTurnGetHandler(&config.Log, config.DB, config.NatsClientConn)
+	// turn latest (get the most recent turn for a session)
+	api.TurnLatestHandler = handlers.NewTurnLatestHandler(&config.Log, config.DB)
 
 	turnSubmitter := sessionSubmitter.NewSessionSubmitter(&config.Log, config.NatsClientConn)
 	api.TurnSubmitHandler = handlers.NewTurnSubmitHandler(&config.Log, config.DB, turnSubmitter)
