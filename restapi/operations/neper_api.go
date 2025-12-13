@@ -92,6 +92,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		SessionCreateHandler: SessionCreateHandlerFunc(func(params SessionCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionCreate has not yet been implemented")
 		}),
+		SessionDeleteHandler: SessionDeleteHandlerFunc(func(params SessionDeleteParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation SessionDelete has not yet been implemented")
+		}),
 		SessionJoinHandler: SessionJoinHandlerFunc(func(params SessionJoinParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionJoin has not yet been implemented")
 		}),
@@ -214,6 +217,8 @@ type NeperAPI struct {
 	RulesReadHandler RulesReadHandler
 	// SessionCreateHandler sets the operation handler for the session create operation
 	SessionCreateHandler SessionCreateHandler
+	// SessionDeleteHandler sets the operation handler for the session delete operation
+	SessionDeleteHandler SessionDeleteHandler
 	// SessionJoinHandler sets the operation handler for the session join operation
 	SessionJoinHandler SessionJoinHandler
 	// SessionPlayerRaceCreateHandler sets the operation handler for the session player race create operation
@@ -368,6 +373,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.SessionCreateHandler == nil {
 		unregistered = append(unregistered, "SessionCreateHandler")
+	}
+	if o.SessionDeleteHandler == nil {
+		unregistered = append(unregistered, "SessionDeleteHandler")
 	}
 	if o.SessionJoinHandler == nil {
 		unregistered = append(unregistered, "SessionJoinHandler")
@@ -571,6 +579,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions"] = NewSessionCreate(o.context, o.SessionCreateHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/v1/sessions/{session_id}"] = NewSessionDelete(o.context, o.SessionDeleteHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

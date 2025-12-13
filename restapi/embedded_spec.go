@@ -317,6 +317,27 @@ func init() {
           }
         }
       },
+      "delete": {
+        "description": "Delete a session and all related data (player races, invitations, rules, game files).\n\nThis is restricted to global managers or\nmanagers of the specific session.\n",
+        "operationId": "sessionDelete",
+        "responses": {
+          "204": {
+            "description": "session deleted successfully"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
       "parameters": [
         {
           "type": "string",
@@ -1453,6 +1474,39 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a session and all related data (player races, invitations, rules, game files).\n\nThis is restricted to global managers or\nmanagers of the specific session.\n",
+        "operationId": "sessionDelete",
+        "responses": {
+          "204": {
+            "description": "session deleted successfully"
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
             "schema": {
               "$ref": "#/definitions/error"
             }

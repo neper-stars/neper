@@ -254,6 +254,7 @@ func (r *Runner) newGame(ctx context.Context, sessionID string, content io.Reade
 			Str("stdOut", strings.Join(stdOut, " ")).
 			Str("stdErr", strings.Join(stdErr, " ")).
 			Msg("failed generate new game")
+		return err
 	}
 	return nil
 }

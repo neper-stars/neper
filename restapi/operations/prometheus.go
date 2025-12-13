@@ -57,6 +57,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/sessions"] = SessionCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions"])
 
+	o.handlers["DELETE"]["/v1/sessions/{session_id}"] = SessionDeleteInstrumentHandler(
+		o.handlers["DELETE"]["/v1/sessions/{session_id}"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/join"] = SessionJoinInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/join"])
 

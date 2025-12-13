@@ -77,6 +77,11 @@ func (s *Service) PublishSessionCreate(sessionID string) error {
 	return s.Publish(TypeSession, sessionID, ActionCreated)
 }
 
+// PublishSessionDelete is a convenience method for session deletion
+func (s *Service) PublishSessionDelete(sessionID string) error {
+	return s.Publish(TypeSession, sessionID, ActionDeleted)
+}
+
 // PublishInvitationCreate is a convenience method for invitation creation
 func (s *Service) PublishInvitationCreate(invitationID string) error {
 	return s.Publish(TypeInvitation, invitationID, ActionCreated)

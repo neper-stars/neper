@@ -338,6 +338,7 @@ func (r *Runner) newTurn(ctx context.Context, sessionID string) error {
 			Str("stdOut", strings.Join(stdOut, " ")).
 			Str("stdErr", strings.Join(stdErr, " ")).
 			Msg("failed generate new turn")
+		return err
 	}
 	return nil
 }
