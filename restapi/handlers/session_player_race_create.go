@@ -62,6 +62,13 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 	sessionPlayerRaceDB.SessionID = params.SessionID
 	sessionPlayerRaceDB.UserProfileID = principal.Subject
 
+	// Automatically assign the next available player_order
+	nextOrder, err := getNextPlayerOrder(sqlH, params.SessionID)
+	if err != nil {
+		return nil, err
+	}
+	sessionPlayerRaceDB.PlayerOrder = nextOrder
+
 	_, err = sqlH.Insert(&sessionPlayerRaceDB)
 	if err != nil {
 		return nil, err
@@ -140,4 +147,22 @@ func (h *SessionPlayerRaceCreateHandler) Authorize(
 	}
 
 	return true, nil
+}
+
+// getNextPlayerOrder returns the next available player_order for a session.
+// Player orders are 0-indexed (0-15 for up to 16 players).
+func getNextPlayerOrder(sqlH database.SQLHelper, sessionID string) (int64, error) {
+	// Count existing players in the session
+	var count int64
+	countQuery := sq.Select("COUNT(*)").
+		From(models.SessionPlayerRaceDBTable).
+		Where(sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID})
+
+	if err := sqlH.Get(&count, countQuery); err != nil {
+		return 0, err
+	}
+
+	// The next player order is simply the count of existing players
+	// (0-indexed: if there are 0 players, next is 0; if there is 1 player, next is 1, etc.)
+	return count, nil
 }

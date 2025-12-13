@@ -74,3 +74,82 @@ func TestSessionPlayerRaceCreateHandler(t *testing.T) {
 		require.Equal(t, spr.RaceID, "humansID")
 	})
 }
+
+func TestSessionPlayerRaceCreateHandler_PlayerOrderAssignment(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+
+	// Load fixtures
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_members.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/races.json")
+
+	// Override Merry to be a member of the gondor session so he can register
+	addMerryToGondor := []byte(`{
+		"changes": [
+			{
+				"operation": "create",
+				"data": {
+					"__type__": "user_profile",
+					"id": "merryID",
+					"nickname": "Merry",
+					"email": "merry@shire.com",
+					"api_key": "apikeyMerry",
+					"is_active": true,
+					"is_manager": false,
+					"session_list": [{"session_id": "gondorID", "is_manager": false}]
+				}
+			}
+		]
+	}`)
+	fixtures.LoadFixtureJSON(t, syncWorker, addMerryToGondor)
+
+	createHandler := NewSessionPlayerRaceCreateHandler(&log, testdb.DB, nil)
+
+	t.Run("multiple_players_get_sequential_player_orders", func(t *testing.T) {
+		sessionID := "gondorID"
+
+		// Boromir registers first with humans
+		boromirPrincipal := models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "boromirID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		sprBoromir, err := createHandler.handle(ctx, operations.SessionPlayerRaceCreateParams{
+			SessionID: sessionID,
+			SessionPlayerRace: &models.SessionPlayerRace{
+				RaceID: "humansID",
+			},
+		}, &boromirPrincipal)
+		require.NoError(t, err)
+		require.Equal(t, int64(0), sprBoromir.PlayerOrder, "first player should get player_order 0")
+
+		// Merry registers second with hobbits
+		merryPrincipal := models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		sprMerry, err := createHandler.handle(ctx, operations.SessionPlayerRaceCreateParams{
+			SessionID: sessionID,
+			SessionPlayerRace: &models.SessionPlayerRace{
+				RaceID: "hobbitsID",
+			},
+		}, &merryPrincipal)
+		require.NoError(t, err)
+		require.Equal(t, int64(1), sprMerry.PlayerOrder, "second player should get player_order 1")
+
+		// Verify all players have correct orders (they should not collide)
+		require.NotEqual(t, sprBoromir.PlayerOrder, sprMerry.PlayerOrder,
+			"players should have different player_order values")
+	})
+}
