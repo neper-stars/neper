@@ -152,7 +152,7 @@ func TestRulesCreateHandler_FailsForStartedSession(t *testing.T) {
 	require.NoError(t, err)
 
 	// Load fixture with started session
-	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/started_session.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/mordor.json")
 
 	rulesHandler := NewRulesCreateHandler(&log, testdb.DB, nil)
 

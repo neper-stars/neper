@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session",
+        "id": "mordorID",
+        "name": "Mordor",
+        "private": false,
+        "rules_is_set": true,
+        "started": true
+      }
+    }
+  ]
+}

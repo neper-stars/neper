@@ -36,11 +36,9 @@ func (h *SessionsList) handle(
 
 	s := models.Schema.SessionDB.As("s")
 
+	// Select all SessionDB columns to ensure full session objects are returned
 	query := database.SQ.Select().
-		Column(s.ID.Sql()).
-		Column(s.Name.Sql()).
-		Column(s.Private.Sql()).
-		Column(s.RulesIsSet.Sql()).
+		Columns(s.FQColumns(true)...).
 		From(s.Sql()).
 		OrderBy(s.ID.Sql())
 

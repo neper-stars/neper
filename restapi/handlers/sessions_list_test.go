@@ -28,6 +28,7 @@ func TestSessionsListHandler(t *testing.T) {
 	// we only load sessions as gandalf.json contains users/perms that are not
 	// tested here
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/mordor.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gandalf.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_members.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
@@ -48,11 +49,7 @@ func TestSessionsListHandler(t *testing.T) {
 			IsGlobalManager: true,
 		})
 		require.NoError(t, err)
-		require.Equal(t, 3, len(sessions))
-		// Verify RulesIsSet is returned (should be false by default)
-		for _, session := range sessions {
-			require.False(t, session.RulesIsSet, "RulesIsSet should be false by default for session %s", session.ID)
-		}
+		require.Equal(t, 4, len(sessions)) // gondorID, isengardID, mordorID, shireID
 	})
 
 	t.Run("boromir_sees_public_sessions_and_his_memberships", func(t *testing.T) {
@@ -66,11 +63,13 @@ func TestSessionsListHandler(t *testing.T) {
 		require.NoError(t, err)
 		// Boromir should see:
 		// - gondorID: he is a member
+		// - mordorID: it's public
 		// - shireID: it's public (even though he's not a member)
 		// But NOT isengardID: it's private and he's not a member
-		require.Equal(t, 2, len(sessions))
+		require.Equal(t, 3, len(sessions))
 		require.Equal(t, "gondorID", sessions[0].ID)
-		require.Equal(t, "shireID", sessions[1].ID)
+		require.Equal(t, "mordorID", sessions[1].ID)
+		require.Equal(t, "shireID", sessions[2].ID)
 	})
 
 	t.Run("merry_sees_only_public_sessions_and_his_memberships", func(t *testing.T) {
@@ -84,11 +83,13 @@ func TestSessionsListHandler(t *testing.T) {
 		require.NoError(t, err)
 		// Merry should see:
 		// - gondorID: it's public
+		// - mordorID: it's public
 		// - shireID: it's public
 		// But NOT isengardID: it's private and he's not a member
-		require.Equal(t, 2, len(sessions))
+		require.Equal(t, 3, len(sessions))
 		require.Equal(t, "gondorID", sessions[0].ID)
-		require.Equal(t, "shireID", sessions[1].ID)
+		require.Equal(t, "mordorID", sessions[1].ID)
+		require.Equal(t, "shireID", sessions[2].ID)
 	})
 
 	t.Run("sarouman_sees_public_sessions_and_his_memberships", func(t *testing.T) {
@@ -103,9 +104,10 @@ func TestSessionsListHandler(t *testing.T) {
 		// Sarouman should see:
 		// - gondorID: it's public
 		// - isengardID: it's private, but he is a member
+		// - mordorID: it's public
 		// - shireID: it's public
 		// in this order as they are sorted by id
-		require.Equal(t, 3, len(sessions))
+		require.Equal(t, 4, len(sessions))
 		require.Equal(t, "gondorID", sessions[0].ID)
 		require.Equal(t, "isengardID", sessions[1].ID)
 		isengardSession := sessions[1]
@@ -113,7 +115,42 @@ func TestSessionsListHandler(t *testing.T) {
 		// only sarouman is manager of isengard
 		require.Equal(t, 1, len(isengardSession.Managers))
 		require.Equal(t, "saroumanID", isengardSession.Managers[0])
-		require.Equal(t, "shireID", sessions[2].ID)
+		require.Equal(t, "mordorID", sessions[2].ID)
+		require.Equal(t, "shireID", sessions[3].ID)
+	})
+
+	t.Run("started_field_is_returned_correctly", func(t *testing.T) {
+		sessions, err := handler.handle(ctx, &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "gandalfID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: true,
+		})
+		require.NoError(t, err)
+
+		// Find mordor session and verify the started field is true
+		var mordorSession *models.Session
+		for _, s := range sessions {
+			if s.ID == "mordorID" {
+				mordorSession = s
+				break
+			}
+		}
+		require.NotNil(t, mordorSession, "mordorID should be in the list")
+		require.True(t, mordorSession.Started, "Started field should be true for mordorID")
+		require.True(t, mordorSession.RulesIsSet, "RulesIsSet field should be true for mordorID")
+
+		// Also verify that non-started sessions have started=false
+		var gondorSession *models.Session
+		for _, s := range sessions {
+			if s.ID == "gondorID" {
+				gondorSession = s
+				break
+			}
+		}
+		require.NotNil(t, gondorSession, "gondorID should be in the list")
+		require.False(t, gondorSession.Started, "Started field should be false for gondorID")
 	})
 
 	t.Run("rules_is_set_is_true_after_creating_rules", func(t *testing.T) {
