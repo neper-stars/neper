@@ -206,6 +206,9 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 		return r.canAccessRuleset(sqlH, change.ID)
 	case notify.TypeSessionPlayerRace:
 		return r.canAccessSessionPlayerRace(sqlH, change.ID)
+	case notify.TypeSessionTurn:
+		// Session turn access is based on session membership
+		return r.canAccessSession(sqlH, change.ID)
 	default:
 		return false, nil
 	}

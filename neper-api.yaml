@@ -87,12 +87,24 @@ paths:
           "type": "session",
           "id": "abc123",
           "action": "updated",
-          "timestamp": 1702400000
+          "timestamp": 1702400000,
+          "metadata": {}
         }
         ```
 
-        Types: session, invitation, race, ruleset, session_player_race
-        Actions: created, updated, deleted
+        For session_turn notifications, metadata contains the year:
+        ```json
+        {
+          "type": "session_turn",
+          "id": "session-id",
+          "action": "ready",
+          "timestamp": 1702400000,
+          "metadata": {"year": 2400}
+        }
+        ```
+
+        Types: session, session_turn, invitation, race, ruleset, session_player_race
+        Actions: created, updated, deleted, ready
       responses:
         101:
           description: WebSocket upgrade successful

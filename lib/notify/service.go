@@ -10,10 +10,11 @@ import (
 
 // ResourceChange represents a notification about a resource modification
 type ResourceChange struct {
-	Type      string `json:"type"`      // Resource type: "session", "invitation", etc.
-	ID        string `json:"id"`        // Resource ID
-	Action    string `json:"action"`    // Action: "created", "updated", "deleted"
-	Timestamp int64  `json:"timestamp"` // Unix timestamp
+	Type      string         `json:"type"`               // Resource type: "session", "invitation", etc.
+	ID        string         `json:"id"`                 // Resource ID
+	Action    string         `json:"action"`             // Action: "created", "updated", "deleted", "ready"
+	Timestamp int64          `json:"timestamp"`          // Unix timestamp
+	Metadata  map[string]any `json:"metadata,omitempty"` // Optional resource-specific data
 }
 
 // Service handles publishing resource change notifications to NATS
@@ -115,4 +116,50 @@ func (s *Service) PublishSessionPlayerRaceCreate(sprID string) error {
 // PublishSessionPlayerRaceUpdate is a convenience method for session player race update
 func (s *Service) PublishSessionPlayerRaceUpdate(sprID string) error {
 	return s.Publish(TypeSessionPlayerRace, sprID, ActionUpdated)
+}
+
+// PublishWithMetadata sends a resource change notification with additional metadata
+func (s *Service) PublishWithMetadata(resourceType, resourceID, action string, metadata map[string]any) error {
+	change := ResourceChange{
+		Type:      resourceType,
+		ID:        resourceID,
+		Action:    action,
+		Timestamp: time.Now().Unix(),
+		Metadata:  metadata,
+	}
+
+	data, err := jsoniter.Marshal(change)
+	if err != nil {
+		s.log.Err(err).
+			Str("type", resourceType).
+			Str("id", resourceID).
+			Str("action", action).
+			Msg("failed to marshal resource change notification with metadata")
+		return err
+	}
+
+	if err := s.natsConn.Publish(SubjectResourceChanges, data); err != nil {
+		s.log.Err(err).
+			Str("type", resourceType).
+			Str("id", resourceID).
+			Str("action", action).
+			Msg("failed to publish resource change notification with metadata")
+		return err
+	}
+
+	s.log.Debug().
+		Str("type", resourceType).
+		Str("id", resourceID).
+		Str("action", action).
+		Interface("metadata", metadata).
+		Msg("published resource change notification with metadata")
+
+	return nil
+}
+
+// PublishSessionTurnReady is a convenience method for session turn ready notification
+func (s *Service) PublishSessionTurnReady(sessionID string, year int64) error {
+	return s.PublishWithMetadata(TypeSessionTurn, sessionID, ActionReady, map[string]any{
+		"year": year,
+	})
 }

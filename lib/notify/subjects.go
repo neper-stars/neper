@@ -9,6 +9,7 @@ const (
 // Resource types
 const (
 	TypeSession           = "session"
+	TypeSessionTurn       = "session_turn"
 	TypeInvitation        = "invitation"
 	TypeRace              = "race"
 	TypeRuleset           = "ruleset"
@@ -20,4 +21,5 @@ const (
 	ActionCreated = "created"
 	ActionUpdated = "updated"
 	ActionDeleted = "deleted"
+	ActionReady   = "ready"
 )

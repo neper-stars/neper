@@ -122,9 +122,10 @@ func (h *GameCreateHandler) handle(
 		return nil, err
 	}
 
-	// Publish notification after successful commit (session is now started)
+	// Publish notifications after successful commit
 	if h.notifyService != nil {
 		_ = h.notifyService.PublishSessionUpdate(sessionID)
+		_ = h.notifyService.PublishSessionTurnReady(sessionID, sfDB.Year)
 	}
 
 	return &sfDB.SessionFiles, nil
