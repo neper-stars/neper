@@ -255,8 +255,11 @@ paths:
         required: true
     post:
       operationId: sessionJoin
-      summary: "join a session, either a public one or a private one if you are invited"
-      description: "join the session"
+      summary: "Join the public session"
+      description: |
+        join the session. It must be a public session.
+        If the session is private and you have an invitation
+        use the invitationAccept operation
       responses:
         200:
           description: the session that has been joined
