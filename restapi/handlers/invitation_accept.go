@@ -117,7 +117,7 @@ func (h *InvitationAcceptHandler) handle(
 
 	// Publish notifications after successful commit
 	if h.notifyService != nil {
-		_ = h.notifyService.PublishInvitationDelete(params.InvitationID)
+		_ = h.notifyService.PublishInvitationDelete(params.InvitationID, invitationDB.UserProfileID)
 		_ = h.notifyService.PublishSessionUpdate(sessionID)
 	}
 

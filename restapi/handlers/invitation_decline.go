@@ -49,21 +49,21 @@ func (h *InvitationDeclineHandler) handle(
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
+	// Get the invitation first to capture the user profile ID for notification
+	var invitationDB models.InvitationDB
+	if err := sqlH.GetByPKey(&invitationDB, params.InvitationID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return errs.ErrNotFound
+		}
+		return err
+	}
+
 	// Delete the invitation
 	query := database.SQ.Delete(models.InvitationDBTable).
 		Where(sq.Eq{models.InvitationDBIDColumn: params.InvitationID})
 
-	result, err := sqlH.Exec(query)
-	if err != nil {
+	if _, err := sqlH.Exec(query); err != nil {
 		return err
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
-		return errs.ErrNotFound
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -72,7 +72,7 @@ func (h *InvitationDeclineHandler) handle(
 
 	// Publish notification after successful commit
 	if h.notifyService != nil {
-		_ = h.notifyService.PublishInvitationDelete(params.InvitationID)
+		_ = h.notifyService.PublishInvitationDelete(params.InvitationID, invitationDB.UserProfileID)
 	}
 
 	return nil

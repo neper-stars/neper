@@ -89,8 +89,11 @@ func (s *Service) PublishInvitationCreate(invitationID string) error {
 }
 
 // PublishInvitationDelete is a convenience method for invitation deletion
-func (s *Service) PublishInvitationDelete(invitationID string) error {
-	return s.Publish(TypeInvitation, invitationID, ActionDeleted)
+// userProfileID is included in metadata since the invitation record is deleted before notification
+func (s *Service) PublishInvitationDelete(invitationID, userProfileID string) error {
+	return s.PublishWithMetadata(TypeInvitation, invitationID, ActionDeleted, map[string]any{
+		"user_profile_id": userProfileID,
+	})
 }
 
 // PublishRaceCreate is a convenience method for race creation

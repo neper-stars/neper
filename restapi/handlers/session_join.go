@@ -112,7 +112,7 @@ func (h *SessionJoinHandler) handle(
 	if h.notifyService != nil {
 		_ = h.notifyService.PublishSessionUpdate(sessionID)
 		if deletedInvitationID != "" {
-			_ = h.notifyService.PublishInvitationDelete(deletedInvitationID)
+			_ = h.notifyService.PublishInvitationDelete(deletedInvitationID, principal.Subject)
 		}
 	}
 

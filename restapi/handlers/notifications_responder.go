@@ -199,7 +199,7 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 	case notify.TypeSession:
 		return r.canAccessSession(sqlH, change.ID)
 	case notify.TypeInvitation:
-		return r.canAccessInvitation(sqlH, change.ID)
+		return r.canAccessInvitation(sqlH, change)
 	case notify.TypeRace:
 		return r.canAccessRace(sqlH, change.ID)
 	case notify.TypeRuleset:
@@ -237,9 +237,21 @@ func (r *NotificationsResponder) canAccessSession(sqlH database.SQLHelper, sessi
 }
 
 // canAccessInvitation checks if invitation is for this user
-func (r *NotificationsResponder) canAccessInvitation(sqlH database.SQLHelper, invitationID string) (bool, error) {
+func (r *NotificationsResponder) canAccessInvitation(sqlH database.SQLHelper, change *notify.ResourceChange) (bool, error) {
+	// For deleted invitations, the record is gone so we check metadata
+	if change.Action == notify.ActionDeleted {
+		if change.Metadata != nil {
+			if userProfileID, ok := change.Metadata["user_profile_id"].(string); ok {
+				return userProfileID == r.principal.Subject, nil
+			}
+		}
+		// No metadata available, can't determine access
+		return false, nil
+	}
+
+	// For create/update, look up the invitation in the database
 	var invitation models.InvitationDB
-	if err := sqlH.GetWhere(&invitation, sq.Eq{models.InvitationDBIDColumn: invitationID}); err != nil {
+	if err := sqlH.GetWhere(&invitation, sq.Eq{models.InvitationDBIDColumn: change.ID}); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}
