@@ -101,6 +101,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "sessionPlayerRaceCreate",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/player_race"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/player_race"] = LogOperation(
+		"", "sessionPlayerRaceGet",
+	)(o.handlers["GET"]["/v1/sessions/{session_id}/player_race"])
+
 	o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"] = LogOperation(
 		"", "sessionPlayerRaceSetReady",
 	)(o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"])

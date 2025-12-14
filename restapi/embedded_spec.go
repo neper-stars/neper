@@ -468,6 +468,31 @@ func init() {
       ]
     },
     "/v1/sessions/{session_id}/player_race": {
+      "get": {
+        "description": "Returns the race file (.r1 format, base64 encoded) that you have set for this session.\nThis allows you to download your race configuration for the current session.\n",
+        "summary": "get your race file for this session",
+        "operationId": "sessionPlayerRaceGet",
+        "responses": {
+          "200": {
+            "description": "the player's race for this session",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/race"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
       "post": {
         "description": "You will have to reference a previously uploaded race definition to indicate the host the race file\nyou will be using for this session.\nIf you are the host you will be able to change all races (in order to set some races for the bots)\nYou will also be able to determine the player order.\nPlayers are not authorized to set their own order and an attempt to set this field will be ignored.\n",
         "summary": "set the race with which you will be competing in this session",
@@ -1726,6 +1751,43 @@ func init() {
       ]
     },
     "/v1/sessions/{session_id}/player_race": {
+      "get": {
+        "description": "Returns the race file (.r1 format, base64 encoded) that you have set for this session.\nThis allows you to download your race configuration for the current session.\n",
+        "summary": "get your race file for this session",
+        "operationId": "sessionPlayerRaceGet",
+        "responses": {
+          "200": {
+            "description": "the player's race for this session",
+            "schema": {
+              "$ref": "#/definitions/race"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
       "post": {
         "description": "You will have to reference a previously uploaded race definition to indicate the host the race file\nyou will be using for this session.\nIf you are the host you will be able to change all races (in order to set some races for the bots)\nYou will also be able to determine the player order.\nPlayers are not authorized to set their own order and an attempt to set this field will be ignored.\n",
         "summary": "set the race with which you will be competing in this session",

@@ -10,6 +10,19 @@
         "rules_is_set": true,
         "started": true
       }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "sauronID",
+        "nickname": "Sauron",
+        "email": "sauron@mordor.com",
+        "api_key": "apikeySauron",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [{"session_id": "mordorID", "is_manager": true}]
+      }
     }
   ]
 }

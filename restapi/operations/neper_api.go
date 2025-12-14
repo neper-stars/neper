@@ -101,6 +101,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		SessionPlayerRaceCreateHandler: SessionPlayerRaceCreateHandlerFunc(func(params SessionPlayerRaceCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPlayerRaceCreate has not yet been implemented")
 		}),
+		SessionPlayerRaceGetHandler: SessionPlayerRaceGetHandlerFunc(func(params SessionPlayerRaceGetParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation SessionPlayerRaceGet has not yet been implemented")
+		}),
 		SessionPlayerRaceSetReadyHandler: SessionPlayerRaceSetReadyHandlerFunc(func(params SessionPlayerRaceSetReadyParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPlayerRaceSetReady has not yet been implemented")
 		}),
@@ -226,6 +229,8 @@ type NeperAPI struct {
 	SessionJoinHandler SessionJoinHandler
 	// SessionPlayerRaceCreateHandler sets the operation handler for the session player race create operation
 	SessionPlayerRaceCreateHandler SessionPlayerRaceCreateHandler
+	// SessionPlayerRaceGetHandler sets the operation handler for the session player race get operation
+	SessionPlayerRaceGetHandler SessionPlayerRaceGetHandler
 	// SessionPlayerRaceSetReadyHandler sets the operation handler for the session player race set ready operation
 	SessionPlayerRaceSetReadyHandler SessionPlayerRaceSetReadyHandler
 	// SessionReadHandler sets the operation handler for the session read operation
@@ -387,6 +392,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.SessionPlayerRaceCreateHandler == nil {
 		unregistered = append(unregistered, "SessionPlayerRaceCreateHandler")
+	}
+	if o.SessionPlayerRaceGetHandler == nil {
+		unregistered = append(unregistered, "SessionPlayerRaceGetHandler")
 	}
 	if o.SessionPlayerRaceSetReadyHandler == nil {
 		unregistered = append(unregistered, "SessionPlayerRaceSetReadyHandler")
@@ -599,6 +607,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions/{session_id}/player_race"] = NewSessionPlayerRaceCreate(o.context, o.SessionPlayerRaceCreateHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/sessions/{session_id}/player_race"] = NewSessionPlayerRaceGet(o.context, o.SessionPlayerRaceGetHandler)
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}

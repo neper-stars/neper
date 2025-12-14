@@ -277,6 +277,25 @@ paths:
         in: path
         type: string
         required: true
+    get:
+      operationId: sessionPlayerRaceGet
+      summary: "get your race file for this session"
+      description: |
+        Returns the race file (.r1 format, base64 encoded) that you have set for this session.
+        This allows you to download your race configuration for the current session.
+      responses:
+        200:
+          description: the player's race for this session
+          schema:
+            $ref: "neper-types.yaml#/definitions/race"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
     post:
       operationId: sessionPlayerRaceCreate
       summary: "set the race with which you will be competing in this session"

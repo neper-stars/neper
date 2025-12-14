@@ -151,14 +151,14 @@ func TestRulesCreateHandler_FailsForStartedSession(t *testing.T) {
 	syncWorker, err := sync.NewWorker(testdb.DB, log)
 	require.NoError(t, err)
 
-	// Load fixture with started session
+	// Load fixture with started session (mordorID) and its manager (sauronID)
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/mordor.json")
 
 	rulesHandler := NewRulesCreateHandler(&log, testdb.DB, nil)
 
-	managerPrincipal := &models.Principal{
+	sauronPrincipal := &models.Principal{
 		StandardClaims: jwt.StandardClaims{
-			Subject:   "managerID",
+			Subject:   "sauronID",
 			ExpiresAt: time.Now().Add(time.Minute).Unix(),
 		},
 		IsGlobalManager: false,
@@ -166,7 +166,7 @@ func TestRulesCreateHandler_FailsForStartedSession(t *testing.T) {
 
 	t.Run("cannot_set_rules_for_started_session", func(t *testing.T) {
 		rulesParams := operations.RulesCreateParams{
-			SessionID: "startedSessionID",
+			SessionID: "mordorID",
 			Ruleset: &models.Ruleset{
 				UniverseSize:     3,
 				Density:          2,
@@ -174,7 +174,7 @@ func TestRulesCreateHandler_FailsForStartedSession(t *testing.T) {
 				RandomSeed:       12345,
 			},
 		}
-		_, err := rulesHandler.handle(ctx, rulesParams, managerPrincipal)
+		_, err := rulesHandler.handle(ctx, rulesParams, sauronPrincipal)
 		require.Error(t, err)
 		require.True(t, errors.Is(err, errs.ErrPreconditionFailed), "should return precondition failed error")
 	})
