@@ -154,7 +154,7 @@ func (h *SessionPlayerRaceCreateHandler) Authorize(
 func getNextPlayerOrder(sqlH database.SQLHelper, sessionID string) (int64, error) {
 	// Count existing players in the session
 	var count int64
-	countQuery := sq.Select("COUNT(*)").
+	countQuery := database.SQ.Select("COUNT(*)").
 		From(models.SessionPlayerRaceDBTable).
 		Where(sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID})
 

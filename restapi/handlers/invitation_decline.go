@@ -50,7 +50,7 @@ func (h *InvitationDeclineHandler) handle(
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
 	// Delete the invitation
-	query := sq.Delete(models.InvitationDBTable).
+	query := database.SQ.Delete(models.InvitationDBTable).
 		Where(sq.Eq{models.InvitationDBIDColumn: params.InvitationID})
 
 	result, err := sqlH.Exec(query)

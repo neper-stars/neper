@@ -88,7 +88,7 @@ func TestRaceDeleteHandler(t *testing.T) {
 		// Verify race is removed from DB
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var count int
-		err = sqlH.Get(&count, sq.Select("COUNT(*)").From(models.RaceDBTable).Where(sq.Eq{models.RaceDBIDColumn: returnedRace.ID}))
+		err = sqlH.Get(&count, database.SQ.Select("COUNT(*)").From(models.RaceDBTable).Where(sq.Eq{models.RaceDBIDColumn: returnedRace.ID}))
 		require.NoError(t, err)
 		require.Equal(t, 0, count)
 	})
@@ -221,7 +221,7 @@ func TestRaceDeleteHandler(t *testing.T) {
 		// Verify race is removed from DB
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var count int
-		err = sqlH.Get(&count, sq.Select("COUNT(*)").From(models.RaceDBTable).Where(sq.Eq{models.RaceDBIDColumn: returnedRace.ID}))
+		err = sqlH.Get(&count, database.SQ.Select("COUNT(*)").From(models.RaceDBTable).Where(sq.Eq{models.RaceDBIDColumn: returnedRace.ID}))
 		require.NoError(t, err)
 		require.Equal(t, 0, count)
 	})

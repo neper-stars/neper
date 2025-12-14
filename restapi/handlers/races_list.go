@@ -47,7 +47,7 @@ func (h *RacesListHandler) handle(
 
 	var list []*models.RaceDB
 
-	q := sq.Select(models.RaceColumns...).
+	q := database.SQ.Select(models.RaceColumns...).
 		From(models.RaceDBTable).
 		OrderBy(models.RaceDBNameSingularColumn)
 

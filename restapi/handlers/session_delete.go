@@ -60,7 +60,7 @@ func (h *SessionDeleteHandler) handle(
 	}
 
 	// Delete the session (cascades to related tables via ON DELETE CASCADE)
-	query := sq.Delete(models.SessionDBTable).
+	query := database.SQ.Delete(models.SessionDBTable).
 		Where(sq.Eq{models.SessionDBIDColumn: params.SessionID})
 
 	result, err := sqlH.Exec(query)

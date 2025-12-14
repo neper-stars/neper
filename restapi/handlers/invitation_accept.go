@@ -94,7 +94,7 @@ func (h *InvitationAcceptHandler) handle(
 	}
 
 	// Once everything else is done we remove invite from db
-	deleteQuery := sq.Delete(models.InvitationDBTable).
+	deleteQuery := database.SQ.Delete(models.InvitationDBTable).
 		Where(sq.Eq{models.InvitationDBIDColumn: params.InvitationID})
 
 	result, err := sqlH.Exec(deleteQuery)
