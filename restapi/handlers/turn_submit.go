@@ -169,7 +169,7 @@ func (h *TurnSubmitHandler) handle(
 	if allPlayersReady {
 		// here we want to submit our database transaction to allow the turn generator to find our updated session
 
-		// then try to warn turm generator it has job to do
+		// then try to warn turn generator it has job to do
 		if err := h.submitter.Sub(params.SessionID, params.Year); err != nil {
 			// here we failed to publish our message.
 			// This should not be a big issue because in the long run the
