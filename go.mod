@@ -1,6 +1,6 @@
 module github.com/neper-stars/neper
 
-go 1.22
+go 1.25
 
 replace orus.io/orus-io/go-orusapi => ./dependencies/go-orusapi
 
