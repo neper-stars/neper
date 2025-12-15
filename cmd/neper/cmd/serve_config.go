@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-openapi/swag"
@@ -122,6 +123,11 @@ func setupServeConfig(config *restapi.Config) error {
 	tg := stars.NewTurnGenerator(&config.Log, config.NatsClientConn, config.DB, runner)
 	config.TurnGenerator = tg
 	go config.TurnGenerator.Run(context.Background())
+	// wait for the turn generator to be fully initialized
+	<-config.TurnGenerator.Ready()
+	if !config.TurnGenerator.IsRunning() {
+		return fmt.Errorf("TurnGenerator failed to start")
+	}
 
 	return nil
 }

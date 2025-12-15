@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/go-cmd/cmd"
@@ -39,6 +40,8 @@ type TurnGenerator struct {
 
 	running    bool
 	cancelFunc context.CancelFunc
+	ready      chan struct{} // closed when Run() completes initialization (success or failure)
+	readyOnce  sync.Once     // ensures ready channel is closed exactly once
 }
 
 func NewTurnGenerator(log *zerolog.Logger, natsConn *nats.Conn, db *sqlx.DB, runner *Runner) *TurnGenerator {
@@ -47,7 +50,27 @@ func NewTurnGenerator(log *zerolog.Logger, natsConn *nats.Conn, db *sqlx.DB, run
 		runner:   runner,
 		natsConn: natsConn,
 		db:       db,
+		ready:    make(chan struct{}),
 	}
+}
+
+// Ready returns a channel that is closed when the TurnGenerator has completed initialization.
+// The channel is closed regardless of whether initialization succeeded or failed.
+// Check IsRunning() after Ready() returns to determine if startup was successful.
+func (g *TurnGenerator) Ready() <-chan struct{} {
+	return g.ready
+}
+
+// IsRunning returns true if the TurnGenerator is running successfully.
+func (g *TurnGenerator) IsRunning() bool {
+	return g.running
+}
+
+// signalReady closes the ready channel exactly once.
+func (g *TurnGenerator) signalReady() {
+	g.readyOnce.Do(func() {
+		close(g.ready)
+	})
 }
 
 // Run is intended to be executed in a goroutine
@@ -62,6 +85,7 @@ func (g *TurnGenerator) Run(ctx context.Context) {
 	turnNeedsGenerationSub, err := g.natsConn.ChanSubscribe(SubjectTurnNeedsGeneration, needsGenerationChan)
 	if err != nil {
 		g.log.Err(err).Str("subject", SubjectTurnNeedsGeneration).Msg("failed to subscribe to subject")
+		g.signalReady() // signal ready even on failure to prevent blocking waiters
 		return
 	}
 	defer func() {
@@ -72,6 +96,8 @@ func (g *TurnGenerator) Run(ctx context.Context) {
 
 	// mark ourselves as running just before going into the infinite loop
 	g.running = true
+	// signal that we are ready
+	g.signalReady()
 	for {
 		select {
 		case <-ctx.Done():
@@ -88,10 +114,11 @@ func (g *TurnGenerator) Run(ctx context.Context) {
 	}
 }
 
-// Shutdown cancels the goroutine that is Run()ing
+// Shutdown cancels the goroutine that is Run()ing.
+// It is safe to call Shutdown multiple times or on an already-stopped generator.
 func (g *TurnGenerator) Shutdown() {
 	if !g.running {
-		g.log.Error().Msg("you should not call TurnGenerator.Shutdown on a non-running generator")
+		g.log.Debug().Msg("TurnGenerator.Shutdown called on non-running generator (already stopped)")
 		return
 	}
 	g.cancelFunc()
