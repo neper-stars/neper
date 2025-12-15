@@ -4,12 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
-	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
@@ -19,16 +17,15 @@ import (
 )
 
 // NewTurnGetHandler ...
-func NewTurnGetHandler(log *zerolog.Logger, db *sqlx.DB, natsConn *nats.Conn) *TurnGetHandler {
+func NewTurnGetHandler(log *zerolog.Logger, db *sqlx.DB) *TurnGetHandler {
 	configuredLogger := log.With().Str("handler", "TurnGetHandler").Logger()
-	return &TurnGetHandler{db, &configuredLogger, natsConn}
+	return &TurnGetHandler{db, &configuredLogger}
 }
 
 // TurnGetHandler handles /session
 type TurnGetHandler struct {
-	db       *sqlx.DB
-	log      *zerolog.Logger
-	natsConn *nats.Conn
+	db  *sqlx.DB
+	log *zerolog.Logger
 }
 
 func (h *TurnGetHandler) handle(
@@ -74,7 +71,6 @@ func (h *TurnGetHandler) getSessionPlayerRace(sqlH database.SQLHelper, userProfi
 func (h *TurnGetHandler) Handle(
 	params operations.TurnGetParams, principal *models.Principal,
 ) middleware.Responder {
-	wsRequested := wantsWebSocket(params.HTTPRequest)
 	ctx := params.HTTPRequest.Context()
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
@@ -104,21 +100,6 @@ func (h *TurnGetHandler) Handle(
 		return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 	}
 
-	if wantsWebSocket(params.HTTPRequest) {
-		// if the client wants a websocket upgrade let's give it a turn responder
-		// this will open a websocket that will push a new turn when it becomes available
-		details := TurnDetails{
-			SessionID:   params.SessionID,
-			Year:        int(params.Year),
-			PlayerOrder: spr.PlayerOrder,
-		}
-		tr, err := NewTurnResponder(params.HTTPRequest, h.db, &details, h.natsConn)
-		if err != nil {
-			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
-		}
-		return tr
-	}
-
 	turn, err := h.handle(sqlH, params, principal, spr.PlayerOrder)
 	if err != nil {
 		switch {
@@ -127,8 +108,7 @@ func (h *TurnGetHandler) Handle(
 				Code:    http.StatusForbidden,
 				Message: &verbotten,
 			})
-		case errors.Is(err, errs.ErrNotFound) && !wsRequested:
-			// Websocket was not requested and the file is not found...
+		case errors.Is(err, errs.ErrNotFound):
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):
 			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
@@ -137,23 +117,6 @@ func (h *TurnGetHandler) Handle(
 		}
 	}
 	return operations.NewTurnGetOK().WithPayload(turn)
-}
-
-func wantsWebSocket(r *http.Request) bool {
-	var connection string
-	var upgrade string
-
-	for k, v := range r.Header {
-		if strings.ToLower(k) == "connection" { // Connection header
-			connection = strings.Join(v, "")
-		} else if strings.ToLower(k) == "upgrade" { // Upgrade header
-			upgrade = strings.Join(v, "")
-		}
-	}
-	if strings.ToLower(connection) == "upgrade" && upgrade == "websocket" {
-		return true
-	}
-	return false
 }
 
 func (h *TurnGetHandler) Authorize(

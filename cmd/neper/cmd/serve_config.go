@@ -120,7 +120,7 @@ func setupServeConfig(config *restapi.Config) error {
 	// NATS out ------------------------------------
 
 	// start the turn generator
-	tg := stars.NewTurnGenerator(&config.Log, config.NatsClientConn, config.DB, runner)
+	tg := stars.NewTurnGenerator(&config.Log, config.NatsClientConn, config.DB, runner, config.NotifyService)
 	config.TurnGenerator = tg
 	go config.TurnGenerator.Run(context.Background())
 	// wait for the turn generator to be fully initialized

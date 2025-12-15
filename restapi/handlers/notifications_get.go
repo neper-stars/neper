@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/nats-io/nats.go"
@@ -57,4 +60,21 @@ func (h *NotificationsHandler) Handle(
 
 func strPtr(s string) *string {
 	return &s
+}
+
+func wantsWebSocket(r *http.Request) bool {
+	var connection string
+	var upgrade string
+
+	for k, v := range r.Header {
+		if strings.ToLower(k) == "connection" {
+			connection = strings.Join(v, "")
+		} else if strings.ToLower(k) == "upgrade" {
+			upgrade = strings.Join(v, "")
+		}
+	}
+	if strings.ToLower(connection) == "upgrade" && upgrade == "websocket" {
+		return true
+	}
+	return false
 }

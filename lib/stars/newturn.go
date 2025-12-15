@@ -14,29 +14,33 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/go-cmd/cmd"
 	"github.com/jmoiron/sqlx"
+	"github.com/m4rw3r/uuid"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 )
 
 const (
 	SubjectTurnNeedsGeneration = "Turn.NeedsGeneration"
-	SubjectTurnNotifyBase      = "Turn.Notify." // this will be appended with the sessionID
 )
 
-func SubjectTurnNotifyForSession(sessionID string) string {
-	return SubjectTurnNotifyBase + sessionID
-}
-
+// TurnGenerator listens on NATs for Turn.NeedsGeneration subjects
+// when received it will get the files out of the db, save them in
+// a directory and launch stars!.exe on the files to generate the new
+// turn.
+// Get back the new turn files and save them into database.
+// Once done it will submit a notification to the clients using
+// the notifyService.
 type TurnGenerator struct {
-	log    *zerolog.Logger
-	runner *Runner
-
-	natsConn *nats.Conn
-	db       *sqlx.DB
+	log           *zerolog.Logger
+	runner        *Runner
+	natsConn      *nats.Conn
+	db            *sqlx.DB
+	notifyService *notify.Service
 
 	running    bool
 	cancelFunc context.CancelFunc
@@ -44,13 +48,15 @@ type TurnGenerator struct {
 	readyOnce  sync.Once     // ensures ready channel is closed exactly once
 }
 
-func NewTurnGenerator(log *zerolog.Logger, natsConn *nats.Conn, db *sqlx.DB, runner *Runner) *TurnGenerator {
+// NewTurnGenerator is the constructor for the TurnGenerator
+func NewTurnGenerator(log *zerolog.Logger, natsConn *nats.Conn, db *sqlx.DB, runner *Runner, notifyService *notify.Service) *TurnGenerator {
 	return &TurnGenerator{
-		log:      log,
-		runner:   runner,
-		natsConn: natsConn,
-		db:       db,
-		ready:    make(chan struct{}),
+		log:           log,
+		runner:        runner,
+		natsConn:      natsConn,
+		db:            db,
+		notifyService: notifyService,
+		ready:         make(chan struct{}),
 	}
 }
 
@@ -142,80 +148,90 @@ func (g *TurnGenerator) needsGeneration(msg *nats.Msg) error {
 		return err
 	}
 
-	var newTurnSessionFiles *models.SessionFiles
-	newTurnSessionFiles, err = g.genTurn(ctx, needsGenerationMsg.SessionID, needsGenerationMsg.Year)
+	err = g.genTurn(ctx, needsGenerationMsg.SessionID, needsGenerationMsg.Year)
 	if err != nil {
 		g.log.Err(err).Msg("failed to generate turn with stars.exe")
 		return err
 	}
 
-	g.log.Debug().Msg("turn generated, will now marshal")
+	g.log.Debug().Msg("turn generated successfully")
 
-	sfData, err := json.Marshal(newTurnSessionFiles)
-	if err != nil {
-		return err
+	// Publish to notifications system
+	if g.notifyService != nil {
+		newYear := int64(needsGenerationMsg.Year + 1)
+		_ = g.notifyService.PublishSessionTurnReady(needsGenerationMsg.SessionID, newYear)
 	}
-
-	g.log.Debug().Msg("turn marshalled, will now send over NATS to handler")
-
-	subject := SubjectTurnNotifyForSession(needsGenerationMsg.SessionID)
-	newTurnMsg := nats.NewMsg(subject)
-	newTurnMsg.Data = sfData
-	if err := g.natsConn.PublishMsg(newTurnMsg); err != nil {
-		return err
-	}
-
-	g.log.Debug().Msg("turn sent over NATS, returning")
 
 	return nil
 }
 
-func (g *TurnGenerator) genTurn(ctx context.Context, sessionID string, year int) (*models.SessionFiles, error) {
+func (g *TurnGenerator) genTurn(ctx context.Context, sessionID string, year int) error {
 	logger := *g.log
 	tx, err := database.Begin(ctx, g.db)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer tx.RollbackIfOpened(logger)
 	sqlH := database.NewSQLHelper(ctx, tx, logger)
 	var sessionDB models.SessionDB
 	if err := sqlH.GetByPKey(&sessionDB, sessionID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewErrSessionNotFound("session not found: " + sessionID)
+			return errs.NewErrSessionNotFound("session not found: " + sessionID)
 		}
 		g.log.Err(err).Msg("failed to get session from DB")
-		return nil, err
+		return err
 	}
 
 	sessionPlayerRaces, err := sessionDB.SessionPlayerRaces(&sqlH)
 	if err != nil {
 		g.log.Err(err).Str("sessionID", sessionID).Msg("failed to get player races for session")
-		return nil, err
+		return err
 	}
 
 	var sessionFilesDB models.SessionFilesDB
 	query := sessionFilesQueryByYear(sessionID, year)
 	if err := sqlH.Get(&sessionFilesDB, query); err != nil {
 		g.log.Err(err).Str("sessionID", sessionID).Int("year", year).Msg("failed to get sessionFilesDB for the needed year")
-		return nil, err
+		return err
 	}
 	inputGF, err := NewGameFilesFromSessionFiles(sessionFilesDB.SessionFiles)
 	if err != nil {
 		g.log.Err(err).Str("sessionID", sessionID).Int("year", year).Msg("failed to get produce game files from sessionfile for the needed year")
-		return nil, err
+		return err
 	}
 
 	gf, err := g.runner.GenTurn(ctx, g.log, sessionID, inputGF, sessionPlayerRaces)
 	if err != nil {
 		g.log.Err(err).Str("sessionID", sessionID).Int("year", year).Msg("failed to get generate turn")
-		return nil, err
+		return err
 	}
-	var res models.SessionFiles
-	if err := gf.HydrateSessionFiles(&res); err != nil {
+
+	// Create new SessionFilesDB for the new turn
+	var newSessionFilesDB models.SessionFilesDB
+	if err := gf.HydrateSessionFiles(&newSessionFilesDB.SessionFiles); err != nil {
 		g.log.Err(err).Str("sessionID", sessionID).Int("year", year).Msg("failed to hydrate session files from gamefiles")
-		return nil, err
+		return err
 	}
-	return &res, nil
+
+	id, err := uuid.V4()
+	if err != nil {
+		return err
+	}
+	newSessionFilesDB.ID = id.String()
+	newSessionFilesDB.SessionID = sessionID
+
+	// Insert the new turn files into the database
+	if _, err := sqlH.Insert(&newSessionFilesDB); err != nil {
+		g.log.Err(err).Str("sessionID", sessionID).Int("year", year).Msg("failed to insert new session files in database")
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		g.log.Err(err).Str("sessionID", sessionID).Int("year", year).Msg("failed to commit transaction")
+		return err
+	}
+
+	return nil
 }
 
 func sessionFilesQueryByYear(sessionID string, year int) sq.SelectBuilder {
@@ -332,21 +348,21 @@ func saveOrderFile(log *zerolog.Logger, sessionDir string, content []byte, playe
 	targetFileName := filepath.Join(sessionDir, fmt.Sprintf("%s%d", orderBaseFilename, playerOrder+1))
 	targetFile, err := os.OpenFile(targetFileName, os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		log.Err(err).Str("filename", targetFileName).Msg("failed to open turn file for creation")
+		log.Err(err).Str("filename", targetFileName).Msg("failed to open order file for creation")
 		return err
 	}
 	defer func() {
 		if err := targetFile.Close(); err != nil {
-			log.Err(err).Str("filename", targetFileName).Msg("failed to close turn file")
+			log.Err(err).Str("filename", targetFileName).Msg("failed to close order file")
 		}
 	}()
 
 	n, err := targetFile.Write(content)
 	if err != nil {
-		log.Err(err).Str("filename", targetFileName).Msg("failed to write into turn file")
+		log.Err(err).Str("filename", targetFileName).Msg("failed to write into order file")
 		return err
 	}
-	log.Debug().Int("# bytes", n).Str("turnFile", targetFileName).Msg("wrote turn file")
+	log.Debug().Int("# bytes", n).Str("turnFile", targetFileName).Msg("wrote order file")
 
 	return nil
 }

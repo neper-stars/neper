@@ -32,6 +32,8 @@ const (
 	notifyPingPeriod = 30 * time.Second
 )
 
+var upgrader = websocket.Upgrader{} // Use default options
+
 // NewNotificationsResponder creates a responder that upgrades to WebSocket and streams notifications
 func NewNotificationsResponder(
 	req *http.Request,

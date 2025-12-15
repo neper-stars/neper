@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"orus.io/orus-io/go-orusapi/testutils"
 
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/models/types"
@@ -29,13 +31,10 @@ func TestTurnSubmit(t *testing.T) {
 
 	// reset Auth after test
 	defer tester.SetHeader("Authorization", "")
-	// reset connection upgrade request
-	defer tester.SetHeader("Connection", "")
-	defer tester.SetHeader("Upgrade", "")
 
 	var token string
 
-	t.Run("gollum_submits_his_turn_and_waits_for_a_new_turn", func(t *testing.T) {
+	t.Run("gollum_submits_his_turn_and_receives_notification", func(t *testing.T) {
 		gollumNickName := "gollum"
 		apiKeyGollum := "apikeyGollum"
 		sessionID := "merryvsgollumID"
@@ -54,41 +53,53 @@ func TestTurnSubmit(t *testing.T) {
 		}, &token))
 		tester.SetHeader("Authorization", "Bearer "+token)
 
+		// Connect to notifications WebSocket first
+		d := wstest.NewDialer(tester.handler)
+		header := make(http.Header)
+		header.Set("Authorization", "Bearer "+token)
+
+		c, resp, err := d.Dial("ws://whatever/api/v1/notifications", header)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
+		defer c.Close()
+
+		// Set a read deadline so we don't wait forever
+		require.NoError(t, c.SetReadDeadline(time.Now().Add(30*time.Second)))
+
+		// Submit the turn
 		submitURL := fmt.Sprintf("/api/v1/sessions/%s/turn/%d", sessionID, year)
 		turn := types.Order{B64Data: gollumOrderContentB64}
 		require.Equal(t, http.StatusOK, tester.MustPutJSON(submitURL, &turn, &token))
 
-		d := wstest.NewDialer(tester.handler)
+		// Wait for session_turn notification
+		var notification notify.ResourceChange
+		for {
+			_, message, err := c.ReadMessage()
+			require.NoError(t, err)
 
+			err = json.Unmarshal(message, &notification)
+			require.NoError(t, err)
+
+			// Look for session_turn notification for our session
+			if notification.Type == notify.TypeSessionTurn &&
+				notification.ID == sessionID &&
+				notification.Action == notify.ActionReady {
+				break
+			}
+			// Continue waiting for more notifications
+		}
+
+		// Verify the notification contains the correct year in metadata
+		yearFromMeta, ok := notification.Metadata["year"].(float64)
+		require.True(t, ok, "year should be present in metadata")
+		require.Equal(t, float64(year+1), yearFromMeta)
+
+		// Now fetch the turn data via regular HTTP GET
 		getURL := fmt.Sprintf("/api/v1/sessions/%s/turn/%d", sessionID, year+1)
-		// var newTurn models.TurnFiles
+		var turnFiles models.TurnFiles
+		require.Equal(t, http.StatusOK, tester.MustGetJSON(getURL, &turnFiles))
 
-		// tester.SetHeader("Connection", "upgrade")
-		// tester.SetHeader("Upgrade", "websocket")
-		// tester.SetHeader("Sec-WebSocket-Version", "13")
-		// uid, err := uuid.V4()
-		// require.NoError(t, err)
-		// key := uid.String()
-		// tester.SetHeader("Sec-WebSocket-Key", key)
-
-		header := make(http.Header)
-		// authorize our dialer
-		header.Set("Authorization", "Bearer "+token)
-
-		c, resp, err := d.Dial("ws://"+"whatever"+getURL, header)
-		// tester.MustGetJSON(getURL, &newTurn)
-		// require.Equal(t, int64(2401), newTurn.Year)
-		require.NoError(t, err)
-		require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
-
-		// here we should wait for our new turn
-		var tf models.TurnFiles
-		var ti time.Time
-		require.NoError(t, c.SetReadDeadline(ti))
-		err = c.ReadJSON(&tf)
-		require.NoError(t, err)
-
-		// returned turn should be for year 2401
-		require.Equal(t, int64(2401), tf.Year)
+		// Verify the turn data
+		require.Equal(t, int64(year+1), turnFiles.Year)
 	})
 }
