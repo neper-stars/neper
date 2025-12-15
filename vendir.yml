@@ -1,0 +1,21 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+
+- path: dependencies
+  contents:
+
+  - path: go-orusapi
+    hg:
+      url: https://orus.io/orus-io/go-orusapi
+      ref: b2fc3277e708
+
+  - path: json-schema-generate
+    git:
+      url: https://github.com/orus-io/json-schema-generate
+      ref: cc402b93ccf6619eef48ac33c0dcbbcfd2cc96a7
+
+  - path: go-bindata
+    git:
+      url: https://github.com/go-bindata/go-bindata
+      ref: 771f8d80059ec9d4244d7c6b6d8f22d97b9f74a6

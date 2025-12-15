@@ -329,7 +329,7 @@ func (r *Runner) saveOrderFilesToSessionDir(sessionID string, orderFiles [][]byt
 }
 
 func saveOrderFile(log *zerolog.Logger, sessionDir string, content []byte, playerOrder int) error {
-	targetFileName := filepath.Join(sessionDir, fmt.Sprintf("%s%d", turnBaseFilename, playerOrder+1))
+	targetFileName := filepath.Join(sessionDir, fmt.Sprintf("%s%d", orderBaseFilename, playerOrder+1))
 	targetFile, err := os.OpenFile(targetFileName, os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
 		log.Err(err).Str("filename", targetFileName).Msg("failed to open turn file for creation")

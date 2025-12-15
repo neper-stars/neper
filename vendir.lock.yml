@@ -1,0 +1,19 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - hg:
+      changeSetTitle: Update dependencies
+      sha: b2fc3277e708362d6dbdc5e7390fcb217c38f9f0
+    path: go-orusapi
+  - git:
+      commitTitle: Fix OneOfStringNull.UnmarshalJSONIterator
+      sha: cc402b93ccf6619eef48ac33c0dcbbcfd2cc96a7
+    path: json-schema-generate
+  - git:
+      commitTitle: 'Merge pull request #47 from jsoref/spelling...'
+      sha: 771f8d80059ec9d4244d7c6b6d8f22d97b9f74a6
+      tags:
+      - v3.1.3-13-g771f8d8
+    path: go-bindata
+  path: dependencies
+kind: LockConfig
