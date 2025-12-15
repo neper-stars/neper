@@ -14,6 +14,7 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
@@ -22,16 +23,17 @@ import (
 )
 
 // NewTurnSubmitHandler ...
-func NewTurnSubmitHandler(log *zerolog.Logger, db *sqlx.DB, submitter sessionSubmitter.SessionSubmitter) *TurnSubmitHandler {
+func NewTurnSubmitHandler(log *zerolog.Logger, db *sqlx.DB, submitter sessionSubmitter.SessionSubmitter, notifyService *notify.Service) *TurnSubmitHandler {
 	configuredLogger := log.With().Str("handler", "TurnSubmitHandler").Logger()
-	return &TurnSubmitHandler{db, &configuredLogger, submitter}
+	return &TurnSubmitHandler{db, &configuredLogger, submitter, notifyService}
 }
 
 // TurnSubmitHandler handles /session
 type TurnSubmitHandler struct {
-	db        *sqlx.DB
-	log       *zerolog.Logger
-	submitter sessionSubmitter.SessionSubmitter
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	submitter     sessionSubmitter.SessionSubmitter
+	notifyService *notify.Service
 }
 
 type TurnDetails struct {
@@ -164,6 +166,11 @@ func (h *TurnSubmitHandler) handle(
 	if err := tx.Commit(); err != nil {
 		h.log.Err(err).Str("sessionID", params.SessionID).Msg("failed save turn into DB")
 		return nil, err
+	}
+
+	// Publish order status update notification after successful commit
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishOrderStatusUpdate(params.SessionID, sessionFilesDB.Year)
 	}
 
 	if allPlayersReady {

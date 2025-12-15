@@ -60,7 +60,18 @@ For session_turn notifications, metadata contains the year:
 }
 ```
 
-Types: session, session_turn, invitation, race, ruleset, session_player_race
+For order_status notifications, metadata contains the year:
+```json
+{
+  "type": "order_status",
+  "id": "session-id",
+  "action": "updated",
+  "timestamp": 1234567890,
+  "metadata": {"year": 2400}
+}
+```
+
+Types: session, session_turn, invitation, race, ruleset, session_player_race, order_status
 Actions: created, updated, deleted, ready
 
 

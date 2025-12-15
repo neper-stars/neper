@@ -10,6 +10,7 @@ const (
 const (
 	TypeSession           = "session"
 	TypeSessionTurn       = "session_turn"
+	TypeOrderStatus       = "order_status"
 	TypeInvitation        = "invitation"
 	TypeRace              = "race"
 	TypeRuleset           = "ruleset"

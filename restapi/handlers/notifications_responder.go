@@ -211,6 +211,9 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 	case notify.TypeSessionTurn:
 		// Session turn access is based on session membership
 		return r.canAccessSession(sqlH, change.ID)
+	case notify.TypeOrderStatus:
+		// Order status access is based on session membership
+		return r.canAccessSession(sqlH, change.ID)
 	default:
 		return false, nil
 	}

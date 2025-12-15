@@ -166,3 +166,11 @@ func (s *Service) PublishSessionTurnReady(sessionID string, year int64) error {
 		"year": year,
 	})
 }
+
+// PublishOrderStatusUpdate is a convenience method for order status updates
+// This is sent when a player submits their orders for a turn
+func (s *Service) PublishOrderStatusUpdate(sessionID string, year int64) error {
+	return s.PublishWithMetadata(TypeOrderStatus, sessionID, ActionUpdated, map[string]any{
+		"year": year,
+	})
+}

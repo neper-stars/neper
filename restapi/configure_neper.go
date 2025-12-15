@@ -165,7 +165,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.TurnLatestHandler = handlers.NewTurnLatestHandler(&config.Log, config.DB)
 
 	turnSubmitter := sessionSubmitter.NewSessionSubmitter(&config.Log, config.NatsClientConn)
-	api.TurnSubmitHandler = handlers.NewTurnSubmitHandler(&config.Log, config.DB, turnSubmitter)
+	api.TurnSubmitHandler = handlers.NewTurnSubmitHandler(&config.Log, config.DB, turnSubmitter, config.NotifyService)
 	// orders status (list of players who have submitted orders)
 	api.OrdersStatusHandler = handlers.NewOrdersStatusHandler(&config.Log, config.DB)
 
