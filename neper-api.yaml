@@ -640,6 +640,38 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/orders/{year}:
+    get:
+      operationId: ordersStatus
+      summary: "get the order submission status for all players"
+      description: |
+        Returns a list of players with their order submission status for the given year.
+        Each entry contains the player order number, nickname, and whether they have submitted their orders.
+      parameters:
+        - name: "session_id"
+          in: "path"
+          type: "string"
+          required: true
+        - name: "year"
+          in: "path"
+          type: "integer"
+          required: true
+      responses:
+        200:
+          description: "list of players with their order submission status"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/playerOrderStatus"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
+
   /v1/user_profiles:
     get:
       operationId: userProfileList
@@ -848,6 +880,22 @@ responses:
       $ref: "neper-types.yaml#/definitions/error"
 
 definitions:
+  playerOrderStatus:
+    type: object
+    description: Order submission status for a player
+    properties:
+      player_order:
+        type: integer
+        description: The player order number (0-15)
+      nickname:
+        type: string
+        description: Player nickname
+      is_bot:
+        type: boolean
+        description: True if this is a bot player
+      submitted:
+        type: boolean
+        description: True if orders have been submitted for this turn
   credentials:
     type: object
     description: Credentials for authentication

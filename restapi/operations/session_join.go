@@ -33,9 +33,12 @@ func NewSessionJoin(ctx *middleware.Context, handler SessionJoinHandler) *Sessio
 
 /* SessionJoin swagger:route POST /v1/sessions/{session_id}/join sessionJoin
 
-join a session, either a public one or a private one if you are invited
+Join the public session
 
-join the session
+join the session. It must be a public session.
+If the session is private and you have an invitation
+use the invitationAccept operation
+
 
 */
 type SessionJoin struct {

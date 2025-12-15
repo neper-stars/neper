@@ -434,8 +434,8 @@ func init() {
     },
     "/v1/sessions/{session_id}/join": {
       "post": {
-        "description": "join the session",
-        "summary": "join a session, either a public one or a private one if you are invited",
+        "description": "join the session. It must be a public session.\nIf the session is private and you have an invitation\nuse the invitationAccept operation\n",
+        "summary": "Join the public session",
         "operationId": "sessionJoin",
         "responses": {
           "200": {
@@ -466,6 +466,50 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/v1/sessions/{session_id}/orders/{year}": {
+      "get": {
+        "description": "Returns a list of players with their order submission status for the given year.\nEach entry contains the player order number, nickname, and whether they have submitted their orders.\n",
+        "summary": "get the order submission status for all players",
+        "operationId": "ordersStatus",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "year",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "list of players with their order submission status",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/playerOrderStatus"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
     },
     "/v1/sessions/{session_id}/player_race": {
       "get": {
@@ -1073,6 +1117,28 @@ func init() {
         "nickname": {
           "description": "User nickname",
           "type": "string"
+        }
+      }
+    },
+    "playerOrderStatus": {
+      "description": "Order submission status for a player",
+      "type": "object",
+      "properties": {
+        "is_bot": {
+          "description": "True if this is a bot player",
+          "type": "boolean"
+        },
+        "nickname": {
+          "description": "Player nickname",
+          "type": "string"
+        },
+        "player_order": {
+          "description": "The player order number (0-15)",
+          "type": "integer"
+        },
+        "submitted": {
+          "description": "True if orders have been submitted for this turn",
+          "type": "boolean"
         }
       }
     },
@@ -1705,8 +1771,8 @@ func init() {
     },
     "/v1/sessions/{session_id}/join": {
       "post": {
-        "description": "join the session",
-        "summary": "join a session, either a public one or a private one if you are invited",
+        "description": "join the session. It must be a public session.\nIf the session is private and you have an invitation\nuse the invitationAccept operation\n",
+        "summary": "Join the public session",
         "operationId": "sessionJoin",
         "responses": {
           "200": {
@@ -1749,6 +1815,62 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/v1/sessions/{session_id}/orders/{year}": {
+      "get": {
+        "description": "Returns a list of players with their order submission status for the given year.\nEach entry contains the player order number, nickname, and whether they have submitted their orders.\n",
+        "summary": "get the order submission status for all players",
+        "operationId": "ordersStatus",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "year",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "list of players with their order submission status",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/playerOrderStatus"
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     },
     "/v1/sessions/{session_id}/player_race": {
       "get": {
@@ -2635,6 +2757,28 @@ func init() {
         "user_profile_id": {
           "description": "the user profile id you want to set the order",
           "type": "string"
+        }
+      }
+    },
+    "playerOrderStatus": {
+      "description": "Order submission status for a player",
+      "type": "object",
+      "properties": {
+        "is_bot": {
+          "description": "True if this is a bot player",
+          "type": "boolean"
+        },
+        "nickname": {
+          "description": "Player nickname",
+          "type": "string"
+        },
+        "player_order": {
+          "description": "The player order number (0-15)",
+          "type": "integer"
+        },
+        "submitted": {
+          "description": "True if orders have been submitted for this turn",
+          "type": "boolean"
         }
       }
     },

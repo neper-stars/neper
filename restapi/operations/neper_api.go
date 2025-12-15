@@ -65,6 +65,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		NotificationsHandler: NotificationsHandlerFunc(func(params NotificationsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation Notifications has not yet been implemented")
 		}),
+		OrdersStatusHandler: OrdersStatusHandlerFunc(func(params OrdersStatusParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation OrdersStatus has not yet been implemented")
+		}),
 		RaceCreateHandler: RaceCreateHandlerFunc(func(params RaceCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RaceCreate has not yet been implemented")
 		}),
@@ -205,6 +208,8 @@ type NeperAPI struct {
 	InvitationListHandler InvitationListHandler
 	// NotificationsHandler sets the operation handler for the notifications operation
 	NotificationsHandler NotificationsHandler
+	// OrdersStatusHandler sets the operation handler for the orders status operation
+	OrdersStatusHandler OrdersStatusHandler
 	// RaceCreateHandler sets the operation handler for the race create operation
 	RaceCreateHandler RaceCreateHandler
 	// RaceDeleteHandler sets the operation handler for the race delete operation
@@ -356,6 +361,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.NotificationsHandler == nil {
 		unregistered = append(unregistered, "NotificationsHandler")
+	}
+	if o.OrdersStatusHandler == nil {
+		unregistered = append(unregistered, "OrdersStatusHandler")
 	}
 	if o.RaceCreateHandler == nil {
 		unregistered = append(unregistered, "RaceCreateHandler")
@@ -559,6 +567,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/notifications"] = NewNotifications(o.context, o.NotificationsHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/sessions/{session_id}/orders/{year}"] = NewOrdersStatus(o.context, o.OrdersStatusHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

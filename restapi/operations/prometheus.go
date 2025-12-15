@@ -30,6 +30,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["GET"]["/v1/notifications"] = NotificationsInstrumentHandler(
 		o.handlers["GET"]["/v1/notifications"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/orders/{year}"] = OrdersStatusInstrumentHandler(
+		o.handlers["GET"]["/v1/sessions/{session_id}/orders/{year}"])
+
 	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"] = RaceCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"])
 
