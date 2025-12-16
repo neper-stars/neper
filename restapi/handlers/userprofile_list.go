@@ -3,11 +3,13 @@ package handlers
 import (
 	"context"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	neper "github.com/neper-stars/neper/lib"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
@@ -38,7 +40,11 @@ func (h *UserProfilesList) handle(
 	query := database.SQ.Select().
 		Column(u.ID.Sql()).
 		Column(u.Nickname.Sql()).
+		Column(u.Email.Sql()).
+		Column(u.IsActive.Sql()).
+		Column(u.IsManager.Sql()).
 		From(u.Sql()).
+		Where(sq.NotEq{models.UserProfileDBIDColumn: neper.SystemUserID}).
 		OrderBy(u.ID.Sql())
 
 	var list []*models.UserProfileDB

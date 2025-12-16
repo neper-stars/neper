@@ -9,7 +9,8 @@ import (
 	"github.com/neper-stars/neper/models"
 )
 
-var SystemUserNickName = "system"
+const SystemUserNickName = "system"
+const SystemUserID = "system"
 
 // InitUserProfile is a helper to create all user relation entries in either our keto layer or
 // the database layer
