@@ -132,6 +132,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		userProfileReadHandlerInFlight,
 	)
 	reg.MustRegister(
+		userProfileResetApikeyHandlerDuration,
+		userProfileResetApikeyHandlerInFlight,
+	)
+	reg.MustRegister(
 		userProfileUpdateHandlerDuration,
 		userProfileUpdateHandlerInFlight,
 	)

@@ -754,6 +754,32 @@ paths:
         403:
           $ref: "#/responses/forbidden"
 
+  /v1/user_profiles/{user_profile_id}/reset_apikey:
+    parameters:
+      - name: user_profile_id
+        in: path
+        type: string
+        required: true
+    post:
+      operationId: userProfileResetApikey
+      summary: "reset the API key for a user"
+      description: |
+        Generate a new random API key for the specified user.
+        A user can reset their own API key, or a manager can reset any user's API key.
+      responses:
+        200:
+          description: the new API key
+          schema:
+            $ref: "#/definitions/apikeyReset"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
+
   /v1/user_profiles/{user_profile_id}/races:
     get:
       operationId: racesList
@@ -891,6 +917,16 @@ responses:
       $ref: "neper-types.yaml#/definitions/error"
 
 definitions:
+  apikeyReset:
+    type: object
+    description: Response containing the new API key after reset
+    properties:
+      user_id:
+        type: string
+        description: The user profile ID
+      apikey:
+        type: string
+        description: The new API key
   playerOrderStatus:
     type: object
     description: Order submission status for a player

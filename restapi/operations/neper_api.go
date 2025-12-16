@@ -137,6 +137,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		UserProfileReadHandler: UserProfileReadHandlerFunc(func(params UserProfileReadParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation UserProfileRead has not yet been implemented")
 		}),
+		UserProfileResetApikeyHandler: UserProfileResetApikeyHandlerFunc(func(params UserProfileResetApikeyParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation UserProfileResetApikey has not yet been implemented")
+		}),
 		UserProfileUpdateHandler: UserProfileUpdateHandlerFunc(func(params UserProfileUpdateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation UserProfileUpdate has not yet been implemented")
 		}),
@@ -256,6 +259,8 @@ type NeperAPI struct {
 	UserProfileListHandler UserProfileListHandler
 	// UserProfileReadHandler sets the operation handler for the user profile read operation
 	UserProfileReadHandler UserProfileReadHandler
+	// UserProfileResetApikeyHandler sets the operation handler for the user profile reset apikey operation
+	UserProfileResetApikeyHandler UserProfileResetApikeyHandler
 	// UserProfileUpdateHandler sets the operation handler for the user profile update operation
 	UserProfileUpdateHandler UserProfileUpdateHandler
 	// UserinfoHandler sets the operation handler for the userinfo operation
@@ -433,6 +438,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.UserProfileReadHandler == nil {
 		unregistered = append(unregistered, "UserProfileReadHandler")
+	}
+	if o.UserProfileResetApikeyHandler == nil {
+		unregistered = append(unregistered, "UserProfileResetApikeyHandler")
 	}
 	if o.UserProfileUpdateHandler == nil {
 		unregistered = append(unregistered, "UserProfileUpdateHandler")
@@ -663,6 +671,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/user_profiles/{user_profile_id}"] = NewUserProfileRead(o.context, o.UserProfileReadHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/reset_apikey"] = NewUserProfileResetApikey(o.context, o.UserProfileResetApikeyHandler)
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}

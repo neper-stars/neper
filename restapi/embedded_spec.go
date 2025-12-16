@@ -1103,9 +1103,58 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/v1/user_profiles/{user_profile_id}/reset_apikey": {
+      "post": {
+        "description": "Generate a new random API key for the specified user.\nA user can reset their own API key, or a manager can reset any user's API key.\n",
+        "summary": "reset the API key for a user",
+        "operationId": "userProfileResetApikey",
+        "responses": {
+          "200": {
+            "description": "the new API key",
+            "schema": {
+              "$ref": "#/definitions/apikeyReset"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "user_profile_id",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
+    "apikeyReset": {
+      "description": "Response containing the new API key after reset",
+      "type": "object",
+      "properties": {
+        "apikey": {
+          "description": "The new API key",
+          "type": "string"
+        },
+        "user_id": {
+          "description": "The user profile ID",
+          "type": "string"
+        }
+      }
+    },
     "credentials": {
       "description": "Credentials for authentication",
       "type": "object",
@@ -2635,9 +2684,70 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/v1/user_profiles/{user_profile_id}/reset_apikey": {
+      "post": {
+        "description": "Generate a new random API key for the specified user.\nA user can reset their own API key, or a manager can reset any user's API key.\n",
+        "summary": "reset the API key for a user",
+        "operationId": "userProfileResetApikey",
+        "responses": {
+          "200": {
+            "description": "the new API key",
+            "schema": {
+              "$ref": "#/definitions/apikeyReset"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "user_profile_id",
+          "in": "path",
+          "required": true
+        }
+      ]
     }
   },
   "definitions": {
+    "apikeyReset": {
+      "description": "Response containing the new API key after reset",
+      "type": "object",
+      "properties": {
+        "apikey": {
+          "description": "The new API key",
+          "type": "string"
+        },
+        "user_id": {
+          "description": "The user profile ID",
+          "type": "string"
+        }
+      }
+    },
     "credentials": {
       "description": "Credentials for authentication",
       "type": "object",

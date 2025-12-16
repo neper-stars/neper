@@ -134,6 +134,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.UserProfileReadHandler = handlers.NewUserProfileReadHandler(config.DB)
 	api.UserProfileListHandler = handlers.NewUserProfilesListHandler(config.DB)
 	api.UserProfileUpdateHandler = handlers.NewUserProfileUpdateHandler(config.DB)
+	api.UserProfileResetApikeyHandler = handlers.NewUserProfileResetApikeyHandler(config.DB)
 
 	// Races
 	api.RaceCreateHandler = handlers.NewRaceCreateHandler(&config.Log, config.DB, config.NotifyService)

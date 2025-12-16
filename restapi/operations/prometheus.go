@@ -102,6 +102,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["GET"]["/v1/user_profiles/{user_profile_id}"] = UserProfileReadInstrumentHandler(
 		o.handlers["GET"]["/v1/user_profiles/{user_profile_id}"])
 
+	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/reset_apikey"] = UserProfileResetApikeyInstrumentHandler(
+		o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/reset_apikey"])
+
 	o.handlers["PUT"]["/v1/user_profiles/{user_profile_id}"] = UserProfileUpdateInstrumentHandler(
 		o.handlers["PUT"]["/v1/user_profiles/{user_profile_id}"])
 

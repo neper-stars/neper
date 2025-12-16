@@ -149,6 +149,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "userProfileRead",
 	)(o.handlers["GET"]["/v1/user_profiles/{user_profile_id}"])
 
+	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/reset_apikey"] = LogOperation(
+		"", "userProfileResetApikey",
+	)(o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/reset_apikey"])
+
 	o.handlers["PUT"]["/v1/user_profiles/{user_profile_id}"] = LogOperation(
 		"", "userProfileUpdate",
 	)(o.handlers["PUT"]["/v1/user_profiles/{user_profile_id}"])

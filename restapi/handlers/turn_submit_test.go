@@ -129,7 +129,7 @@ func TestSubmitTurn(t *testing.T) {
 
 	turnSubmitter := sessionSubmitter.NewTestSessionSubmitter(&log)
 
-	handler := NewTurnSubmitHandler(&log, testdb.DB, turnSubmitter)
+	handler := NewTurnSubmitHandler(&log, testdb.DB, turnSubmitter, nil)
 	// we cannot test the websocket upgrade in a unit test because we are not
 	// at the right layer.
 	// to test websockets you should go to the integration tests
