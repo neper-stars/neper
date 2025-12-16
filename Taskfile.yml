@@ -39,11 +39,6 @@ tasks:
       - task: build-all
       - ./{{.OUTPUT}} -c config.ini serve -vvv
 
-  run-ui:
-    desc: run the ui in development mode
-    cmds:
-      - (cd ui && elm-live --port 1234 --dir public --pushstate -- src/Main.elm --output public/dist/elm.min.js --debug)
-
   build:
     desc: Build the final app
     cmds:
@@ -98,15 +93,6 @@ tasks:
     deps: [fetch-govulncheck]
     cmds:
       - "govulncheck ./..."
-
-  dl-deps:
-    run: once
-    desc: Install tools required to build this app
-    cmds:
-      - task: go-install
-        vars: {REPO: github.com/tdewolff/minify/cmd/minify@latest}
-    status:
-      - test -x $(which minify)
 
   go-install:
     cmds:
@@ -180,3 +166,15 @@ tasks:
     cmds:
       - (cd ./dependencies/json-schema-generate && go build -buildvcs=false -o ../../tools/bin/schema-generate ./cmd/schema-generate)
       - go generate ./sync
+
+  docker:
+    desc: build the docker image
+    deps:
+    cmds:
+      - podman build -t registry.figaro.home.arpa:5001/gaming/starshosting/neper -f docker/Dockerfile .
+
+  docker-push:
+    desc: push image to internal registry
+    deps: [docker]
+    cmds:
+      - podman push registry.figaro.home.arpa:5001/gaming/starshosting/neper
