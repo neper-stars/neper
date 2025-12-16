@@ -33,8 +33,8 @@ services:
       - "33670:33670"
     networks:
       - neper-net
-    # enable this when you want to create the initial user
-    # command: create-user admin
+    # enable this when you want to create the initial user (which is a manager)
+    # command: create-user admin --manager --email=admin@mydomain.com
 
 networks:
   neper-net:
