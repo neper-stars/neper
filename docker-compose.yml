@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: neper-postgres
+    environment:
+      POSTGRES_USER: neper
+      POSTGRES_PASSWORD: neper
+      POSTGRES_DB: neper
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neper"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - neper-net
+
+  neper:
+    #build:
+    #  context: .
+    #  dockerfile: ./docker/Dockerfile
+    image: registry.figaro.home.arpa:5001/gaming/starshosting/neper:latest
+    container_name: neper-app
+    depends_on:
+      postgres:
+        condition: service_healthy # service_healthy, service_started
+    environment:
+      NEPER_UID: 1000
+      NEPER_GID: 1000
+      NEPER_DB_DSN: "postgres://neper:neper@neper-postgres:5432/neper?sslmode=disable"
+    volumes:
+      - "./etc:/etc/neper"
+    ports:
+      - "33670:33670"
+    networks:
+      - neper-net
+    # enable this when you want to create the initial user
+    # command: create-user admin
+
+networks:
+  neper-net:
+    driver: bridge
