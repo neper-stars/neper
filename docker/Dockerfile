@@ -21,8 +21,9 @@ RUN apk add --no-cache wine xvfb su-exec \
 
 VOLUME /etc/neper
 WORKDIR /home/neper
+VOLUME /home/neper
 EXPOSE 33670
 
 # Runs as root initially, entrypoint drops to neper user after fixing permissions
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["-c", "/etc/neper/neper.conf", "serve"]
+CMD ["-c", "/etc/neper/neper.ini", "serve"]

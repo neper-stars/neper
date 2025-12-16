@@ -4,6 +4,7 @@ stars.exe
 # task cache files should not be versionned ever
 .task/
 lib/stars/resources/serialC.txt
+neper_data/
 
 # tools are fetched from tasks on every work station
 tools/bin

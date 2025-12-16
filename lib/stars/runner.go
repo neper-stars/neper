@@ -19,6 +19,8 @@ import (
 
 const (
 	wine                     = "wine"
+	wineboot                 = "wineboot"
+	wineInit                 = "init"
 	xvfb                     = "Xvfb"
 	wineHostname             = "hostname"
 	dosDevicesDir            = "dosdevices"
@@ -29,8 +31,8 @@ const (
 )
 
 type RunnerOptions struct {
-	ExecutableDir   string `long:"stars-executable-dir" env:"STARS_EXECUTABLE_DIR" ini-name:"stars_executable_dir" description:"directory that will be used to put stars.exe"`
-	SaveDir         string `long:"stars-save-dir" env:"STARS_SAVE_DIR" ini-name:"stars_save_dir" description:"directory that will be used as a base to create all savegame dirs"`
+	ExecutableDir   string `long:"stars-executable-dir" env:"STARS_EXECUTABLE_DIR" ini-name:"stars_executable_dir" description:"directory that will be used to put stars.exe" default:"~/.local/share/neper/stars"`
+	SaveDir         string `long:"stars-save-dir" env:"STARS_SAVE_DIR" ini-name:"stars_save_dir" description:"directory that will be used as a base to create all savegame dirs" default:"~/.local/share/neper/saves"`
 	WinePrefix      string `long:"wine-prefix" env:"WINE_PREFIX" ini-name:"wine_prefix" description:"wine prefix to use for running wine apps" default:"~/.wine"`
 	CommandsTimeout int    `long:"wine-commands-timeout" env:"WINE_COMMMANDS_TIMEOUT" ini-name:"wine_commands_timeout" description:"time in seconds after which the wine process is considered unresponsive and killed" default:"30"`
 	DisplayNumber   int    `long:"display" env:"DISPLAY" ini-name:"display" description:"the display number to provide for wine commands" default:"99"`
@@ -362,7 +364,8 @@ func (r *Runner) displayEnv() string {
 func (r *Runner) createWinePrefix() error {
 	// we run 'wine hostname' as it is a non GUI command and running such a wine command will
 	// create the wine prefix we want
-	c := cmd.NewCmd(wine, wineHostname)
+	// c := cmd.NewCmd(wine, wineHostname)
+	c := cmd.NewCmd(wineboot, wineInit)
 	// inject wineprefix & display variable to use Xvfb
 	c.Env = append(c.Env, r.winePrefixEnv(), r.displayEnv())
 	// unset wine debug if level is not appropriate

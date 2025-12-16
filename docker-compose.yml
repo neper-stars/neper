@@ -20,6 +20,7 @@ services:
     #  dockerfile: ./docker/Dockerfile
     image: registry.figaro.home.arpa:5001/gaming/starshosting/neper:latest
     container_name: neper-app
+    hostname: neper-app
     depends_on:
       postgres:
         condition: service_healthy # service_healthy, service_started
@@ -28,13 +29,14 @@ services:
       NEPER_GID: 1000
       NEPER_DB_DSN: "postgres://neper:neper@neper-postgres:5432/neper?sslmode=disable"
     volumes:
-      - "./etc:/etc/neper"
+      - "./neper_data/etc:/etc/neper"
+      - "./neper_data/neper:/home/neper"
     ports:
       - "33670:33670"
     networks:
       - neper-net
     # enable this when you want to create the initial user (which is a manager)
-    # command: create-user admin --manager --email=admin@mydomain.com
+    # command: create-user admin2 --manager --email=admin@mydomain.com
 
 networks:
   neper-net:
