@@ -302,11 +302,6 @@ func (auth *Auth) Auth(header string) (*models.Principal, error) {
 
 // MakeToken creates a new token
 func (auth *Auth) MakeToken(principal models.Principal) (string, error) {
-	auth.log.Debug().Msg("in auth.MakeToken")
-	auth.log.Debug().
-		Str("nickname", principal.NickName).
-		Int64("expires", principal.ExpiresAt).
-		Msg("")
 	principal.ExpiresAt = auth.now().Add(time.Minute * 5).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, principal)
 	sToken, err := token.SignedString(auth.secret)
