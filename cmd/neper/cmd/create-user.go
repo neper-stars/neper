@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"github.com/m4rw3r/uuid"
 	orusapi "orus.io/orus-io/go-orusapi"
 	"orus.io/orus-io/go-orusapi/database"
+
+	"github.com/neper-stars/neper/models"
 )
 
 // CreateUserCmd is the command to create a new user
@@ -34,6 +37,7 @@ func NewCreateUserCmd(dbOptions *database.Options, loggingOptions *orusapi.Loggi
 // Execute creates a new user in the database
 func (cmd *CreateUserCmd) Execute([]string) error {
 	log := cmd.log.Logger()
+	ctx := context.Background()
 
 	// Generate a random API key (32 bytes = 64 hex characters)
 	apiKey := make([]byte, 32)
@@ -61,13 +65,32 @@ func (cmd *CreateUserCmd) Execute([]string) error {
 		email = cmd.Args.Username + "@neper.local"
 	}
 
-	// Insert the user
-	_, err = db.Exec(`
-		INSERT INTO user_profile (id, email, is_active, is_manager, nickname, apikey)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`, userID.String(), email, true, cmd.IsManager, cmd.Args.Username, apiKeyHex)
+	// Create the user profile using the model
+	userProfileDB := models.UserProfileDB{
+		UserProfile: models.UserProfile{
+			ID:        userID.String(),
+			Email:     email,
+			IsActive:  true,
+			IsManager: cmd.IsManager,
+			Nickname:  cmd.Args.Username,
+		},
+		APIKey: apiKeyHex,
+	}
+
+	// Insert the user using SQLHelper
+	tx, err := database.Begin(ctx, db)
 	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.RollbackIfOpened(log)
+
+	sqlH := database.NewSQLHelper(ctx, tx, log)
+	if _, err := sqlH.Insert(&userProfileDB); err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	log.Info().
