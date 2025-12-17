@@ -12,6 +12,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/auth/authenticate"] = AuthenticateInstrumentHandler(
 		o.handlers["POST"]["/v1/auth/authenticate"])
 
+	o.handlers["GET"]["/v1/downloads/stars.exe"] = DownloadStarsExeInstrumentHandler(
+		o.handlers["GET"]["/v1/downloads/stars.exe"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/game"] = GameCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/game"])
 

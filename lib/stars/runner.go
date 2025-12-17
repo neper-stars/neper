@@ -267,6 +267,11 @@ var starsBin []byte
 //go:embed resources/Stars.ini
 var starsINI []byte
 
+// GetStarsExecutable returns the embedded stars.exe binary
+func GetStarsExecutable() []byte {
+	return starsBin
+}
+
 func (r *Runner) ensureSaveDir() error {
 	if err := os.MkdirAll(r.SaveDir, 0770); err != nil { // #nosec G301 -- dir needs group write for wine
 		return err

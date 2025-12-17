@@ -109,6 +109,30 @@ func init() {
         }
       }
     },
+    "/v1/downloads/stars.exe": {
+      "get": {
+        "description": "Download the embedded Stars! game executable (stars.exe).\nThis is the game client needed to play Stars! games.\n",
+        "produces": [
+          "application/octet-stream"
+        ],
+        "summary": "download the Stars! game executable",
+        "operationId": "downloadStarsExe",
+        "responses": {
+          "200": {
+            "description": "The Stars! executable binary",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
     "/v1/invitations": {
       "get": {
         "operationId": "invitationList",
@@ -1368,6 +1392,36 @@ func init() {
           },
           "default": {
             "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/downloads/stars.exe": {
+      "get": {
+        "description": "Download the embedded Stars! game executable (stars.exe).\nThis is the game client needed to play Stars! games.\n",
+        "produces": [
+          "application/octet-stream"
+        ],
+        "summary": "download the Stars! game executable",
+        "operationId": "downloadStarsExe",
+        "responses": {
+          "200": {
+            "description": "The Stars! executable binary",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
             "schema": {
               "$ref": "#/definitions/error"
             }

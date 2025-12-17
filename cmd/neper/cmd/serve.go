@@ -32,8 +32,7 @@ func NewServerCmd() *ServeCmd {
 
 // ServeCmd is the 'serve' command
 type ServeCmd struct {
-	Server *orusapi.Server
-
+	Server      *orusapi.Server
 	AutoMigrate bool `long:"auto-migrate" description:"automatically apply database migrations if needed"`
 
 	API *operations.NeperAPI `no-flag:"t"`
@@ -79,7 +78,6 @@ func (cmd *ServeCmd) Execute([]string) error {
 			return err
 		}
 		defer prometheus.Unregister(infoGauge)
-
 		collector := sqlstats.NewStatsCollector("db", db)
 		if err := prometheus.Register(collector); err != nil {
 			return err

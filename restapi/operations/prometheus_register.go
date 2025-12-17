@@ -12,6 +12,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		authenticateHandlerInFlight,
 	)
 	reg.MustRegister(
+		downloadStarsExeHandlerDuration,
+		downloadStarsExeHandlerInFlight,
+	)
+	reg.MustRegister(
 		gameCreateHandlerDuration,
 		gameCreateHandlerInFlight,
 	)

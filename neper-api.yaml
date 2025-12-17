@@ -47,6 +47,25 @@ paths:
           description: generic error response
           schema:
             $ref: "neper-types.yaml#/definitions/error"
+  /v1/downloads/stars.exe:
+    get:
+      operationId: downloadStarsExe
+      summary: "download the Stars! game executable"
+      description: |
+        Download the embedded Stars! game executable (stars.exe).
+        This is the game client needed to play Stars! games.
+      produces:
+        - application/octet-stream
+      responses:
+        200:
+          description: The Stars! executable binary
+          schema:
+            type: file
+        401:
+          $ref: "#/responses/unauthorized"
+        default:
+          $ref: "#/responses/default"
+
   /v1/auth/refresh_token:
     post:
       operationId: refresh-token

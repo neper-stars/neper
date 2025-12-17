@@ -29,6 +29,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "authenticate",
 	)(o.handlers["POST"]["/v1/auth/authenticate"])
 
+	o.handlers["GET"]["/v1/downloads/stars.exe"] = LogOperation(
+		"", "downloadStarsExe",
+	)(o.handlers["GET"]["/v1/downloads/stars.exe"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/game"] = LogOperation(
 		"", "gameCreate",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/game"])

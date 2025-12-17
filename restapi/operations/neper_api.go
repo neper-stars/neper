@@ -42,10 +42,14 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 
 		JSONConsumer: runtime.JSONConsumer(),
 
+		BinProducer:  runtime.ByteStreamProducer(),
 		JSONProducer: runtime.JSONProducer(),
 
 		AuthenticateHandler: AuthenticateHandlerFunc(func(params AuthenticateParams) middleware.Responder {
 			return middleware.NotImplemented("operation Authenticate has not yet been implemented")
+		}),
+		DownloadStarsExeHandler: DownloadStarsExeHandlerFunc(func(params DownloadStarsExeParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation DownloadStarsExe has not yet been implemented")
 		}),
 		GameCreateHandler: GameCreateHandlerFunc(func(params GameCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GameCreate has not yet been implemented")
@@ -186,6 +190,9 @@ type NeperAPI struct {
 	//   - application/json
 	JSONConsumer runtime.Consumer
 
+	// BinProducer registers a producer for the following mime types:
+	//   - application/octet-stream
+	BinProducer runtime.Producer
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
 	JSONProducer runtime.Producer
@@ -199,6 +206,8 @@ type NeperAPI struct {
 
 	// AuthenticateHandler sets the operation handler for the authenticate operation
 	AuthenticateHandler AuthenticateHandler
+	// DownloadStarsExeHandler sets the operation handler for the download stars exe operation
+	DownloadStarsExeHandler DownloadStarsExeHandler
 	// GameCreateHandler sets the operation handler for the game create operation
 	GameCreateHandler GameCreateHandler
 	// InvitationAcceptHandler sets the operation handler for the invitation accept operation
@@ -338,6 +347,9 @@ func (o *NeperAPI) Validate() error {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
 
+	if o.BinProducer == nil {
+		unregistered = append(unregistered, "BinProducer")
+	}
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
 	}
@@ -348,6 +360,9 @@ func (o *NeperAPI) Validate() error {
 
 	if o.AuthenticateHandler == nil {
 		unregistered = append(unregistered, "AuthenticateHandler")
+	}
+	if o.DownloadStarsExeHandler == nil {
+		unregistered = append(unregistered, "DownloadStarsExeHandler")
 	}
 	if o.GameCreateHandler == nil {
 		unregistered = append(unregistered, "GameCreateHandler")
@@ -505,6 +520,8 @@ func (o *NeperAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
+		case "application/octet-stream":
+			result["application/octet-stream"] = o.BinProducer
 		case "application/json":
 			result["application/json"] = o.JSONProducer
 		}
@@ -551,6 +568,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/auth/authenticate"] = NewAuthenticate(o.context, o.AuthenticateHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/downloads/stars.exe"] = NewDownloadStarsExe(o.context, o.DownloadStarsExeHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

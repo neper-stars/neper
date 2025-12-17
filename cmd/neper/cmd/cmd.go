@@ -44,10 +44,6 @@ func Run() int {
 		return 1
 	}
 
-	// Rebuild logger after bootstrap parsing to apply logging options
-	LoggingOptions.BuildLogger()
-	Logger = *LoggingOptions.Logger()
-
 	if ConfigFileOption.ConfigFile != "" {
 		Logger.Debug().Str("configfile", ConfigFileOption.ConfigFile).Msg("parsing configuration file")
 		iniParser := flags.NewIniParser(parser)
@@ -55,9 +51,6 @@ func Run() int {
 			Logger.Err(err).Msg("")
 			return 1
 		}
-		// Rebuild logger after config file parsing
-		LoggingOptions.BuildLogger()
-		Logger = *LoggingOptions.Logger()
 	}
 
 	if _, err := parser.Parse(); err != nil {
@@ -76,11 +69,6 @@ func Run() int {
 		}
 		return code
 	}
-
-	// Rebuild logger after final parsing to ensure all options are applied
-	LoggingOptions.BuildLogger()
-	Logger = *LoggingOptions.Logger()
-
 	return 0
 }
 
@@ -102,7 +90,6 @@ func init() {
 	}
 	g.Namespace = "log"
 	g.EnvNamespace = "LOG"
-
 	g, err = parser.AddGroup("Database", "Database options", DatabaseOptions)
 	if err != nil {
 		panic(err)
