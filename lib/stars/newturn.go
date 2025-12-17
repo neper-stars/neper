@@ -46,6 +46,8 @@ type TurnGenerator struct {
 	cancelFunc context.CancelFunc
 	ready      chan struct{} // closed when Run() completes initialization (success or failure)
 	readyOnce  sync.Once     // ensures ready channel is closed exactly once
+	done       chan struct{} // closed when Run() goroutine exits
+	doneOnce   sync.Once     // ensures done channel is closed exactly once
 }
 
 // NewTurnGenerator is the constructor for the TurnGenerator
@@ -57,6 +59,7 @@ func NewTurnGenerator(log *zerolog.Logger, natsConn *nats.Conn, db *sqlx.DB, run
 		db:            db,
 		notifyService: notifyService,
 		ready:         make(chan struct{}),
+		done:          make(chan struct{}),
 	}
 }
 
@@ -79,10 +82,24 @@ func (g *TurnGenerator) signalReady() {
 	})
 }
 
+// signalDone closes the done channel exactly once.
+func (g *TurnGenerator) signalDone() {
+	g.doneOnce.Do(func() {
+		close(g.done)
+	})
+}
+
+// Done returns a channel that is closed when the Run() goroutine has fully exited.
+func (g *TurnGenerator) Done() <-chan struct{} {
+	return g.done
+}
+
 // Run is intended to be executed in a goroutine
 // when you want to shut down the TurnGenerator.Run goroutine
 // just cancel the context you passed in the Run command
 func (g *TurnGenerator) Run(ctx context.Context) {
+	defer g.signalDone() // signal that we have fully exited
+
 	ctx, fn := context.WithCancel(ctx)
 	g.cancelFunc = fn
 	needsGenerationChan := make(chan *nats.Msg)
@@ -120,14 +137,14 @@ func (g *TurnGenerator) Run(ctx context.Context) {
 	}
 }
 
-// Shutdown cancels the goroutine that is Run()ing.
+// Shutdown cancels the goroutine that is Run()ing and waits for it to exit.
 // It is safe to call Shutdown multiple times or on an already-stopped generator.
 func (g *TurnGenerator) Shutdown() {
 	if !g.running {
-		g.log.Debug().Msg("TurnGenerator.Shutdown called on non-running generator (already stopped)")
 		return
 	}
 	g.cancelFunc()
+	<-g.done // wait for Run() to fully exit
 }
 
 // NeedsGenerationMsg is the message we will receive on the SubjectTurnNeedsGeneration
