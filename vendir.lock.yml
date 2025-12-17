@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - hg:
-      changeSetTitle: Update dependencies
-      sha: b2fc3277e708362d6dbdc5e7390fcb217c38f9f0
+      changeSetTitle: fix migration template
+      sha: 863c269d1d3b0b18ef7aa46e6dfbc294576db8e4
     path: go-orusapi
   - git:
       commitTitle: Fix OneOfStringNull.UnmarshalJSONIterator
