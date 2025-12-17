@@ -246,7 +246,7 @@ func (r *NotificationsResponder) canAccessInvitation(sqlH database.SQLHelper, ch
 	// For deleted invitations, the record is gone so we check metadata
 	if change.Action == notify.ActionDeleted {
 		if change.Metadata != nil {
-			if userProfileID, ok := change.Metadata["user_profile_id"].(string); ok {
+			if userProfileID, ok := change.Metadata[models.InvitationDBUserProfileIDColumn].(string); ok {
 				return userProfileID == r.principal.Subject, nil
 			}
 		}

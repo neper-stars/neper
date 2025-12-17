@@ -1,7 +1,11 @@
 package tests
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -12,7 +16,9 @@ import (
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
+	"github.com/neper-stars/neper/models/types"
 )
 
 func TestNotificationsFiltering(t *testing.T) {
@@ -35,9 +41,9 @@ func TestNotificationsFiltering(t *testing.T) {
 	server := tester.TestServer()
 	defer server.Close()
 
-	// Helper to get WebSocket URL from HTTP URL
+	// Helper to get WebSocket URL from HTTP URL (handles both http:// and https://)
 	wsURL := func(httpURL string) string {
-		return "ws" + httpURL[4:] + "/api/v1/notifications"
+		return "ws" + strings.TrimPrefix(httpURL, "http") + "/api/v1/notifications"
 	}
 
 	// Helper to authenticate and get token
@@ -246,5 +252,141 @@ func TestNotificationsFiltering(t *testing.T) {
 		require.NotNil(t, gandalfSessionNotif, "gandalf should receive gondorID session notification (global manager)")
 		require.NotNil(t, merrySessionNotif, "merry should receive gondorID session notification (public session)")
 		require.NotNil(t, boromirSessionNotif, "boromir should receive gondorID session notification (member)")
+	})
+}
+
+func TestOrderStatusNotificationSentToAllSessionMembers(t *testing.T) {
+	log := testutils.GetLogger(t)
+	apiTesterConfigUpdater := NewAPITesterConfigUpdater(t, &log, true)
+	tester := NewAPITester(t, apiTesterConfigUpdater.UpdateConfig)
+	defer tester.Close()
+
+	// Load fixtures for a 2-player session (merry vs gollum)
+	tester.LoadFixtureFile("../restapi/handlers/fixtures/merryvsgollum.json")
+	tester.LoadFixtureFile("../restapi/handlers/fixtures/merryvsgollum_turn0_files.json")
+
+	server := tester.TestServer()
+	defer server.Close()
+
+	wsURL := func(httpURL string) string {
+		return "ws" + strings.TrimPrefix(httpURL, "http") + "/api/v1/notifications"
+	}
+
+	getToken := func(nickname, apikey string) string {
+		var token string
+		require.Equal(t, http.StatusOK, tester.MustPostJSON("/api/v1/auth/authenticate", JSONObj{
+			"nickname": nickname,
+			"apikey":   apikey,
+		}, &token))
+		return token
+	}
+
+	connectWS := func(token string) *websocket.Conn {
+		header := http.Header{}
+		header.Set("Authorization", "Bearer "+token)
+		conn, resp, err := websocket.DefaultDialer.Dial(wsURL(server.URL), header)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
+		return conn
+	}
+
+	readNotification := func(conn *websocket.Conn, timeout time.Duration) (*notify.ResourceChange, error) {
+		_ = conn.SetReadDeadline(time.Now().Add(timeout))
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			return nil, err
+		}
+		var change notify.ResourceChange
+		if err := jsoniter.Unmarshal(msg, &change); err != nil {
+			return nil, err
+		}
+		return &change, nil
+	}
+
+	t.Run("all_session_members_receive_order_status_notification_when_player_submits_turn", func(t *testing.T) {
+		sessionID := "merryvsgollumID"
+		year := 2400
+
+		// Get tokens for both players
+		merryToken := getToken("merry", "apikeyMerry")
+		gollumToken := getToken("gollum", "apikeyGollum")
+
+		// Connect both users to WebSocket
+		merryConn := connectWS(merryToken)
+		defer func() { _ = merryConn.Close() }()
+
+		gollumConn := connectWS(gollumToken)
+		defer func() { _ = gollumConn.Close() }()
+
+		var mu sync.Mutex
+		merryNotifications := make([]*notify.ResourceChange, 0)
+		gollumNotifications := make([]*notify.ResourceChange, 0)
+
+		var wg sync.WaitGroup
+
+		collectNotifications := func(conn *websocket.Conn, notifications *[]*notify.ResourceChange, name string) {
+			defer wg.Done()
+			for {
+				change, err := readNotification(conn, 3*time.Second)
+				if err != nil {
+					return
+				}
+				mu.Lock()
+				*notifications = append(*notifications, change)
+				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, change.Type, change.ID, change.Action)
+				mu.Unlock()
+			}
+		}
+
+		wg.Add(2)
+		go collectNotifications(merryConn, &merryNotifications, "merry")
+		go collectNotifications(gollumConn, &gollumNotifications, "gollum")
+
+		// Small delay to ensure WebSocket connections are established
+		time.Sleep(100 * time.Millisecond)
+
+		// Load gollum's turn file
+		gollumOrderFileName := "../restapi/handlers/fixtures/merryvsgollum/Game.x2"
+		gf, err := os.Open(gollumOrderFileName)
+		require.NoError(t, err)
+		gollumOrderContent, err := io.ReadAll(gf)
+		require.NoError(t, err)
+		gollumOrderContentB64 := stars.B64Encode(gollumOrderContent)
+
+		// Gollum submits his turn
+		tester.SetHeader("Authorization", "Bearer "+gollumToken)
+		submitURL := fmt.Sprintf("/api/v1/sessions/%s/turn/%d", sessionID, year)
+		turn := types.Order{B64Data: gollumOrderContentB64}
+		var response interface{}
+		require.Equal(t, http.StatusOK, tester.MustPutJSON(submitURL, &turn, &response))
+
+		// Wait for notifications to be collected
+		wg.Wait()
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		// Helper to find order_status notification for our session
+		findOrderStatusNotification := func(notifications []*notify.ResourceChange) *notify.ResourceChange {
+			for _, n := range notifications {
+				if n.Type == notify.TypeOrderStatus && n.ID == sessionID {
+					return n
+				}
+			}
+			return nil
+		}
+
+		// Both merry and gollum should receive the order_status notification
+		merryOrderStatus := findOrderStatusNotification(merryNotifications)
+		gollumOrderStatus := findOrderStatusNotification(gollumNotifications)
+
+		require.NotNil(t, merryOrderStatus, "merry (session member) should receive order_status notification when gollum submits")
+		require.Equal(t, notify.ActionUpdated, merryOrderStatus.Action)
+		yearFromMeta, ok := merryOrderStatus.Metadata["year"].(float64)
+		require.True(t, ok, "year should be present in metadata")
+		require.Equal(t, float64(year), yearFromMeta)
+
+		require.NotNil(t, gollumOrderStatus, "gollum (submitter) should also receive order_status notification")
+		require.Equal(t, notify.ActionUpdated, gollumOrderStatus.Action)
 	})
 }

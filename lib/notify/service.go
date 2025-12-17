@@ -6,6 +6,8 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
+
+	"github.com/neper-stars/neper/models"
 )
 
 // ResourceChange represents a notification about a resource modification
@@ -92,7 +94,7 @@ func (s *Service) PublishInvitationCreate(invitationID string) error {
 // userProfileID is included in metadata since the invitation record is deleted before notification
 func (s *Service) PublishInvitationDelete(invitationID, userProfileID string) error {
 	return s.PublishWithMetadata(TypeInvitation, invitationID, ActionDeleted, map[string]any{
-		"user_profile_id": userProfileID,
+		models.InvitationDBUserProfileIDColumn: userProfileID,
 	})
 }
 
