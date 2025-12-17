@@ -32,12 +32,12 @@ var (
 
 // TokenOptions holds options related to the JWT
 type TokenOptions struct {
-	Secret             string             `long:"token-secret" ini-name:"token-secret" description:"hex HMAC256 secret for signing/verifying JWT (<= 32 bytes)"`
-	ExpirationOpt      func(string) error `long:"token-expiration" ini-name:"token-expiration" required:"false" description:"Expiration time of the generated tokens" default:"5m"`
+	Secret             string             `long:"token-secret" env:"TOKEN_SECRET" ini-name:"token-secret" description:"hex HMAC256 secret for signing/verifying JWT (<= 32 bytes)"`
+	ExpirationOpt      func(string) error `long:"token-expiration" env:"TOKEN_EXPIRATION" ini-name:"token-expiration" required:"false" description:"Expiration time of the generated tokens" default:"5m"`
 	Expiration         time.Duration      `no-flag:"t"`
-	CacheMaxSize       int                `long:"token-cache-max-size" ini-name:"token-cache-max-size" required:"false" description:"Maximum number of entries in the token cache" default:"10000"`
+	CacheMaxSize       int                `long:"token-cache-max-size" env:"TOKEN_CACHE_MAX_SIZE" ini-name:"token-cache-max-size" required:"false" description:"Maximum number of entries in the token cache" default:"10000"`
 	CachePurgeDelay    time.Duration      `no-flag:"t"`
-	CachePurgeDelayOpt func(string) error `long:"token-cache-purge-delay" ini-name:"token-cache-purge-delay" required:"false" description:"Delay between token cache purges" default:"10m"`
+	CachePurgeDelayOpt func(string) error `long:"token-cache-purge-delay" env:"TOKEN_CACHE_PURGE_DELAY" ini-name:"token-cache-purge-delay" required:"false" description:"Delay between token cache purges" default:"10m"`
 }
 
 func durationOption(tgt *time.Duration) func(string) error {

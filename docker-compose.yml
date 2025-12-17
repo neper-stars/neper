@@ -28,9 +28,18 @@ services:
       NEPER_UID: 1000
       NEPER_GID: 1000
       NEPER_DB_DSN: "postgres://neper:neper@neper-postgres:5432/neper?sslmode=disable"
+      NEPER_LOG_FORMAT: "pretty"
+      NEPER_LOG_LEVEL: "debug"
+      NEPER_SERVE_SCHEME: "http"
+      NEPER_SERVE_HOST: "0.0.0.0"
+      NEPER_SERVE_PORT: "33670"
+      NEPER_SERVE_STARS_EXECUTABLE_DIR: "~/stars"
+      NEPER_SERVE_STARS_SAVE_DIR: "~/saves"
+      NEPER_SERVE_WINE_PREFIX: "~/wine"
+      NEPER_SERVE_WINE_COMMANDS_TIMEOUT: "20"
     volumes:
       - "./neper_data/etc:/etc/neper"
-      - "./neper_data/neper:/home/neper"
+      - "./neper_data:/home/neper"
     ports:
       - "33670:33670"
     networks:

@@ -7,6 +7,7 @@ NEPER_GID=${NEPER_GID:-1000}
 
 # Generate config if it doesn't exist (runs as root if needed)
 if [ ! -f /etc/neper/neper.ini ]; then
+    echo "Config file not found, creating a fresh one"
     /usr/local/bin/neper generate-config > /etc/neper/neper.ini
 fi
 
