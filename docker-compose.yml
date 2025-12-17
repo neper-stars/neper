@@ -37,8 +37,10 @@ services:
       NEPER_SERVE_STARS_SAVE_DIR: "~/saves"
       NEPER_SERVE_WINE_PREFIX: "~/wine"
       NEPER_SERVE_WINE_COMMANDS_TIMEOUT: "20"
-      NEPER_SERVE_NATS_CLIENT_NKEY: "use your own NKey here, see command: generate-nkey in docker-compose.yml"
-      NEPER_SERVE_TOKEN_SECRET: "use your own token secret here, see command: generate-token-secret in docker-compose.yml"
+      # use your own NKey here, see command: generate-nkey in docker-compose.yml
+      NEPER_SERVE_NATS_CLIENT_NKEY:
+      # use your own token secret here, see command: generate-token-secret in docker-compose.yml
+      NEPER_SERVE_TOKEN_SECRET:
     volumes:
       - "./neper_data/etc:/etc/neper"
       - "./neper_data:/home/neper"

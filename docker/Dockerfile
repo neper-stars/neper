@@ -16,15 +16,12 @@ RUN apk add --no-cache wine xvfb su-exec \
 	    --gecos "" \
 	    --uid 1337 \
 	    neper \
-	&& mkdir -p /etc/neper \
-	&& chown neper:neper /etc/neper
 
-VOLUME /etc/neper
 VOLUME /home/neper
-
 WORKDIR /home/neper
+
 EXPOSE 33670
 
 # Runs as root initially, entrypoint drops to neper user after fixing permissions
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["-c", "/etc/neper/neper.ini", "serve", "--auto-migrate"]
+CMD ["serve", "--auto-migrate"]

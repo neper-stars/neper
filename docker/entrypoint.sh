@@ -5,12 +5,6 @@
 NEPER_UID=${NEPER_UID:-1000}
 NEPER_GID=${NEPER_GID:-1000}
 
-# Generate config if it doesn't exist (runs as root if needed)
-if [ ! -f /etc/neper/neper.ini ]; then
-    echo "Config file not found, creating a fresh one"
-    /usr/local/bin/neper generate-config > /etc/neper/neper.ini
-fi
-
 # Fix ownership and drop privileges if running as root
 if [ "$(id -u)" = "0" ]; then
     echo "Root mode, fixing permissions and dropping privileges"
@@ -20,7 +14,7 @@ if [ "$(id -u)" = "0" ]; then
     addgroup -g "$NEPER_GID" neper
     adduser -D -u "$NEPER_UID" -G neper neper
 
-    chown -R neper:neper /etc/neper /home/neper
+    chown -R neper:neper /home/neper
     exec su-exec neper /usr/local/bin/neper "$@"
 else
     echo "non root mode, running as is"

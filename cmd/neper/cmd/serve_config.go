@@ -77,7 +77,11 @@ func setupServeConfig(config *restapi.Config) error {
 	// NATS configuration
 	// ----------------------------
 	config.NatsClientOptions = NatsClientOptions
-	signatureHandler, err := embeddednats.NewClientSigHandler([]byte(config.NatsClientOptions.NPrivkey))
+	privKey, err := config.NatsClientOptions.NPrivateKey(config.Log)
+	if err != nil {
+		return err
+	}
+	signatureHandler, err := embeddednats.NewClientSigHandler(privKey)
 	if err != nil {
 		return err
 	}
