@@ -6,7 +6,7 @@ NEPER_UID=${NEPER_UID:-1000}
 NEPER_GID=${NEPER_GID:-1000}
 
 # Generate config if it doesn't exist (runs as root if needed)
-if [ ! -f /etc/neper/neper.conf ]; then
+if [ ! -f /etc/neper/neper.ini ]; then
     /usr/local/bin/neper generate-config > /etc/neper/neper.ini
 fi
 
