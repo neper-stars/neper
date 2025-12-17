@@ -52,6 +52,10 @@ func setupServerCmd(cmd *ServeCmd) {
 }
 
 func setupServeConfig(config *restapi.Config) error {
+	// Rebuild the logger from parsed options (updates the package-level Logger variable)
+	Logger = *LoggingOptions.Logger()
+	config.Log = Logger
+
 	config.BaseURL = InfoOptions.BaseURL
 	// This is where the api config can be customized at will
 	config.TokenOptions = *TokenOptions
@@ -91,6 +95,10 @@ func setupServeConfig(config *restapi.Config) error {
 		ns := embeddednats.NewEmbeddedServer(signatureHandler.PubKey())
 		config.NatsServer = ns
 		go ns.Run()
+		// Wait for NATS server to be ready before proceeding
+		if !ns.WaitReady(10 * time.Second) {
+			return fmt.Errorf("NATS server failed to start within timeout")
+		}
 	}
 
 	connHandlers := embeddednats.NewConnHandlers(&config.Log)
