@@ -22,13 +22,12 @@ And for the moment we decided to use simple preshared keys as a means of authent
 You will need to generate a Nats client key for the client code inside the Neper server:
 
 ```shell
-go install github.com/nats-io/nkeys/nk@latest
-nk -gen user -pubout
+./neper generate-nkey
 ```
 
-You will get 2 lines:
-  - one starting with an S which is a private key (needed by the client code of the neper server)
-  - one starting with an U which is a public key (needed if you have an *external* NATS server)
+You will get 2 keys:
+  - one private starting with an S which is a private key (needed by the client code of the neper server)
+  - one public starting with an U which is a public key (needed if you have an *external* NATS server)
 
 ## Internal NATS server
 
