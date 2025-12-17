@@ -129,7 +129,6 @@ tasks:
       - go generate ./models
     sources:
       - models/*.go
-      - dependencies/go-orusapi/scripts/generate_db_helpers.go
     generates:
       - models/db_helpers.go
 

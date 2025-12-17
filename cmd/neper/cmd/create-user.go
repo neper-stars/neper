@@ -82,9 +82,9 @@ func (cmd *CreateUserCmd) Execute([]string) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.RollbackIfOpened(log)
+	defer tx.RollbackIfOpened(*log)
 
-	sqlH := database.NewSQLHelper(ctx, tx, log)
+	sqlH := database.NewSQLHelper(ctx, tx, *log)
 	if _, err := sqlH.Insert(&userProfileDB); err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}

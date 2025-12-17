@@ -9,7 +9,7 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
-//go:generate go run ../dependencies/go-orusapi/scripts/generate_db_helpers.go
+//go:generate go tool orus.io/orus-io/go-orusapi/tools/generate_db_helpers
 
 func init() {
 	strfmt.MarshalFormat = strfmt.RFC3339Millis

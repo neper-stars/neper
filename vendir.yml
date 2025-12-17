@@ -8,7 +8,7 @@ directories:
   - path: go-orusapi
     hg:
       url: https://orus.io/orus-io/go-orusapi
-      ref: b2fc3277e708
+      ref: 189926b48099
 
   - path: json-schema-generate
     git:

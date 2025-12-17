@@ -949,7 +949,7 @@ func (t InvitationDBTableSchema) FQColumns(withPKey bool) []string {
     colList = InvitationDBDataColumns
 
 	if withPKey {
-		colList = InvitationDBColumns	
+		colList = InvitationDBColumns
 	}
 
     var cols []string
@@ -1130,7 +1130,7 @@ func (t RaceDBTableSchema) FQColumns(withPKey bool) []string {
     colList = RaceDBDataColumns
 
 	if withPKey {
-		colList = RaceDBColumns	
+		colList = RaceDBColumns
 	}
 
     var cols []string
@@ -1554,7 +1554,7 @@ func (t RulesetDBTableSchema) FQColumns(withPKey bool) []string {
     colList = RulesetDBDataColumns
 
 	if withPKey {
-		colList = RulesetDBColumns	
+		colList = RulesetDBColumns
 	}
 
     var cols []string
@@ -1767,7 +1767,7 @@ func (t SessionDBTableSchema) FQColumns(withPKey bool) []string {
     colList = SessionDBDataColumns
 
 	if withPKey {
-		colList = SessionDBColumns	
+		colList = SessionDBColumns
 	}
 
     var cols []string
@@ -1970,7 +1970,7 @@ func (t SessionFilesDBTableSchema) FQColumns(withPKey bool) []string {
     colList = SessionFilesDBDataColumns
 
 	if withPKey {
-		colList = SessionFilesDBColumns	
+		colList = SessionFilesDBColumns
 	}
 
     var cols []string
@@ -2174,7 +2174,7 @@ func (t SessionPlayerRaceDBTableSchema) FQColumns(withPKey bool) []string {
     colList = SessionPlayerRaceDBDataColumns
 
 	if withPKey {
-		colList = SessionPlayerRaceDBColumns	
+		colList = SessionPlayerRaceDBColumns
 	}
 
     var cols []string
@@ -2438,7 +2438,7 @@ func (t UserProfileDBTableSchema) FQColumns(withPKey bool) []string {
     colList = UserProfileDBDataColumns
 
 	if withPKey {
-		colList = UserProfileDBColumns	
+		colList = UserProfileDBColumns
 	}
 
     var cols []string
@@ -2562,7 +2562,7 @@ func (t UserProfileSessionRelDBTableSchema) FQColumns(withPKey bool) []string {
     colList = UserProfileSessionRelDBDataColumns
 
 	if withPKey {
-		colList = UserProfileSessionRelDBColumns	
+		colList = UserProfileSessionRelDBColumns
 	}
 
     var cols []string

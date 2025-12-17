@@ -27,7 +27,7 @@ type Info struct {
 
 var (
 	Logger           = orusapi.DefaultLogger(os.Stdout)
-	LoggingOptions   = orusapi.MustLoggingOptions(orusapi.NewLoggingOptions(&Logger, os.Stdout))
+	LoggingOptions   = orusapi.NewLoggingOptions(os.Stdout)
 	DatabaseOptions  = &database.Options{}
 	ConfigFileOption = &ConfigFile{}
 	InfoOptions      = &Info{}
@@ -44,6 +44,10 @@ func Run() int {
 		return 1
 	}
 
+	// Rebuild logger after bootstrap parsing to apply logging options
+	LoggingOptions.BuildLogger()
+	Logger = *LoggingOptions.Logger()
+
 	if ConfigFileOption.ConfigFile != "" {
 		Logger.Debug().Str("configfile", ConfigFileOption.ConfigFile).Msg("parsing configuration file")
 		iniParser := flags.NewIniParser(parser)
@@ -51,6 +55,9 @@ func Run() int {
 			Logger.Err(err).Msg("")
 			return 1
 		}
+		// Rebuild logger after config file parsing
+		LoggingOptions.BuildLogger()
+		Logger = *LoggingOptions.Logger()
 	}
 
 	if _, err := parser.Parse(); err != nil {
@@ -69,6 +76,11 @@ func Run() int {
 		}
 		return code
 	}
+
+	// Rebuild logger after final parsing to ensure all options are applied
+	LoggingOptions.BuildLogger()
+	Logger = *LoggingOptions.Logger()
+
 	return 0
 }
 
