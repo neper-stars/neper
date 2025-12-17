@@ -6,17 +6,15 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
-
-	"github.com/neper-stars/neper/models"
 )
 
 // ResourceChange represents a notification about a resource modification
 type ResourceChange struct {
-	Type      string         `json:"type"`               // Resource type: "session", "invitation", etc.
-	ID        string         `json:"id"`                 // Resource ID
-	Action    string         `json:"action"`             // Action: "created", "updated", "deleted", "ready"
-	Timestamp int64          `json:"timestamp"`          // Unix timestamp
-	Metadata  map[string]any `json:"metadata,omitempty"` // Optional resource-specific data
+	Type      string `json:"type"`               // Resource type: "session", "invitation", etc.
+	ID        string `json:"id"`                 // Resource ID
+	Action    string `json:"action"`             // Action: "created", "updated", "deleted", "ready"
+	Timestamp int64  `json:"timestamp"`          // Unix timestamp
+	Metadata  any    `json:"metadata,omitempty"` // Optional resource-specific data (typed based on Type)
 }
 
 // Service handles publishing resource change notifications to NATS
@@ -84,9 +82,9 @@ func (s *Service) PublishSessionCreate(sessionID string) error {
 // memberIDs is the list of user profile IDs who were members of the session
 // isPrivate indicates whether the session was private
 func (s *Service) PublishSessionDelete(sessionID string, memberIDs []string, isPrivate bool) error {
-	return s.PublishWithMetadata(TypeSession, sessionID, ActionDeleted, map[string]any{
-		"member_ids": memberIDs,
-		"is_private": isPrivate,
+	return s.PublishWithMetadata(TypeSession, sessionID, ActionDeleted, SessionDeleteMeta{
+		MemberIDs: memberIDs,
+		IsPrivate: isPrivate,
 	})
 }
 
@@ -98,8 +96,8 @@ func (s *Service) PublishInvitationCreate(invitationID string) error {
 // PublishInvitationDelete is a convenience method for invitation deletion
 // userProfileID is included in metadata since the invitation record is deleted before notification
 func (s *Service) PublishInvitationDelete(invitationID, userProfileID string) error {
-	return s.PublishWithMetadata(TypeInvitation, invitationID, ActionDeleted, map[string]any{
-		models.InvitationDBUserProfileIDColumn: userProfileID,
+	return s.PublishWithMetadata(TypeInvitation, invitationID, ActionDeleted, InvitationDeleteMeta{
+		UserProfileID: userProfileID,
 	})
 }
 
@@ -129,7 +127,7 @@ func (s *Service) PublishSessionPlayerRaceUpdate(sprID string) error {
 }
 
 // PublishWithMetadata sends a resource change notification with additional metadata
-func (s *Service) PublishWithMetadata(resourceType, resourceID, action string, metadata map[string]any) error {
+func (s *Service) PublishWithMetadata(resourceType, resourceID, action string, metadata any) error {
 	change := ResourceChange{
 		Type:      resourceType,
 		ID:        resourceID,
@@ -169,15 +167,15 @@ func (s *Service) PublishWithMetadata(resourceType, resourceID, action string, m
 
 // PublishSessionTurnReady is a convenience method for session turn ready notification
 func (s *Service) PublishSessionTurnReady(sessionID string, year int64) error {
-	return s.PublishWithMetadata(TypeSessionTurn, sessionID, ActionReady, map[string]any{
-		"year": year,
+	return s.PublishWithMetadata(TypeSessionTurn, sessionID, ActionReady, SessionTurnMeta{
+		Year: year,
 	})
 }
 
 // PublishOrderStatusUpdate is a convenience method for order status updates
 // This is sent when a player submits their orders for a turn
 func (s *Service) PublishOrderStatusUpdate(sessionID string, year int64) error {
-	return s.PublishWithMetadata(TypeOrderStatus, sessionID, ActionUpdated, map[string]any{
-		"year": year,
+	return s.PublishWithMetadata(TypeOrderStatus, sessionID, ActionUpdated, OrderStatusMeta{
+		Year: year,
 	})
 }

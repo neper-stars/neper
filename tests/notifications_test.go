@@ -382,9 +382,9 @@ func TestOrderStatusNotificationSentToAllSessionMembers(t *testing.T) {
 
 		require.NotNil(t, merryOrderStatus, "merry (session member) should receive order_status notification when gollum submits")
 		require.Equal(t, notify.ActionUpdated, merryOrderStatus.Action)
-		yearFromMeta, ok := merryOrderStatus.Metadata["year"].(float64)
-		require.True(t, ok, "year should be present in metadata")
-		require.Equal(t, float64(year), yearFromMeta)
+		merryMeta := notify.ParseMetadata[notify.OrderStatusMeta](merryOrderStatus)
+		require.NotNil(t, merryMeta, "year should be present in metadata")
+		require.Equal(t, int64(year), merryMeta.Year)
 
 		require.NotNil(t, gollumOrderStatus, "gollum (submitter) should also receive order_status notification")
 		require.Equal(t, notify.ActionUpdated, gollumOrderStatus.Action)

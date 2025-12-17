@@ -225,21 +225,20 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 
 // canAccessDeletedSession checks if user could see a deleted session using metadata
 func (r *NotificationsResponder) canAccessDeletedSession(change *notify.ResourceChange) bool {
-	if change.Metadata == nil {
+	meta := notify.ParseMetadata[notify.SessionDeleteMeta](change)
+	if meta == nil {
 		return false
 	}
 
 	// Check if session was public
-	if isPrivate, ok := change.Metadata["is_private"].(bool); ok && !isPrivate {
+	if !meta.IsPrivate {
 		return true
 	}
 
 	// Check if user was a member
-	if memberIDs, ok := change.Metadata["member_ids"].([]any); ok {
-		for _, id := range memberIDs {
-			if memberID, ok := id.(string); ok && memberID == r.principal.Subject {
-				return true
-			}
+	for _, memberID := range meta.MemberIDs {
+		if memberID == r.principal.Subject {
+			return true
 		}
 	}
 
@@ -272,13 +271,11 @@ func (r *NotificationsResponder) canAccessSession(sqlH database.SQLHelper, sessi
 func (r *NotificationsResponder) canAccessInvitation(sqlH database.SQLHelper, change *notify.ResourceChange) (bool, error) {
 	// For deleted invitations, the record is gone so we check metadata
 	if change.Action == notify.ActionDeleted {
-		if change.Metadata != nil {
-			if userProfileID, ok := change.Metadata[models.InvitationDBUserProfileIDColumn].(string); ok {
-				return userProfileID == r.principal.Subject, nil
-			}
+		meta := notify.ParseMetadata[notify.InvitationDeleteMeta](change)
+		if meta == nil {
+			return false, nil
 		}
-		// No metadata available, can't determine access
-		return false, nil
+		return meta.UserProfileID == r.principal.Subject, nil
 	}
 
 	// For create/update, look up the invitation in the database

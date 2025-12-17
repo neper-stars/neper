@@ -90,9 +90,9 @@ func TestTurnSubmit(t *testing.T) {
 		}
 
 		// Verify the notification contains the correct year in metadata
-		yearFromMeta, ok := notification.Metadata["year"].(float64)
-		require.True(t, ok, "year should be present in metadata")
-		require.Equal(t, float64(year+1), yearFromMeta)
+		meta := notify.ParseMetadata[notify.SessionTurnMeta](&notification)
+		require.NotNil(t, meta, "year should be present in metadata")
+		require.Equal(t, int64(year+1), meta.Year)
 
 		// Now fetch the turn data via regular HTTP GET
 		getURL := fmt.Sprintf("/api/v1/sessions/%s/turn/%d", sessionID, year+1)
