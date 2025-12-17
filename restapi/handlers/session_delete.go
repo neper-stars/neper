@@ -59,6 +59,12 @@ func (h *SessionDeleteHandler) handle(
 		return errs.ErrForbidden
 	}
 
+	// Get session member IDs before deletion for notification
+	memberIDs, err := h.getSessionMemberIDs(sqlH, params.SessionID)
+	if err != nil {
+		return err
+	}
+
 	// Delete the session (cascades to related tables via ON DELETE CASCADE)
 	query := database.SQ.Delete(models.SessionDBTable).
 		Where(sq.Eq{models.SessionDBIDColumn: params.SessionID})
@@ -82,10 +88,33 @@ func (h *SessionDeleteHandler) handle(
 
 	// Publish notification after successful commit
 	if h.notifyService != nil {
-		_ = h.notifyService.PublishSessionDelete(params.SessionID)
+		_ = h.notifyService.PublishSessionDelete(params.SessionID, memberIDs, sessionDB.Private)
 	}
 
 	return nil
+}
+
+// getSessionMemberIDs returns the list of user profile IDs who are members of the session
+func (h *SessionDeleteHandler) getSessionMemberIDs(sqlH database.SQLHelper, sessionID string) ([]string, error) {
+	query := database.SQ.Select(models.UserProfileSessionRelDBUserProfileIDColumn).
+		From(models.UserProfileSessionRelDBTable).
+		Where(sq.Eq{models.UserProfileSessionRelDBSessionIDColumn: sessionID})
+
+	rows, err := sqlH.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var memberIDs []string
+	for rows.Next() {
+		var userProfileID string
+		if err := rows.Scan(&userProfileID); err != nil {
+			return nil, err
+		}
+		memberIDs = append(memberIDs, userProfileID)
+	}
+	return memberIDs, rows.Err()
 }
 
 // Handle handles the request

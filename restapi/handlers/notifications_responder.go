@@ -199,6 +199,10 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 
 	switch change.Type {
 	case notify.TypeSession:
+		// For deleted sessions, check metadata since the record is gone
+		if change.Action == notify.ActionDeleted {
+			return r.canAccessDeletedSession(change), nil
+		}
 		return r.canAccessSession(sqlH, change.ID)
 	case notify.TypeInvitation:
 		return r.canAccessInvitation(sqlH, change)
@@ -217,6 +221,29 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 	default:
 		return false, nil
 	}
+}
+
+// canAccessDeletedSession checks if user could see a deleted session using metadata
+func (r *NotificationsResponder) canAccessDeletedSession(change *notify.ResourceChange) bool {
+	if change.Metadata == nil {
+		return false
+	}
+
+	// Check if session was public
+	if isPrivate, ok := change.Metadata["is_private"].(bool); ok && !isPrivate {
+		return true
+	}
+
+	// Check if user was a member
+	if memberIDs, ok := change.Metadata["member_ids"].([]any); ok {
+		for _, id := range memberIDs {
+			if memberID, ok := id.(string); ok && memberID == r.principal.Subject {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // canAccessSession checks if user can see a session (member or public session)

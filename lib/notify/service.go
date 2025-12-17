@@ -81,8 +81,13 @@ func (s *Service) PublishSessionCreate(sessionID string) error {
 }
 
 // PublishSessionDelete is a convenience method for session deletion
-func (s *Service) PublishSessionDelete(sessionID string) error {
-	return s.Publish(TypeSession, sessionID, ActionDeleted)
+// memberIDs is the list of user profile IDs who were members of the session
+// isPrivate indicates whether the session was private
+func (s *Service) PublishSessionDelete(sessionID string, memberIDs []string, isPrivate bool) error {
+	return s.PublishWithMetadata(TypeSession, sessionID, ActionDeleted, map[string]any{
+		"member_ids": memberIDs,
+		"is_private": isPrivate,
+	})
 }
 
 // PublishInvitationCreate is a convenience method for invitation creation
