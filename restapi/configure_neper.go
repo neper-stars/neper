@@ -115,7 +115,9 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	config.OnShutdown(config.Authenticator.Close)
 	config.OnShutdown(config.StarsRunner.Shutdown)
 	config.OnShutdown(config.TurnGenerator.Shutdown)
-	config.OnShutdown(config.NatsServer.Shutdown)
+	if config.NatsServer != nil {
+		config.OnShutdown(config.NatsServer.Shutdown)
+	}
 
 	// Authenticate
 	api.AuthenticateHandler = handlers.NewAuthenticateHandler(config.DB, config.Authenticator)

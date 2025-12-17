@@ -2,6 +2,7 @@ package embeddednats
 
 import (
 	"net"
+	"time"
 
 	"github.com/nats-io/nats-server/v2/server"
 )
@@ -16,7 +17,8 @@ func NewEmbeddedNatsOptions() *ServerOptions {
 }
 
 type EmbeddedNats struct {
-	ns *server.Server
+	ns      *server.Server
+	started bool
 }
 
 func NewEmbeddedServer(nKey string) *EmbeddedNats {
@@ -39,9 +41,18 @@ func NewEmbeddedServer(nKey string) *EmbeddedNats {
 // Run is intended to be run in a goroutine
 func (en *EmbeddedNats) Run() {
 	en.ns.Start()
+	en.started = true
+}
+
+// WaitReady waits for the NATS server to be ready for connections
+func (en *EmbeddedNats) WaitReady(timeout time.Duration) bool {
+	return en.ns.ReadyForConnections(timeout)
 }
 
 func (en *EmbeddedNats) Shutdown() {
+	if !en.started {
+		return
+	}
 	en.ns.Shutdown()
 	en.ns.WaitForShutdown()
 }
