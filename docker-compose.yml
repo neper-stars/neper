@@ -37,6 +37,8 @@ services:
       NEPER_SERVE_STARS_SAVE_DIR: "~/saves"
       NEPER_SERVE_WINE_PREFIX: "~/wine"
       NEPER_SERVE_WINE_COMMANDS_TIMEOUT: "20"
+      NEPER_SERVE_NATS_CLIENT_NKEY: "use your own NKey here, see command: generate-nkey in docker-compose.yml"
+      NEPER_SERVE_TOKEN_SECRET: "use your own token secret here, see command: generate-token-secret in docker-compose.yml"
     volumes:
       - "./neper_data/etc:/etc/neper"
       - "./neper_data:/home/neper"
@@ -45,7 +47,11 @@ services:
     networks:
       - neper-net
     # enable this when you want to create the initial user (which is a manager)
-    # command: create-user admin2 --manager --email=admin@mydomain.com
+    # command: create-user admin --manager --email=admin@mydomain.com
+    # enable this to get a secret for token encryption to put in NEPER_SERVE_NATS_CLIENT_NKEY above
+    # command: generate-token-secret
+    # enable this to get an NKey to put in NEPER_SERVE_NATS_CLIENT_NKEY above
+    # command: generate-nkey
 
 networks:
   neper-net:
