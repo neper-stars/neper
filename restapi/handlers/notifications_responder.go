@@ -245,26 +245,9 @@ func (r *NotificationsResponder) canAccessDeletedSession(change *notify.Resource
 	return false
 }
 
-// canAccessSession checks if user can see a session (member or public session)
+// canAccessSession checks if user can see a session (public, member, or invited)
 func (r *NotificationsResponder) canAccessSession(sqlH database.SQLHelper, sessionID string) (bool, error) {
-	// Check if user is member
-	isMember, err := IsSessionMember(sqlH, r.principal.Subject, sessionID)
-	if err != nil {
-		return false, err
-	}
-	if isMember {
-		return true, nil
-	}
-
-	// Check if session is public
-	var session models.SessionDB
-	if err := sqlH.GetWhere(&session, sq.Eq{models.SessionDBIDColumn: sessionID}); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
-		}
-		return false, err
-	}
-	return !session.Private, nil
+	return CanAccessSession(sqlH, r.principal.Subject, sessionID)
 }
 
 // canAccessInvitation checks if invitation is for this user

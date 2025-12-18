@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
@@ -88,41 +87,11 @@ func (h *SessionReadHandler) Handle(
 	return operations.NewSessionReadOK().WithPayload(session)
 }
 
-type SessionPrivateQueryResult struct {
-	Private bool `db:"private"`
-}
-
 func (h *SessionReadHandler) Authorize(
 	sqlH database.SQLHelper, params operations.SessionReadParams, principal *models.Principal,
 ) (bool, error) {
 	if principal.IsGlobalManager {
 		return true, nil
 	}
-
-	askedSessionID := params.SessionID
-
-	query := database.SQ.
-		Select().
-		Columns(
-			models.SessionDBPrivateColumn,
-		).
-		From(models.SessionDBTable).
-		Where(sq.Eq{models.SessionDBIDColumn: askedSessionID})
-
-	var p SessionPrivateQueryResult
-	if err := sqlH.Get(&p, query); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			h.log.Debug().Msg("auth: no matching session found --> reject")
-			return false, nil
-		}
-		return false, err
-	}
-
-	// if session is public no problem
-	if !p.Private {
-		return true, nil
-	}
-
-	// if session is private only members have access
-	return IsSessionMember(sqlH, principal.Subject, askedSessionID)
+	return CanAccessSession(sqlH, principal.Subject, params.SessionID)
 }

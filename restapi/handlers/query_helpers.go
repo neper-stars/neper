@@ -67,6 +67,54 @@ func IsSessionPublic(sqlH database.SQLHelper, sessionID string) (bool, error) {
 	return !result.Private, nil
 }
 
+// IsInvitedToSession returns true if the given user has a pending invitation to the session
+func IsInvitedToSession(sqlH database.SQLHelper, userProfileID, sessionID string) (bool, error) {
+	query := database.SQ.
+		Select(models.InvitationDBIDColumn).
+		From(models.InvitationDBTable).
+		Where(sq.And{
+			sq.Eq{models.InvitationDBUserProfileIDColumn: userProfileID},
+			sq.Eq{models.InvitationDBSessionIDColumn: sessionID},
+		})
+
+	var invitationID string
+	if err := sqlH.Get(&invitationID, query); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// CanAccessSession checks if a user can access a session.
+// Access is granted if:
+// - Session is public
+// - User is a member of the session
+// - User has a pending invitation to the session
+func CanAccessSession(sqlH database.SQLHelper, userProfileID, sessionID string) (bool, error) {
+	// Check if session is public
+	isPublic, err := IsSessionPublic(sqlH, sessionID)
+	if err != nil {
+		return false, err
+	}
+	if isPublic {
+		return true, nil
+	}
+
+	// Check if user is a member
+	isMember, err := IsSessionMember(sqlH, userProfileID, sessionID)
+	if err != nil {
+		return false, err
+	}
+	if isMember {
+		return true, nil
+	}
+
+	// Check if user has a pending invitation
+	return IsInvitedToSession(sqlH, userProfileID, sessionID)
+}
+
 func userProfileSessionRelationQuery(userProfileID, sessionID string) sq.SelectBuilder {
 	return database.SQ.
 		Select().

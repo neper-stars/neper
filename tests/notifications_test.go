@@ -253,6 +253,82 @@ func TestNotificationsFiltering(t *testing.T) {
 		require.NotNil(t, merrySessionNotif, "merry should receive gondorID session notification (public session)")
 		require.NotNil(t, boromirSessionNotif, "boromir should receive gondorID session notification (member)")
 	})
+
+	t.Run("invited_user_receives_private_session_notifications", func(t *testing.T) {
+		// isengardID is a private session
+		// Merry is not a member but will be invited
+		// After invitation, Merry should receive notifications for isengard
+
+		gandalfToken := getToken("GandalfTheGrey", "apikeyGandalf")
+		merryToken := getToken("Merry", "apikeyMerry")
+
+		// First, make gandalf a manager of isengard so he can modify it
+		tester.SetHeader("Authorization", "Bearer "+gandalfToken)
+		// Join isengard as manager (gandalf is global manager so this works)
+		require.Equal(t, http.StatusOK, tester.MustPostJSON("/api/v1/sessions/isengardID/join", JSONObj{
+			"is_manager": true,
+		}, nil))
+
+		// Connect merry to WebSocket
+		merryConn := connectWS(merryToken)
+		defer func() { _ = merryConn.Close() }()
+
+		var mu sync.Mutex
+		merryNotifications := make([]*notify.ResourceChange, 0)
+
+		var wg sync.WaitGroup
+
+		collectNotifications := func(conn *websocket.Conn, notifications *[]*notify.ResourceChange, name string) {
+			defer wg.Done()
+			for {
+				change, err := readNotification(conn, 2*time.Second)
+				if err != nil {
+					return
+				}
+				mu.Lock()
+				*notifications = append(*notifications, change)
+				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, change.Type, change.ID, change.Action)
+				mu.Unlock()
+			}
+		}
+
+		wg.Add(1)
+		go collectNotifications(merryConn, &merryNotifications, "merry")
+
+		time.Sleep(100 * time.Millisecond)
+
+		// Gandalf invites Merry to isengard (private session)
+		var invite models.Invitation
+		require.Equal(t, http.StatusCreated, tester.MustPostJSON("/api/v1/sessions/isengardID/invite", models.Invitation{
+			SessionID:     "isengardID",
+			UserProfileID: "merryID",
+		}, &invite))
+
+		// Now create rules for isengard - this triggers a session update notification
+		var ruleset models.Ruleset
+		require.Equal(t, http.StatusOK, tester.MustPostJSON("/api/v1/sessions/isengardID/rules", models.Ruleset{
+			UniverseSize:     4,
+			Density:          1,
+			StartingDistance: 2,
+			RandomSeed:       99999,
+		}, &ruleset))
+
+		wg.Wait()
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		// Find session update notification for isengardID
+		var isengardSessionNotif *notify.ResourceChange
+		for _, n := range merryNotifications {
+			if n.Type == notify.TypeSession && n.ID == "isengardID" && n.Action == notify.ActionUpdated {
+				isengardSessionNotif = n
+				break
+			}
+		}
+
+		require.NotNil(t, isengardSessionNotif, "merry (invited user) should receive private session notification for isengardID")
+	})
 }
 
 func TestOrderStatusNotificationSentToAllSessionMembers(t *testing.T) {

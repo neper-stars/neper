@@ -87,6 +87,29 @@ func TestSessionReadHandler(t *testing.T) {
 		require.Error(t, err)
 		require.True(t, errors.Is(err, errs.ErrForbidden))
 	})
+
+	// Load merry_nosession to get a user without any session membership
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
+
+	t.Run("invited_user_can_see_private_session", func(t *testing.T) {
+		// Create an invitation for merry to isengard (private session)
+		_, err := testdb.Exec(`INSERT INTO invitation (id, session_id, user_profile_id, inviter_id) VALUES ('invitationID', 'isengardID', 'merryID', 'gandalfID')`)
+		require.NoError(t, err)
+
+		p := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		params := operations.SessionReadParams{
+			SessionID: "isengardID",
+		}
+		session, err := handler.handle(ctx, params, p)
+		require.NoError(t, err)
+		require.Equal(t, "Isengard", session.Name)
+	})
 }
 
 func TestSessionReadHandler_PlayersReady(t *testing.T) {
