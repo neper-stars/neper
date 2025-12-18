@@ -30,6 +30,10 @@ func NewEmbeddedServer(nKey string) *EmbeddedNats {
 				Nkey: nKey,
 			},
 		},
+		// Disable NATS server's internal signal handling to prevent double shutdown.
+		// Our application handles signals and calls Shutdown() explicitly.
+		// See: https://github.com/nats-io/nats-server/issues/5922
+		NoSigs: true,
 	}
 	ns, err := server.NewServer(opts)
 	if err != nil {
@@ -53,11 +57,8 @@ func (en *EmbeddedNats) Shutdown() {
 	if !en.started {
 		return
 	}
-	// Check if server is running before shutdown to avoid panic on nil channels
-	if en.ns.Running() {
-		en.ns.Shutdown()
-		en.ns.WaitForShutdown()
-	}
+	en.ns.Shutdown()
+	en.ns.WaitForShutdown()
 }
 
 // InProcessConn is use for testing purposes to get the nats server conn directly
