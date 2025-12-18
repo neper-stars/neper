@@ -233,6 +233,66 @@ func TestSessionQuitHandler_StartedSessionCannotBeLeft(t *testing.T) {
 	require.Contains(t, err.Error(), "started")
 }
 
+func TestSessionQuitHandler_SessionPlayerRaceIsDeleted(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_members.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/finduilas_not_ready.json")
+
+	quitHandler := NewSessionQuitHandler(&log, testdb.DB, nil)
+
+	sessionID := "gondorID"
+
+	// Verify finduilas has a session_player_race before quitting
+	tx, err := database.Begin(ctx, testdb.DB)
+	require.NoError(t, err)
+	sqlH := database.NewSQLHelper(ctx, tx, log)
+	var sprCount int
+	err = sqlH.Get(&sprCount, database.SQ.Select("COUNT(*)").
+		From(models.SessionPlayerRaceDBTable).
+		Where(sq.And{
+			sq.Eq{models.SessionPlayerRaceDBUserProfileIDColumn: "finduilasID"},
+			sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID},
+		}))
+	require.NoError(t, err)
+	require.Equal(t, 1, sprCount, "finduilas should have a session_player_race before quitting")
+	tx.RollbackIfOpened(log)
+
+	finduilasPrincipal := models.Principal{
+		StandardClaims: jwt.StandardClaims{
+			Subject:   "finduilasID",
+			ExpiresAt: time.Now().Add(time.Minute).Unix(),
+		},
+		IsGlobalManager: false,
+	}
+
+	quitParams := operations.SessionQuitParams{
+		SessionID: sessionID,
+	}
+	err = quitHandler.handle(ctx, quitParams, &finduilasPrincipal)
+	require.NoError(t, err)
+
+	// Verify finduilas no longer has a session_player_race
+	tx, err = database.Begin(ctx, testdb.DB)
+	require.NoError(t, err)
+	sqlH = database.NewSQLHelper(ctx, tx, log)
+	err = sqlH.Get(&sprCount, database.SQ.Select("COUNT(*)").
+		From(models.SessionPlayerRaceDBTable).
+		Where(sq.And{
+			sq.Eq{models.SessionPlayerRaceDBUserProfileIDColumn: "finduilasID"},
+			sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID},
+		}))
+	require.NoError(t, err)
+	require.Equal(t, 0, sprCount, "finduilas should not have a session_player_race after quitting")
+	tx.RollbackIfOpened(log)
+}
+
 func TestSessionQuitHandler_ManagerWithOtherManager(t *testing.T) {
 	log := testutils.GetLogger(t)
 	ctx := log.WithContext(context.Background())

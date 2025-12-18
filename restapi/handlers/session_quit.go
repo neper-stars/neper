@@ -89,6 +89,17 @@ func (h *SessionQuitHandler) handle(
 		return errs.NewErrPlayerShouldNotBeReady("cannot leave session: you are marked as ready")
 	}
 
+	// Delete the session player race association if it exists
+	deleteSPRQuery := database.SQ.Delete(models.SessionPlayerRaceDBTable).
+		Where(sq.And{
+			sq.Eq{models.SessionPlayerRaceDBUserProfileIDColumn: principal.Subject},
+			sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID},
+		})
+
+	if _, err := sqlH.Exec(deleteSPRQuery); err != nil {
+		return err
+	}
+
 	// Delete the membership
 	deleteQuery := database.SQ.Delete(models.UserProfileSessionRelDBTable).
 		Where(sq.And{
