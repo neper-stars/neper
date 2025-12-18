@@ -201,6 +201,38 @@ func TestSessionQuitHandler_ReadyPlayerCannotLeave(t *testing.T) {
 	require.Contains(t, err.Error(), "ready")
 }
 
+func TestSessionQuitHandler_StartedSessionCannotBeLeft(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_started.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_members.json")
+
+	quitHandler := NewSessionQuitHandler(&log, testdb.DB, nil)
+
+	sessionID := "gondorID"
+
+	finduilasPrincipal := models.Principal{
+		StandardClaims: jwt.StandardClaims{
+			Subject:   "finduilasID",
+			ExpiresAt: time.Now().Add(time.Minute).Unix(),
+		},
+		IsGlobalManager: false,
+	}
+
+	quitParams := operations.SessionQuitParams{
+		SessionID: sessionID,
+	}
+	err = quitHandler.handle(ctx, quitParams, &finduilasPrincipal)
+	require.Error(t, err)
+	require.ErrorIs(t, err, errs.ErrPreconditionFailed)
+	require.Contains(t, err.Error(), "started")
+}
+
 func TestSessionQuitHandler_ManagerWithOtherManager(t *testing.T) {
 	log := testutils.GetLogger(t)
 	ctx := log.WithContext(context.Background())

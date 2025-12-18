@@ -52,6 +52,11 @@ func (h *SessionQuitHandler) handle(
 		return err
 	}
 
+	// Check if session has already started
+	if sessionDB.Started {
+		return errs.NewErrSessionAlreadyStarted("cannot leave session: session has already started")
+	}
+
 	// Check if user is a member of the session
 	var relation models.UserProfileSessionRelDB
 	if err := sqlH.GetWhere(&relation, sq.And{
