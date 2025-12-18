@@ -88,6 +88,15 @@ func (s *Service) PublishSessionDelete(sessionID string, memberIDs []string, isP
 	})
 }
 
+// PublishSessionMemberLeft is a convenience method for when a member leaves a session
+// leftUserID is the user who left, isPrivate indicates whether the session is private
+func (s *Service) PublishSessionMemberLeft(sessionID, leftUserID string, isPrivate bool) error {
+	return s.PublishWithMetadata(TypeSession, sessionID, ActionMemberLeft, SessionMemberLeftMeta{
+		LeftUserID: leftUserID,
+		IsPrivate:  isPrivate,
+	})
+}
+
 // PublishInvitationCreate is a convenience method for invitation creation
 func (s *Service) PublishInvitationCreate(invitationID string) error {
 	return s.Publish(TypeInvitation, invitationID, ActionCreated)

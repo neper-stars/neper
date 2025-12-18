@@ -8,6 +8,13 @@ type SessionDeleteMeta struct {
 	IsPrivate bool     `json:"is_private"`
 }
 
+// SessionMemberLeftMeta contains metadata for session member left notifications
+// This is needed so the leaving user can receive the notification for private sessions
+type SessionMemberLeftMeta struct {
+	LeftUserID string `json:"left_user_id"`
+	IsPrivate  bool   `json:"is_private"`
+}
+
 // InvitationDeleteMeta contains metadata for invitation deletion notifications
 type InvitationDeleteMeta struct {
 	UserProfileID string `json:"user_profile_id"`

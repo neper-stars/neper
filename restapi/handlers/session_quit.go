@@ -106,7 +106,7 @@ func (h *SessionQuitHandler) handle(
 
 	// Publish notification after successful commit
 	if h.notifyService != nil {
-		_ = h.notifyService.PublishSessionUpdate(sessionID)
+		_ = h.notifyService.PublishSessionMemberLeft(sessionID, principal.Subject, sessionDB.Private)
 	}
 
 	return nil

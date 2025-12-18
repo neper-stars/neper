@@ -203,6 +203,10 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 		if change.Action == notify.ActionDeleted {
 			return r.canAccessDeletedSession(change), nil
 		}
+		// For member left, check if user is the one who left or can access session
+		if change.Action == notify.ActionMemberLeft {
+			return r.canAccessSessionMemberLeft(sqlH, change)
+		}
 		return r.canAccessSession(sqlH, change.ID)
 	case notify.TypeInvitation:
 		return r.canAccessInvitation(sqlH, change)
@@ -248,6 +252,24 @@ func (r *NotificationsResponder) canAccessDeletedSession(change *notify.Resource
 // canAccessSession checks if user can see a session (public, member, or invited)
 func (r *NotificationsResponder) canAccessSession(sqlH database.SQLHelper, sessionID string) (bool, error) {
 	return CanAccessSession(sqlH, r.principal.Subject, sessionID)
+}
+
+// canAccessSessionMemberLeft checks if user can see a member left notification
+// The user who left should still receive the notification even for private sessions
+func (r *NotificationsResponder) canAccessSessionMemberLeft(sqlH database.SQLHelper, change *notify.ResourceChange) (bool, error) {
+	meta := notify.ParseMetadata[notify.SessionMemberLeftMeta](change)
+	if meta == nil {
+		// No metadata, fall back to normal session access check
+		return r.canAccessSession(sqlH, change.ID)
+	}
+
+	// The user who left should receive the notification
+	if meta.LeftUserID == r.principal.Subject {
+		return true, nil
+	}
+
+	// For other users, check normal session access
+	return r.canAccessSession(sqlH, change.ID)
 }
 
 // canAccessInvitation checks if invitation is for this user

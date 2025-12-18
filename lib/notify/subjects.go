@@ -19,8 +19,9 @@ const (
 
 // Actions
 const (
-	ActionCreated = "created"
-	ActionUpdated = "updated"
-	ActionDeleted = "deleted"
-	ActionReady   = "ready"
+	ActionCreated    = "created"
+	ActionUpdated    = "updated"
+	ActionDeleted    = "deleted"
+	ActionReady      = "ready"
+	ActionMemberLeft = "member_left"
 )
