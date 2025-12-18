@@ -179,3 +179,26 @@ func invitationQuery(userProfileID, invitationID string) sq.SelectBuilder {
 			},
 		)
 }
+
+// GetSessionInviteeIDs returns the list of user profile IDs who have pending invitations to the session
+func GetSessionInviteeIDs(sqlH database.SQLHelper, sessionID string) ([]string, error) {
+	query := database.SQ.Select(models.InvitationDBUserProfileIDColumn).
+		From(models.InvitationDBTable).
+		Where(sq.Eq{models.InvitationDBSessionIDColumn: sessionID})
+
+	rows, err := sqlH.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var inviteeIDs []string
+	for rows.Next() {
+		var userProfileID string
+		if err := rows.Scan(&userProfileID); err != nil {
+			return nil, err
+		}
+		inviteeIDs = append(inviteeIDs, userProfileID)
+	}
+	return inviteeIDs, rows.Err()
+}

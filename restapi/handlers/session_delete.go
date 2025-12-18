@@ -59,11 +59,17 @@ func (h *SessionDeleteHandler) handle(
 		return errs.ErrForbidden
 	}
 
-	// Get session member IDs before deletion for notification
+	// Get session member IDs and invitee IDs before deletion for notification
 	memberIDs, err := h.getSessionMemberIDs(sqlH, params.SessionID)
 	if err != nil {
 		return err
 	}
+	inviteeIDs, err := GetSessionInviteeIDs(sqlH, params.SessionID)
+	if err != nil {
+		return err
+	}
+	// Combine member and invitee IDs for notification (invitees also need to know the session was deleted)
+	notifyUserIDs := append(memberIDs, inviteeIDs...)
 
 	// Delete the session (cascades to related tables via ON DELETE CASCADE)
 	query := database.SQ.Delete(models.SessionDBTable).
@@ -88,7 +94,7 @@ func (h *SessionDeleteHandler) handle(
 
 	// Publish notification after successful commit
 	if h.notifyService != nil {
-		_ = h.notifyService.PublishSessionDelete(params.SessionID, memberIDs, sessionDB.Private)
+		_ = h.notifyService.PublishSessionDelete(params.SessionID, notifyUserIDs, sessionDB.Private)
 	}
 
 	return nil
