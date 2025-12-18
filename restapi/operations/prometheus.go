@@ -81,6 +81,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"] = SessionPlayerRaceSetReadyInstrumentHandler(
 		o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"])
 
+	o.handlers["POST"]["/v1/sessions/{session_id}/promote/{user_profile_id}"] = SessionPromoteMemberInstrumentHandler(
+		o.handlers["POST"]["/v1/sessions/{session_id}/promote/{user_profile_id}"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/quit"] = SessionQuitInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/quit"])
 

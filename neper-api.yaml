@@ -351,6 +351,37 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/promote/{user_profile_id}:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+      - name: user_profile_id
+        in: path
+        type: string
+        required: true
+    post:
+      operationId: sessionPromoteMember
+      summary: "Promote a member to manager"
+      description: |
+        Promote an existing session member to manager status.
+        Only session managers or global managers can perform this action.
+        The target user must already be a member of the session.
+      responses:
+        204:
+          description: member successfully promoted to manager
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        412:
+          $ref: "#/responses/preconditionfailed"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}/player_race:
     parameters:
       - name: session_id

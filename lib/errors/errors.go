@@ -335,3 +335,24 @@ func (e ErrLastManager) Error() string {
 func (e ErrLastManager) Is(target error) bool {
 	return errors.Is(target, ErrPreconditionFailed)
 }
+
+// ErrNotAMember is returned when an operation requires the target user
+// to be a member of the session but they are not
+type ErrNotAMember struct {
+	GivenMessage string
+}
+
+// NewErrNotAMember ...
+func NewErrNotAMember(msg string) *ErrNotAMember {
+	return &ErrNotAMember{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrNotAMember) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrNotAMember) Is(target error) bool {
+	return errors.Is(target, ErrPreconditionFailed)
+}
