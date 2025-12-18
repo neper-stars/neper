@@ -23,12 +23,6 @@ type SessionsList struct {
 	db *sqlx.DB
 }
 
-// sessionListResult extends SessionDB to track invitation status
-type sessionListResult struct {
-	models.SessionDB
-	HasInvitation bool `db:"has_invitation"`
-}
-
 func (h *SessionsList) handle(
 	ctx context.Context, principal *models.Principal,
 ) ([]*models.Session, error) {
@@ -100,14 +94,14 @@ func (h *SessionsList) handle(
 		if invitedSessionIDs != nil && invitedSessionIDs[list[i].ID] {
 			// Check if user is a member (managers and members are in the session)
 			isMember := false
-			for _, memberID := range list[i].Session.Members {
+			for _, memberID := range list[i].Members {
 				if memberID == principal.Subject {
 					isMember = true
 					break
 				}
 			}
 			if !isMember {
-				for _, managerID := range list[i].Session.Managers {
+				for _, managerID := range list[i].Managers {
 					if managerID == principal.Subject {
 						isMember = true
 						break
@@ -115,7 +109,7 @@ func (h *SessionsList) handle(
 				}
 			}
 			if !isMember {
-				list[i].Session.PendingInvitation = true
+				list[i].PendingInvitation = true
 			}
 		}
 

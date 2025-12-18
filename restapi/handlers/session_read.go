@@ -72,7 +72,7 @@ func (h *SessionReadHandler) handle(
 			if err != nil {
 				return nil, err
 			}
-			sessionDB.Session.PendingInvitation = isInvited
+			sessionDB.PendingInvitation = isInvited
 		}
 	}
 

@@ -69,7 +69,9 @@ func (h *SessionDeleteHandler) handle(
 		return err
 	}
 	// Combine member and invitee IDs for notification (invitees also need to know the session was deleted)
-	notifyUserIDs := append(memberIDs, inviteeIDs...)
+	notifyUserIDs := make([]string, 0, len(memberIDs)+len(inviteeIDs))
+	notifyUserIDs = append(notifyUserIDs, memberIDs...)
+	notifyUserIDs = append(notifyUserIDs, inviteeIDs...)
 
 	// Delete the session (cascades to related tables via ON DELETE CASCADE)
 	query := database.SQ.Delete(models.SessionDBTable).

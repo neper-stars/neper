@@ -84,9 +84,10 @@ func TestInvitationSentListHandler(t *testing.T) {
 			require.Equal(t, "Gondor", inv.SessionName)
 			require.Equal(t, "boromirID", inv.InviterID)
 			// Check invitee nickname is populated
-			if inv.UserProfileID == merryID {
+			switch inv.UserProfileID {
+			case merryID:
 				require.Equal(t, "Merry", inv.InviteeNickname)
-			} else if inv.UserProfileID == gollumID {
+			case gollumID:
 				require.Equal(t, "SméagolGollum", inv.InviteeNickname)
 			}
 		}
