@@ -115,6 +115,14 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	config.OnShutdown(config.Authenticator.Close)
 	config.OnShutdown(config.StarsRunner.Shutdown)
 	config.OnShutdown(config.TurnGenerator.Shutdown)
+	// Close NATS client connection before shutting down the server
+	// This ensures clean disconnection and prevents "CLOSED" state errors
+	// in handlers that use the connection during shutdown
+	if config.NatsClientConn != nil {
+		config.OnShutdown(func() {
+			config.NatsClientConn.Close()
+		})
+	}
 	if config.NatsServer != nil {
 		config.OnShutdown(config.NatsServer.Shutdown)
 	}

@@ -6,24 +6,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/go-cmd/cmd"
 	"github.com/mitchellh/go-homedir"
 	"github.com/rs/zerolog"
+
+	"github.com/neper-stars/neper/lib/wine"
 )
 
 const (
-	wine                     = "wine"
-	wineboot                 = "wineboot"
-	wineInit                 = "init"
 	xvfb                     = "Xvfb"
-	wineHostname             = "hostname"
-	dosDevicesDir            = "dosdevices"
 	saveDirDriveLetter       = "s:"
 	executableDirDriveLetter = "x:"
 	starsExecutableName      = "stars.exe"
@@ -45,14 +40,13 @@ func NewRunnerOptions() *RunnerOptions {
 }
 
 type Runner struct {
-	log             *zerolog.Logger
-	ExecutableDir   string // will be mapped to x: for executables
-	SaveDir         string // will be mapped to s: for saves
-	WinePrefix      string // contains the wine prefix to use
-	CommandsTimeout time.Duration
-	DisplayNumber   int
-	xvfbProcess     *cmd.Cmd // the xvfbProcess we launch at startup
-	xvfbStatusChan  <-chan cmd.Status
+	log           *zerolog.Logger
+	ExecutableDir string // will be mapped to x: for executables
+	SaveDir       string // will be mapped to s: for saves
+	DisplayNumber int
+	prefix        *wine.Prefix    // wine prefix manager
+	xvfbProcess   *cmd.Cmd        // the xvfbProcess we launch at startup
+	xvfbStatusChan <-chan cmd.Status
 }
 
 func expand(input string) (string, error) {
@@ -72,19 +66,23 @@ func NewRunner(log *zerolog.Logger, opts *RunnerOptions) (*Runner, error) {
 	if err != nil {
 		return nil, err
 	}
-	prefix, err := expand(opts.WinePrefix)
+
+	display := fmt.Sprintf(":%d", opts.DisplayNumber)
+	prefix, err := wine.NewPrefix(log, wine.PrefixOptions{
+		PrefixPath:      opts.WinePrefix,
+		CommandsTimeout: time.Duration(opts.CommandsTimeout) * time.Second,
+		Display:         display,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	commandsTimout := time.Duration(opts.CommandsTimeout) * time.Second
 	return &Runner{
-		log:             log,
-		ExecutableDir:   absExecutableDir,
-		SaveDir:         absSaveDir,
-		WinePrefix:      prefix,
-		CommandsTimeout: commandsTimout,
-		DisplayNumber:   opts.DisplayNumber,
+		log:           log,
+		ExecutableDir: absExecutableDir,
+		SaveDir:       absSaveDir,
+		DisplayNumber: opts.DisplayNumber,
+		prefix:        prefix,
 	}, nil
 }
 
@@ -125,7 +123,6 @@ func (r *Runner) initialize() error {
 
 func (r *Runner) Shutdown() {
 	if r == nil || r.xvfbProcess == nil {
-		// something went really wrong, or something went really wrong ?
 		return
 	}
 	pid := r.xvfbProcess.Status().PID
@@ -133,7 +130,6 @@ func (r *Runner) Shutdown() {
 	if err := r.xvfbProcess.Stop(); err != nil {
 		r.log.Err(err).Msg("failed to shutdown Xvfb process")
 	}
-	// give a small amount of time to the X server before going down
 	timeout := time.After(3 * time.Second)
 	var gotStatus cmd.Status
 	select {
@@ -151,7 +147,7 @@ func (r *Runner) Shutdown() {
 
 // preChecks are specific checks that need to be OK before running initialize
 func (r *Runner) preChecks() error {
-	if err := r.ensureXvfb(); err != nil {
+	if err := wine.CheckExecutable(xvfb, true); err != nil {
 		r.log.Err(err).Msg("Xvfb not found in your PATH or neper has no right to execute it.")
 		return err
 	}
@@ -159,11 +155,11 @@ func (r *Runner) preChecks() error {
 }
 
 func (r *Runner) checks() error {
-	if err := r.ensureWine(); err != nil {
+	if err := wine.CheckWine(); err != nil {
 		r.log.Err(err).Msg("wine not found in your PATH or neper has no right to execute it.")
 		return err
 	}
-	if err := r.ensureWinePrefix(); err != nil {
+	if err := r.prefix.EnsurePrefix(); err != nil {
 		r.log.Err(err).Msg("wineprefix directory not properly configured")
 		return err
 	}
@@ -178,7 +174,7 @@ func (r *Runner) checks() error {
 	// once this is done (storing your serial alongside some environment elements like
 	// the screen resolution) you can generate turns
 	if err := r.ensureStarsINI(); err != nil {
-		r.log.Err(err).Msg("Stars.ini file could not be create in the windows directory")
+		r.log.Err(err).Msg("Stars.ini file could not be created in the windows directory")
 		return err
 	}
 	if err := r.ensureDriveLetters(); err != nil {
@@ -196,69 +192,18 @@ func (r *Runner) checks() error {
 	return nil
 }
 
-func (r *Runner) ensureWine() error {
-	return CheckFileExecutable(wine, true)
-}
-
-func (r *Runner) ensureXvfb() error {
-	return CheckFileExecutable(xvfb, true)
-}
-
-func (r *Runner) wineConfDir() (string, error) {
-	return homedir.Expand(r.WinePrefix)
-}
-
-func (r *Runner) devicesDir() (string, error) {
-	wd, err := r.wineConfDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(wd, dosDevicesDir), nil
-}
-
 func (r *Runner) ensureDriveLetters() error {
 	r.log.Debug().Str("letter", saveDirDriveLetter).Str("actualDir", r.SaveDir).Msg("checking drive letter")
-	if err := r.ensureDriveLetter(saveDirDriveLetter, r.SaveDir); err != nil {
+	if err := r.prefix.EnsureDriveLetter(saveDirDriveLetter, r.SaveDir); err != nil {
 		r.log.Err(err).Str("letter", saveDirDriveLetter).Msg("failed")
 		return err
 	}
 	r.log.Debug().Str("letter", executableDirDriveLetter).Str("actualDir", r.ExecutableDir).Msg("checking drive letter")
-	if err := r.ensureDriveLetter(executableDirDriveLetter, r.ExecutableDir); err != nil {
+	if err := r.prefix.EnsureDriveLetter(executableDirDriveLetter, r.ExecutableDir); err != nil {
 		r.log.Err(err).Str("letter", executableDirDriveLetter).Msg("failed")
 		return err
 	}
 	return nil
-}
-
-func (r *Runner) ensureDriveLetter(letter, targetDir string) error {
-	devicesDir, err := r.devicesDir()
-	if err != nil {
-		return err
-	}
-	fInfo, err := os.Lstat(filepath.Join(devicesDir, letter))
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		// some real error occurred
-		return err
-	}
-	if errors.Is(err, os.ErrNotExist) {
-		// file does not exist... we will create it
-		if err2 := r.createDriveLetter(targetDir, devicesDir, letter); err != nil {
-			return err2
-		}
-	}
-	m := fInfo.Mode()
-	if m.IsDir() {
-		return fmt.Errorf("%s should be a symlink, not a directory", letter)
-	}
-	if m&fs.ModeSymlink != 0 {
-		// file IS a symlink
-		return nil
-	}
-	return fmt.Errorf("%s should be a symlink, not a normal file", letter)
-}
-
-func (r *Runner) createDriveLetter(targetDir, dir, letter string) error {
-	return os.Symlink(targetDir, filepath.Join(dir, letter))
 }
 
 //go:embed resources/stars26jrc4.exe
@@ -280,11 +225,7 @@ func (r *Runner) ensureSaveDir() error {
 }
 
 func (r *Runner) ensureStarsINI() error {
-	wineDir, err := r.wineConfDir()
-	if err != nil {
-		return err
-	}
-	starsINIFilePath := filepath.Join(wineDir, "drive_c", "windows", starsININame)
+	starsINIFilePath := filepath.Join(r.prefix.WindowsDir(), starsININame)
 	targetStarsINI, err := os.OpenFile(starsINIFilePath, os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
 		return err
@@ -310,8 +251,6 @@ func (r *Runner) ensureStars() error {
 	starsFilePath := filepath.Join(r.ExecutableDir, starsExecutableName)
 	_, err := os.Stat(starsFilePath)
 	if errors.Is(err, os.ErrNotExist) {
-		// we should create the stars.exe file
-		// make sure it is not readable / writeable by anyone
 		targetStars, err := os.OpenFile(starsFilePath, os.O_RDWR|os.O_CREATE, 0660)
 		if err != nil {
 			return err
@@ -329,70 +268,12 @@ func (r *Runner) ensureStars() error {
 		}
 	}
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		// a real error occurred here
 		return err
 	}
 	return nil
 }
 
-func (r *Runner) ensureWinePrefix() error {
-	info, err := os.Stat(r.WinePrefix)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			dir := filepath.Dir(r.WinePrefix)
-			if err := os.MkdirAll(dir, 0770); err != nil {
-				r.log.Err(err).Msg("failed to create containing dir for wineprefix")
-				return err
-			}
-			// wineprefix does not exist yet... we should run `wine winecfg` to initialize it
-			r.log.Info().Msg("initializing wineprefix... this can take some time")
-			return r.createWinePrefix()
-		}
-		r.log.Err(err).Str("wineprefix", r.WinePrefix).Msg("failed to stat wineprefix")
-		return err
-	}
-	if info.IsDir() {
-		return nil
-	}
-	// we have a problem.
-	return errors.New("wineprefix does not appear to be a directory. Please investigate")
-}
-
-func (r *Runner) winePrefixEnv() string {
-	return "WINEPREFIX=" + r.WinePrefix
-}
-
-func (r *Runner) displayEnv() string {
-	return "DISPLAY=" + r.displayName()
-}
-
-func (r *Runner) createWinePrefix() error {
-	// we run 'wine hostname' as it is a non GUI command and running such a wine command will
-	// create the wine prefix we want
-	// c := cmd.NewCmd(wine, wineHostname)
-	c := cmd.NewCmd(wineboot, wineInit)
-	// inject wineprefix & display variable to use Xvfb
-	c.Env = append(c.Env, r.winePrefixEnv(), r.displayEnv())
-	// unset wine debug if level is not appropriate
-	if r.log.GetLevel() > zerolog.DebugLevel {
-		// remove all debug from wine
-		c.Env = append(c.Env, "WINEDEBUG=-all")
-	}
-	stdOut, stdErr, err := RunCMDTimeout(r.log, c, r.CommandsTimeout)
-	if err != nil {
-		msg := ""
-		for _, s := range stdOut {
-			msg += s
-		}
-		for _, s := range stdErr {
-			msg += s
-		}
-		r.log.Err(err).Msg(msg)
-		return err
-	}
-	r.log.Debug().
-		Str("out", strings.Join(stdOut, "\n")).
-		Str("err", strings.Join(stdErr, "\n")).
-		Msg("...")
-	return nil
+// Prefix returns the wine prefix manager for running wine commands
+func (r *Runner) Prefix() *wine.Prefix {
+	return r.prefix
 }

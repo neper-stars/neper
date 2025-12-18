@@ -54,7 +54,7 @@ func GetTestStarsRunnerWithAutoDelete(t *testing.T, log *zerolog.Logger, autoDel
 	// even if the test fails or panics (only if autoDelete is true)
 	if autoDelete {
 		t.Cleanup(func() {
-			_ = os.RemoveAll(runner.WinePrefix)
+			_ = os.RemoveAll(runner.Prefix().Path())
 			_ = os.RemoveAll(runner.ExecutableDir)
 			_ = os.RemoveAll(runner.SaveDir)
 			runner.Shutdown()

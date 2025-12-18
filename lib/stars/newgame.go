@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-cmd/cmd"
 	"github.com/rs/zerolog"
 
 	"github.com/neper-stars/neper/models"
@@ -244,10 +243,7 @@ func (r *Runner) newGame(ctx context.Context, sessionID string, content io.Reade
 
 	gameDefWindowsPath := r.wPathJoin(r.wSessionSaveDir(sessionID), gameDefName)
 	// use content to create a new game
-	genCmd := cmd.NewCmd(wine, r.wStarsExecutablePath(), "-a", gameDefWindowsPath)
-	// inject the wine prefix & display in the env vars
-	genCmd.Env = append(genCmd.Env, r.winePrefixEnv(), r.displayEnv())
-	stdOut, stdErr, err := RunCMDTimeout(r.log, genCmd, r.CommandsTimeout)
+	stdOut, stdErr, err := r.prefix.RunWine(r.wStarsExecutablePath(), "-a", gameDefWindowsPath)
 	if err != nil {
 		r.log.Err(err).
 			Str("sessionID", sessionID).

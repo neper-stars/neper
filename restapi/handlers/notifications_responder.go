@@ -41,13 +41,15 @@ func NewNotificationsResponder(
 	natsConn *nats.Conn,
 	principal *models.Principal,
 ) (*NotificationsResponder, error) {
+	ctx := req.Context()
+	logger := zerolog.Ctx(ctx)
+
 	changeChan := make(chan *nats.Msg, 100)
 	sub, err := natsConn.ChanSubscribe(notify.SubjectResourceChanges, changeChan)
 	if err != nil {
 		return nil, err
 	}
-	ctx := req.Context()
-	logger := zerolog.Ctx(ctx)
+
 	return &NotificationsResponder{
 		db:         db,
 		req:        req,

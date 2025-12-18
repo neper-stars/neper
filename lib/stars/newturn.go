@@ -12,7 +12,6 @@ import (
 	"sync"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/go-cmd/cmd"
 	"github.com/jmoiron/sqlx"
 	"github.com/m4rw3r/uuid"
 	"github.com/nats-io/nats.go"
@@ -388,10 +387,7 @@ func (r *Runner) newTurn(ctx context.Context, sessionID string) error {
 	hostWFilePath := r.wPathJoin(r.wSessionSaveDir(sessionID), hostBaseFilename)
 	// Load the host file, generate 1 turn and quit.
 	// wine stars.exe -g game.hst
-	genCmd := cmd.NewCmd(wine, r.wStarsExecutablePath(), "-g", hostWFilePath)
-	// inject the wine prefix & display in the env vars
-	genCmd.Env = append(genCmd.Env, r.winePrefixEnv(), r.displayEnv())
-	stdOut, stdErr, err := RunCMDTimeout(r.log, genCmd, r.CommandsTimeout)
+	stdOut, stdErr, err := r.prefix.RunWine(r.wStarsExecutablePath(), "-g", hostWFilePath)
 	if err != nil {
 		r.log.Err(err).
 			Str("sessionID", sessionID).

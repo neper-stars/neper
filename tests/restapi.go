@@ -108,6 +108,10 @@ func (a *APITesterConfigUpdater) UpdateConfig(config restapi.Config) restapi.Con
 	connHandlers := embeddednats.NewConnHandlers(a.log)
 	// launch the NATS.io server
 	go config.NatsServer.Run()
+	// Wait for NATS server to be ready before connecting
+	if !config.NatsServer.WaitReady(10 * time.Second) {
+		a.t.Fatal("NATS server failed to start within timeout")
+	}
 
 	cOpts := nats.Options{
 		InProcessServer: ns,
