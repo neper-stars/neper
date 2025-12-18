@@ -63,13 +63,43 @@ func TestSessionJoinHandler(t *testing.T) {
 		require.True(t, found, "merry should be in the members list after joining")
 	})
 
-	t.Run("user_cannot_join_private_session", func(t *testing.T) {
+	t.Run("user_cannot_join_private_session_without_invitation", func(t *testing.T) {
 		joinParams := operations.SessionJoinParams{
 			SessionID: "isengardID", // isengard is private
 		}
 		_, err := joinHandler.handle(ctx, joinParams, merryPrincipal)
 		require.Error(t, err)
 		require.ErrorIs(t, err, errs.ErrForbidden)
+	})
+
+	t.Run("invited_user_can_join_private_session", func(t *testing.T) {
+		// Create an invitation for merry to isengard (private session)
+		_, err := testdb.Exec(`INSERT INTO invitation (id, session_id, user_profile_id, inviter_id) VALUES ('inviteMerryToIsengard', 'isengardID', 'merryID', 'saroumanID')`)
+		require.NoError(t, err)
+
+		joinParams := operations.SessionJoinParams{
+			SessionID: "isengardID",
+		}
+		session, err := joinHandler.handle(ctx, joinParams, merryPrincipal)
+		require.NoError(t, err)
+		require.NotNil(t, session)
+		require.Equal(t, "isengardID", session.ID)
+
+		// Verify merry is now a member
+		found := false
+		for _, member := range session.Members {
+			if member == "merryID" {
+				found = true
+				break
+			}
+		}
+		require.True(t, found, "merry should be in the members list after joining")
+
+		// Verify invitation was deleted
+		var count int
+		err = testdb.Get(&count, `SELECT COUNT(*) FROM invitation WHERE id = 'inviteMerryToIsengard'`)
+		require.NoError(t, err)
+		require.Equal(t, 0, count, "invitation should be deleted after joining")
 	})
 
 	t.Run("user_cannot_join_same_session_twice", func(t *testing.T) {

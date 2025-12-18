@@ -143,7 +143,7 @@ func (h *SessionJoinHandler) Handle(
 	return operations.NewSessionJoinOK().WithPayload(session)
 }
 
-// Authorize checks if the user can join this session (session must be public)
+// Authorize checks if the user can join this session (public or has invitation)
 func (h *SessionJoinHandler) Authorize(
 	sqlH database.SQLHelper, params operations.SessionJoinParams, principal *models.Principal,
 ) (bool, error) {
@@ -151,23 +151,27 @@ func (h *SessionJoinHandler) Authorize(
 		return true, nil
 	}
 
-	// Get the session to check if it's public
-	var sessionDB models.SessionDB
-	if err := sqlH.GetByPKey(&sessionDB, params.SessionID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return false, nil
-		}
+	// Check if session is public
+	isPublic, err := IsSessionPublic(sqlH, params.SessionID)
+	if err != nil {
 		return false, err
 	}
-
-	// Only allow joining public sessions
-	if sessionDB.Private {
-		h.log.Debug().
-			Str("session_id", params.SessionID).
-			Str("user_id", principal.Subject).
-			Msg("auth: cannot join private session without invitation --> reject")
-		return false, nil
+	if isPublic {
+		return true, nil
 	}
 
-	return true, nil
+	// Private session: check if user has a pending invitation
+	isInvited, err := IsInvitedToSession(sqlH, principal.Subject, params.SessionID)
+	if err != nil {
+		return false, err
+	}
+	if isInvited {
+		return true, nil
+	}
+
+	h.log.Debug().
+		Str("session_id", params.SessionID).
+		Str("user_id", principal.Subject).
+		Msg("auth: cannot join private session without invitation --> reject")
+	return false, nil
 }
