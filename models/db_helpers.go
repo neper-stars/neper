@@ -364,6 +364,21 @@ const (
 	// RulesetDBSessionIDColumn is the name of the column containing field "SessionID" data
 	RulesetDBSessionIDColumn = "session_id"
 
+	// SerialKeyDBTable is the name of the table where SerialKeyDB are stored
+	SerialKeyDBTable = "serial_key"
+
+	// SerialKeyDBPKeyColumn is the name of the primary key
+	SerialKeyDBPKeyColumn = SerialKeyDBKeyColumn
+
+	// SerialKeyDBKeyColumn is the name of the column containing field "Key" data
+	SerialKeyDBKeyColumn = "key"
+
+	// SerialKeyDBUserProfileIDColumn is the name of the column containing field "UserProfileID" data
+	SerialKeyDBUserProfileIDColumn = "user_profile_id"
+
+	// SerialKeyDBAssignedAtColumn is the name of the column containing field "AssignedAt" data
+	SerialKeyDBAssignedAtColumn = "assigned_at"
+
 	// SessionIDColumn is the name of the column containing field "ID" data
 	SessionIDColumn = "id"
 
@@ -553,6 +568,9 @@ const (
 	// UserProfileDBAPIKeyColumn is the name of the column containing field "APIKey" data
 	UserProfileDBAPIKeyColumn = "apikey"
 
+	// UserProfileDBSerialKeyColumn is the name of the column containing field "SerialKey" data
+	UserProfileDBSerialKeyColumn = "serial_key"
+
 	// UserProfileSessionRelDBTable is the name of the table where UserProfileSessionRelDB are stored
 	UserProfileSessionRelDBTable = "user_profile_session_rel"
 
@@ -581,6 +599,7 @@ var (
 		InvitationDBTable,
 		RaceDBTable,
 		RulesetDBTable,
+		SerialKeyDBTable,
 		SessionDBTable,
 		SessionFilesDBTable,
 		SessionPlayerRaceDBTable,
@@ -696,6 +715,17 @@ var (
 		[]string{ RulesetDBIDColumn },
 		RulesetDBDataColumns...,
 	)
+	// SerialKeyDBDataColumns is the list of the columns for the SerialKeyDB structure, expect its primary key
+	SerialKeyDBDataColumns = []string{
+		SerialKeyDBUserProfileIDColumn,
+		SerialKeyDBAssignedAtColumn,
+	}
+
+	// SerialKeyDBColumns is the list of the columns for the SerialKeyDB structure
+	SerialKeyDBColumns = append(
+		[]string{ SerialKeyDBKeyColumn },
+		SerialKeyDBDataColumns...,
+	)
 	// SessionColumns is the list of the columns for the Session structure
 	SessionColumns = []string{
 		SessionIDColumn,
@@ -794,6 +824,7 @@ var (
 		UserProfileDBIsManagerColumn,
 		UserProfileDBNicknameColumn,
 		UserProfileDBAPIKeyColumn,
+		UserProfileDBSerialKeyColumn,
 	}
 
 	// UserProfileDBColumns is the list of the columns for the UserProfileDB structure
@@ -1621,6 +1652,127 @@ func (t RulesetDBTableSchema) Select() squirrel.SelectBuilder {
 	return squirrel.Select(t.Columns(true)...).From(t.Sql())
 }
 
+// Table returns the database table name
+func (s SerialKeyDB) Table() string {
+	return SerialKeyDBTable
+}
+
+// PKeyColumn returns the database table primary key column name
+func (s SerialKeyDB) PKeyColumn() string {
+	return SerialKeyDBPKeyColumn
+}
+
+// Columns returns the database table column names
+func (s SerialKeyDB) Columns(withPKey bool) []string {
+	if withPKey {
+		return SerialKeyDBColumns
+	}
+	return SerialKeyDBDataColumns
+}
+
+// Values returns the values for a list of columns. If a column does not exits,
+// the corresponding value is left empty
+func (s SerialKeyDB) Values(columns ...string) []interface{} {
+	values := make([]interface{}, len(columns))
+	for i, column := range columns {
+		switch column {
+		case "key":
+			values[i] = s.Key
+		case "user_profile_id":
+			values[i] = s.UserProfileID
+		case "assigned_at":
+			values[i] = s.AssignedAt
+		}
+	}
+	return values
+}
+
+// ValuesMap returns the values map for a list of columns. If a column does not
+// exits, the corresponding value is left empty
+func (s SerialKeyDB) ValuesMap(columns ...string) map[string]interface{} {
+	values := make(map[string]interface{})
+	for _, column := range columns {
+		switch column {
+		case "key":
+			values["key"] = s.Key
+		case "user_profile_id":
+			values["user_profile_id"] = s.UserProfileID
+		case "assigned_at":
+			values["assigned_at"] = s.AssignedAt
+		}
+	}
+	return values
+}
+
+func NewSerialKeyDBTableSchema() *SerialKeyDBTableSchema {
+	t := SerialKeyDBTableSchema{}
+	t.Key = NewColumn(&t, "key")
+	t.UserProfileID = NewColumn(&t, "user_profile_id")
+	t.AssignedAt = NewColumn(&t, "assigned_at")
+	return &t
+}
+
+type SerialKeyDBTableSchema struct {
+	alias string
+	Key Column
+	UserProfileID Column
+	AssignedAt Column
+}
+
+// Columns returns the database table column names
+func (t SerialKeyDBTableSchema) Columns(withPKey bool) []string {
+	if withPKey {
+		return SerialKeyDBColumns
+	}
+	return SerialKeyDBDataColumns
+}
+
+// FQColumns returns the database table column names prefixed with the table alias
+func (t SerialKeyDBTableSchema) FQColumns(withPKey bool) []string {
+	var colList []string
+    colList = SerialKeyDBDataColumns
+
+	if withPKey {
+		colList = SerialKeyDBColumns
+	}
+
+    var cols []string
+	for _, col := range colList {
+			cols = append(cols, t.GetName()+"."+col)
+	}
+	return cols
+}
+
+func (t SerialKeyDBTableSchema) As(name string) *SerialKeyDBTableSchema {
+	t.alias = name
+	t.Key = NewColumn(&t, "key")
+	t.UserProfileID = NewColumn(&t, "user_profile_id")
+	t.AssignedAt = NewColumn(&t, "assigned_at")
+	return &t
+}
+
+func (t SerialKeyDBTableSchema) GetName() string {
+	if t.alias == "" {
+		return SerialKeyDBTable
+	}
+	return t.alias
+}
+
+func (t SerialKeyDBTableSchema) Sql() string {
+	if t.alias == "" {
+		return SerialKeyDBTable
+	}
+	return SerialKeyDBTable + " AS " + t.alias
+}
+
+func (t SerialKeyDBTableSchema) ToSql() (string, []interface{}, error) {
+	return t.Sql(), nil, nil
+}
+
+func (t SerialKeyDBTableSchema) Select() squirrel.SelectBuilder {
+	return squirrel.Select(t.Columns(true)...).From(t.Sql())
+}
+
 // Columns returns the database table column names
 func (s Session) Columns() []string {
 	return SessionColumns
@@ -2375,6 +2527,8 @@ func (s UserProfileDB) Values(columns ...string) []interface{} {
 			values[i] = s.Nickname
 		case "apikey":
 			values[i] = s.APIKey
+		case "serial_key":
+			values[i] = s.SerialKey
 		}
 	}
 	return values
@@ -2398,6 +2552,8 @@ func (s UserProfileDB) ValuesMap(columns ...string) map[string]interface{} {
 			values["nickname"] = s.Nickname
 		case "apikey":
 			values["apikey"] = s.APIKey
+		case "serial_key":
+			values["serial_key"] = s.SerialKey
 		}
 	}
 	return values
@@ -2411,6 +2567,7 @@ func NewUserProfileDBTableSchema() *UserProfileDBTableSchema {
 	t.IsManager = NewColumn(&t, "is_manager")
 	t.Nickname = NewColumn(&t, "nickname")
 	t.APIKey = NewColumn(&t, "apikey")
+	t.SerialKey = NewColumn(&t, "serial_key")
 	return &t
 }
 
@@ -2422,6 +2579,7 @@ type UserProfileDBTableSchema struct {
 	IsManager Column
 	Nickname Column
 	APIKey Column
+	SerialKey Column
 }
 
 // Columns returns the database table column names
@@ -2456,6 +2614,7 @@ func (t UserProfileDBTableSchema) As(name string) *UserProfileDBTableSchema {
 	t.IsManager = NewColumn(&t, "is_manager")
 	t.Nickname = NewColumn(&t, "nickname")
 	t.APIKey = NewColumn(&t, "apikey")
+	t.SerialKey = NewColumn(&t, "serial_key")
 	return &t
 }
 
@@ -2642,6 +2801,7 @@ func NewDBSchema() *DBSchema {
 		InvitationDB: NewInvitationDBTableSchema(),
 		RaceDB: NewRaceDBTableSchema(),
 		RulesetDB: NewRulesetDBTableSchema(),
+		SerialKeyDB: NewSerialKeyDBTableSchema(),
 		SessionDB: NewSessionDBTableSchema(),
 		SessionFilesDB: NewSessionFilesDBTableSchema(),
 		SessionPlayerRaceDB: NewSessionPlayerRaceDBTableSchema(),
@@ -2654,6 +2814,7 @@ type DBSchema struct {
 	InvitationDB *InvitationDBTableSchema
 	RaceDB *RaceDBTableSchema
 	RulesetDB *RulesetDBTableSchema
+	SerialKeyDB *SerialKeyDBTableSchema
 	SessionDB *SessionDBTableSchema
 	SessionFilesDB *SessionFilesDBTableSchema
 	SessionPlayerRaceDB *SessionPlayerRaceDBTableSchema

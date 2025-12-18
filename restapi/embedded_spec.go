@@ -244,7 +244,7 @@ func init() {
     },
     "/v1/notifications": {
       "get": {
-        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session_turn notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session_turn\",\n  \"id\": \"session-id\",\n  \"action\": \"ready\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor order_status notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"order_status\",\n  \"id\": \"session-id\",\n  \"action\": \"updated\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, session_turn, invitation, race, ruleset, session_player_race, order_status\nActions: created, updated, deleted, ready\n",
+        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session_turn notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session_turn\",\n  \"id\": \"session-id\",\n  \"action\": \"ready\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor order_status notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"order_status\",\n  \"id\": \"session-id\",\n  \"action\": \"updated\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session member_left notifications, metadata contains the user who left:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"session-id\",\n  \"action\": \"member_left\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"left_user_id\": \"user-id\", \"is_private\": false}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session deleted notifications, metadata contains the member IDs:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"session-id\",\n  \"action\": \"deleted\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"member_ids\": [\"user1\", \"user2\"], \"is_private\": true}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, session_turn, invitation, race, ruleset, session_player_race, order_status\nActions: created, updated, deleted, ready, member_left\n",
         "summary": "WebSocket endpoint for real-time resource change notifications",
         "operationId": "notifications",
         "responses": {
@@ -1337,6 +1337,10 @@ func init() {
       "description": "Current user information",
       "type": "object",
       "properties": {
+        "serial_key": {
+          "description": "The serial key assigned to this user for Stars! game registration",
+          "type": "string"
+        },
         "user": {
           "$ref": "#/definitions/user"
         }
@@ -1684,7 +1688,7 @@ func init() {
     },
     "/v1/notifications": {
       "get": {
-        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session_turn notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session_turn\",\n  \"id\": \"session-id\",\n  \"action\": \"ready\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor order_status notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"order_status\",\n  \"id\": \"session-id\",\n  \"action\": \"updated\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, session_turn, invitation, race, ruleset, session_player_race, order_status\nActions: created, updated, deleted, ready\n",
+        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session_turn notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session_turn\",\n  \"id\": \"session-id\",\n  \"action\": \"ready\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor order_status notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"order_status\",\n  \"id\": \"session-id\",\n  \"action\": \"updated\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session member_left notifications, metadata contains the user who left:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"session-id\",\n  \"action\": \"member_left\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"left_user_id\": \"user-id\", \"is_private\": false}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session deleted notifications, metadata contains the member IDs:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"session-id\",\n  \"action\": \"deleted\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"member_ids\": [\"user1\", \"user2\"], \"is_private\": true}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, session_turn, invitation, race, ruleset, session_player_race, order_status\nActions: created, updated, deleted, ready, member_left\n",
         "summary": "WebSocket endpoint for real-time resource change notifications",
         "operationId": "notifications",
         "responses": {
@@ -3739,6 +3743,10 @@ func init() {
       "description": "Current user information",
       "type": "object",
       "properties": {
+        "serial_key": {
+          "description": "The serial key assigned to this user for Stars! game registration",
+          "type": "string"
+        },
         "user": {
           "$ref": "#/definitions/user"
         }

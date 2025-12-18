@@ -3,11 +3,13 @@ package handlers
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 )
 
@@ -226,4 +228,36 @@ func GetSessionInviteeIDs(sqlH database.SQLHelper, sessionID string, log *zerolo
 		inviteeIDs = append(inviteeIDs, userProfileID)
 	}
 	return inviteeIDs, rows.Err()
+}
+
+// ValidatePlayerOrder checks that player orders are 0-indexed and have no gaps.
+// Returns an error if validation fails, nil otherwise.
+func ValidatePlayerOrder(players []*models.PlayerOrder) error {
+	if len(players) == 0 {
+		return nil
+	}
+
+	// Create a set of orders to check for duplicates and gaps
+	orders := make(map[int64]bool)
+	for _, player := range players {
+		if player.PlayerOrder < 0 {
+			return errs.NewErrInvalidSomething("player order must be non-negative")
+		}
+		if player.PlayerOrder >= int64(len(players)) {
+			return errs.NewErrInvalidSomething("player order must be less than the number of players")
+		}
+		if orders[player.PlayerOrder] {
+			return errs.NewErrInvalidSomething("duplicate player order")
+		}
+		orders[player.PlayerOrder] = true
+	}
+
+	// Check for gaps: we should have exactly 0, 1, 2, ..., n-1
+	for i := int64(0); i < int64(len(players)); i++ {
+		if !orders[i] {
+			return errs.NewErrInvalidSomething(fmt.Sprintf("player order has gaps: missing order %d", i))
+		}
+	}
+
+	return nil
 }

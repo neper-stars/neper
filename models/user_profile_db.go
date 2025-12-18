@@ -10,7 +10,8 @@ import (
 type UserProfileDB struct {
 	UserProfile
 
-	APIKey string `db:"apikey"`
+	APIKey    string  `db:"apikey"`
+	SerialKey *string `db:"serial_key"`
 }
 
 // SessionIDList returns the list of Session ids for this userProfileDB

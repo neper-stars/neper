@@ -27,6 +27,12 @@ type Userinfo struct {
 	db *sqlx.DB
 }
 
+// userWithSerial is a helper struct to query user data with serial_key
+type userWithSerial struct {
+	models.User
+	SerialKey *string `db:"serial_key"`
+}
+
 func (h *Userinfo) handle(
 	ctx context.Context, principal *models.Principal,
 ) (*models.Userinfo, error) {
@@ -38,11 +44,11 @@ func (h *Userinfo) handle(
 	defer tx.RollbackIfOpened(*log)
 
 	userQuery := database.SQ.
-		Select(models.UserColumns...).
+		Select(models.UserIDColumn, models.UserNicknameColumn, "serial_key").
 		From(models.UserProfileDBTable).
 		Where(sq.Eq{models.UserProfileDBIDColumn: principal.Subject})
 
-	var user models.User
+	var user userWithSerial
 	if err := database.Get(tx, &user, userQuery, log); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrUnknownUser
@@ -50,9 +56,14 @@ func (h *Userinfo) handle(
 		return nil, err
 	}
 
-	return &models.Userinfo{
-		User: &user,
-	}, nil
+	result := &models.Userinfo{
+		User: &user.User,
+	}
+	if user.SerialKey != nil {
+		result.SerialKey = *user.SerialKey
+	}
+
+	return result, nil
 }
 
 // Handle an incoming request

@@ -19,6 +19,11 @@ func (w *Worker) syncUserProfile(ctx context.Context, sql database.SQLHelper, op
 				Msg("user is marked as active but has no api_key set... will not work as expected")
 		}
 
+		var serialKey *string
+		if data.SerialKey != "" {
+			serialKey = &data.SerialKey
+		}
+
 		var userProfileDB = models.UserProfileDB{
 			UserProfile: models.UserProfile{
 				ID:        data.Id,
@@ -27,7 +32,8 @@ func (w *Worker) syncUserProfile(ctx context.Context, sql database.SQLHelper, op
 				IsActive:  data.IsActive,
 				IsManager: data.IsManager,
 			},
-			APIKey: data.ApiKey,
+			APIKey:    data.ApiKey,
+			SerialKey: serialKey,
 		}
 		if err := sql.Upsert(&userProfileDB); err != nil {
 			w.logger.Err(err).

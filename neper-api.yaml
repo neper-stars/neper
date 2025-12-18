@@ -1078,6 +1078,9 @@ definitions:
     properties:
       user:
         $ref: "#/definitions/user"
+      serial_key:
+        type: string
+        description: The serial key assigned to this user for Stars! game registration
   user:
     type: object
     description: User information

@@ -42,9 +42,10 @@ func (h *ReorderPlayersHandler) handle(
 	}
 	players := params.Players
 
-	// sort players by playerOrder
-	// create an array of playerID using the resulting list
-	// use this array in our sql query
+	// Validate player orders are 0-indexed with no gaps
+	if err := ValidatePlayerOrder(players); err != nil {
+		return nil, err
+	}
 
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)

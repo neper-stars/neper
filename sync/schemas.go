@@ -1071,6 +1071,9 @@ type UserProfile struct {
 	// Nickname nickname of this user (name displayed to other users)
 	Nickname string `json:"nickname,omitempty"`
 
+	// SerialKey Serial key assigned to this user for Stars! game registration
+	SerialKey string `json:"serial_key,omitempty"`
+
 	// SessionList List of session ID. Defines the sessions linked to this profile. Represented as user_profile_rel, user_profile_id is optional
 	SessionList []*UserProfileSessionRel `json:"session_list,omitempty"`
 
@@ -3038,6 +3041,13 @@ func (s UserProfile) MarshalJSONStream(stream *jsoniter.Stream) {
 		stream.WriteString(s.Nickname)
 	}
 
+	// Marshal the SerialKey field
+	if !IsEmpty(s.SerialKey) {
+		ct.More()
+		stream.WriteObjectField("serial_key")
+		stream.WriteString(s.SerialKey)
+	}
+
 	// Marshal the SessionList field
 	if !IsEmpty(s.SessionList) {
 		ct.More()
@@ -3129,6 +3139,18 @@ func (s *UserProfile) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 				// received 'false', which we accept and ignore for now
 			}
 			s.Nickname = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+		case "serial_key":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field serial_key", "serial_key is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.SerialKey = iter.ReadString()
 			if iter.Error != nil {
 				return
 			}

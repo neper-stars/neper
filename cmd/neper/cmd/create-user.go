@@ -10,6 +10,7 @@ import (
 	orusapi "orus.io/orus-io/go-orusapi"
 	"orus.io/orus-io/go-orusapi/database"
 
+	"github.com/neper-stars/neper/lib/serial"
 	"github.com/neper-stars/neper/models"
 )
 
@@ -97,13 +98,23 @@ func (cmd *CreateUserCmd) Execute([]string) error {
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
+	// Assign a serial key to the user
+	serialKey, err := serial.AssignKeyToUser(ctx, db, userID.String())
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to assign serial key (serials may not be loaded yet)")
+	}
+
 	log.Info().
 		Str("username", cmd.Args.Username).
 		Str("id", userID.String()).
 		Bool("is_manager", cmd.IsManager).
+		Str("serial_key", serialKey).
 		Msg("user created successfully")
 
 	fmt.Println("API Key:", apiKeyHex)
+	if serialKey != "" {
+		fmt.Println("Serial Key:", serialKey)
+	}
 
 	return nil
 }

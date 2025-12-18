@@ -18,6 +18,9 @@ import (
 // swagger:model userinfo
 type Userinfo struct {
 
+	// The serial key assigned to this user for Stars! game registration
+	SerialKey string `json:"serial_key,omitempty"`
+
 	// user
 	User *User `json:"user,omitempty"`
 }
