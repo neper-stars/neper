@@ -114,7 +114,7 @@ func (a *APITesterConfigUpdater) UpdateConfig(config restapi.Config) restapi.Con
 		AllowReconnect:  false,
 		MaxReconnect:    2,
 		// ClosedCB:             nil,
-		DisconnectedErrCB: connHandlers.ConnErrHandler,
+		DisconnectedErrCB: connHandlers.DisconnectErrHandler,
 		ConnectedCB:       connHandlers.ConnHandler,
 		// ReconnectedCB:        nil,
 		// DiscoveredServersCB:  nil,

@@ -53,8 +53,11 @@ func (en *EmbeddedNats) Shutdown() {
 	if !en.started {
 		return
 	}
-	en.ns.Shutdown()
-	en.ns.WaitForShutdown()
+	// Check if server is running before shutdown to avoid panic on nil channels
+	if en.ns.Running() {
+		en.ns.Shutdown()
+		en.ns.WaitForShutdown()
+	}
 }
 
 // InProcessConn is use for testing purposes to get the nats server conn directly

@@ -21,10 +21,17 @@ func (ch *ConnHandlers) ConnHandler(conn *nats.Conn) {
 		Msg("nats client connected successfully")
 }
 
-func (ch *ConnHandlers) ConnErrHandler(conn *nats.Conn, err error) {
+func (ch *ConnHandlers) DisconnectErrHandler(conn *nats.Conn, err error) {
+	// During normal shutdown, err is nil and status is CLOSED - don't log as error
+	if err == nil && conn.Status() == nats.CLOSED {
+		ch.logger.Debug().
+			Str("connStatus", conn.Status().String()).
+			Msg("nats client disconnected")
+		return
+	}
 	ch.logger.Err(err).
 		Str("connStatus", conn.Status().String()).
-		Msg("nats client failed to connect")
+		Msg("nats client disconnected unexpectedly")
 }
 
 func (ch *ConnHandlers) ErrHandler(conn *nats.Conn, sub *nats.Subscription, err error) {

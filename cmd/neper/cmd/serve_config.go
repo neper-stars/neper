@@ -108,7 +108,7 @@ func setupServeConfig(config *restapi.Config) error {
 		AllowReconnect: false, // TODO: understand how to make this work... setting yes here no connection goes up...
 		MaxReconnect:   60,
 		// ClosedCB:             nil,
-		DisconnectedErrCB: connHandlers.ConnErrHandler,
+		DisconnectedErrCB: connHandlers.DisconnectErrHandler,
 		ConnectedCB:       connHandlers.ConnHandler,
 		// ReconnectedCB:        nil,
 		// DiscoveredServersCB:  nil,
