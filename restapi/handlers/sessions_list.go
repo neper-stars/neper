@@ -23,6 +23,12 @@ type SessionsList struct {
 	db *sqlx.DB
 }
 
+// sessionListResult extends SessionDB to track invitation status
+type sessionListResult struct {
+	models.SessionDB
+	HasInvitation bool `db:"has_invitation"`
+}
+
 func (h *SessionsList) handle(
 	ctx context.Context, principal *models.Principal,
 ) ([]*models.Session, error) {
@@ -42,11 +48,21 @@ func (h *SessionsList) handle(
 		From(s.Sql()).
 		OrderBy(s.ID.Sql())
 
+	// Track which sessions have pending invitations
+	var invitedSessionIDs map[string]bool
+
 	if !principal.IsGlobalManager {
 		// filter using the sessions membership if the user is not a global manager
 		upsr := models.Schema.UserProfileSessionRelDB.As("upsr")
-		// Use LEFT JOIN so public sessions without any members are still returned
+		inv := models.Schema.InvitationDB.As("inv")
+
+		// Use LEFT JOINs so public sessions without members/invitations are still returned
 		query = query.LeftJoin(s.ID.Join(upsr.SessionID).Sql())
+		// Join invitation table with extra condition for user_profile_id
+		query = query.LeftJoin(
+			s.ID.Join(inv.SessionID).Sql()+" AND "+inv.UserProfileID.Sql()+" = ?",
+			principal.Subject,
+		)
 
 		filter := sq.Or{
 			// public sessions: visible to everyone
@@ -56,8 +72,16 @@ func (h *SessionsList) handle(
 				sq.Eq{models.SessionDBPrivateColumn: true},
 				upsr.UserProfileID.Eq(principal.Subject),
 			},
+			// private sessions: also visible if I have a pending invitation
+			sq.And{
+				sq.Eq{models.SessionDBPrivateColumn: true},
+				sq.NotEq{inv.ID.Sql(): nil},
+			},
 		}
 		query = query.Where(filter).Distinct()
+
+		// Query invited session IDs separately to know which ones to flag
+		invitedSessionIDs, _ = h.getInvitedSessionIDs(sqlH, principal.Subject)
 	}
 
 	var list []*models.SessionDB
@@ -71,9 +95,51 @@ func (h *SessionsList) handle(
 		if err := list[i].FromDB(&sqlH); err != nil {
 			return nil, err
 		}
+
+		// Set pending_invitation flag if user has invitation and is not a member
+		if invitedSessionIDs != nil && invitedSessionIDs[list[i].ID] {
+			// Check if user is a member (managers and members are in the session)
+			isMember := false
+			for _, memberID := range list[i].Session.Members {
+				if memberID == principal.Subject {
+					isMember = true
+					break
+				}
+			}
+			if !isMember {
+				for _, managerID := range list[i].Session.Managers {
+					if managerID == principal.Subject {
+						isMember = true
+						break
+					}
+				}
+			}
+			if !isMember {
+				list[i].Session.PendingInvitation = true
+			}
+		}
+
 		retList = append(retList, &list[i].Session)
 	}
 	return retList, nil
+}
+
+// getInvitedSessionIDs returns a map of session IDs that the user has pending invitations for
+func (h *SessionsList) getInvitedSessionIDs(sqlH database.SQLHelper, userProfileID string) (map[string]bool, error) {
+	query := database.SQ.Select(models.InvitationDBSessionIDColumn).
+		From(models.InvitationDBTable).
+		Where(sq.Eq{models.InvitationDBUserProfileIDColumn: userProfileID})
+
+	var sessionIDs []string
+	if err := sqlH.Select(&sessionIDs, query); err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]bool)
+	for _, id := range sessionIDs {
+		result[id] = true
+	}
+	return result, nil
 }
 
 // Handle handles the request

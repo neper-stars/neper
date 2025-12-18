@@ -198,4 +198,60 @@ func TestSessionsListHandler(t *testing.T) {
 		require.NotNil(t, gondorSession, "gondorID session should be in the list")
 		require.True(t, gondorSession.RulesIsSet, "RulesIsSet should be true after creating rules")
 	})
+
+	t.Run("invited_user_sees_private_session_with_pending_invitation_flag", func(t *testing.T) {
+		// Create an invitation for merry to isengard (private session)
+		_, err := testdb.Exec(`INSERT INTO invitation (id, session_id, user_profile_id, inviter_id) VALUES ('invitationForMerryID', 'isengardID', 'merryID', 'saroumanID') ON CONFLICT (id) DO NOTHING`)
+		require.NoError(t, err)
+
+		sessions, err := handler.handle(ctx, &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		})
+		require.NoError(t, err)
+
+		// Merry should now see:
+		// - gondorID: it's public
+		// - isengardID: it's private, but he has a pending invitation
+		// - mordorID: it's public
+		// - shireID: it's public
+		require.Equal(t, 4, len(sessions))
+		require.Equal(t, "gondorID", sessions[0].ID)
+		require.False(t, sessions[0].PendingInvitation, "gondorID should not have pending_invitation")
+
+		require.Equal(t, "isengardID", sessions[1].ID)
+		require.True(t, sessions[1].PendingInvitation, "isengardID should have pending_invitation=true for merry")
+
+		require.Equal(t, "mordorID", sessions[2].ID)
+		require.False(t, sessions[2].PendingInvitation, "mordorID should not have pending_invitation")
+
+		require.Equal(t, "shireID", sessions[3].ID)
+		require.False(t, sessions[3].PendingInvitation, "shireID should not have pending_invitation")
+	})
+
+	t.Run("member_does_not_have_pending_invitation_flag_in_list", func(t *testing.T) {
+		// Sarouman is a member of isengard, so pending_invitation should be false
+		sessions, err := handler.handle(ctx, &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "saroumanID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		})
+		require.NoError(t, err)
+
+		// Find isengardID session
+		var isengardSession *models.Session
+		for _, s := range sessions {
+			if s.ID == "isengardID" {
+				isengardSession = s
+				break
+			}
+		}
+		require.NotNil(t, isengardSession, "isengardID should be in the list")
+		require.False(t, isengardSession.PendingInvitation, "pending_invitation should be false for members")
+	})
 }
