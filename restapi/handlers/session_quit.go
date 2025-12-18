@@ -75,6 +75,15 @@ func (h *SessionQuitHandler) handle(
 		}
 	}
 
+	// Check if player is ready - ready players cannot leave
+	isReady, err := IsPlayerReady(sqlH, sessionID, principal.Subject)
+	if err != nil {
+		return err
+	}
+	if isReady {
+		return errs.NewErrPlayerShouldNotBeReady("cannot leave session: you are marked as ready")
+	}
+
 	// Delete the membership
 	deleteQuery := database.SQ.Delete(models.UserProfileSessionRelDBTable).
 		Where(sq.And{

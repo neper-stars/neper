@@ -1,0 +1,28 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "race",
+        "id": "finduilasRaceID",
+        "name_plural": "Dunedain",
+        "name_singular": "Dunadan",
+        "user_id": "finduilasID",
+        "data": "ECBKM0ozAAAAAGAqBwDfCwUAfRgGLO8a9nahWBLxzu8K0QX+OMP4/pYC5ncbrRrG9trmHvDENliQuqXS3k3S6NcQq+/POOf6/StvJRbLWqr+zDYJP0Wwq/YFhwzys5Pu3sqIsIP4YDLuWMJrGJ50UUTArj69j3zdXaBIROjkkR2hKefZm3mHrcRV97WEknON4AIAnIw="
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session_player_race",
+        "id": "finduilasSprID",
+        "session_id": "gondorID",
+        "user_profile_id": "finduilasID",
+        "is_bot": false,
+        "race_id": "finduilasRaceID",
+        "player_order": 0,
+        "ready": true
+      }
+    }
+  ]
+}

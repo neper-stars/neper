@@ -12,6 +12,7 @@ import (
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/fixtures"
+	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -165,6 +166,39 @@ func TestSessionQuitHandler(t *testing.T) {
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "session not found")
 	})
+}
+
+func TestSessionQuitHandler_ReadyPlayerCannotLeave(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_members.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/finduilas_ready.json")
+
+	quitHandler := NewSessionQuitHandler(&log, testdb.DB, nil)
+
+	sessionID := "gondorID"
+
+	finduilasPrincipal := models.Principal{
+		StandardClaims: jwt.StandardClaims{
+			Subject:   "finduilasID",
+			ExpiresAt: time.Now().Add(time.Minute).Unix(),
+		},
+		IsGlobalManager: false,
+	}
+
+	quitParams := operations.SessionQuitParams{
+		SessionID: sessionID,
+	}
+	err = quitHandler.handle(ctx, quitParams, &finduilasPrincipal)
+	require.Error(t, err)
+	require.ErrorIs(t, err, errs.ErrPreconditionFailed)
+	require.Contains(t, err.Error(), "ready")
 }
 
 func TestSessionQuitHandler_ManagerWithOtherManager(t *testing.T) {

@@ -61,7 +61,11 @@ func TestTurnSubmit(t *testing.T) {
 		c, resp, err := d.Dial("ws://whatever/api/v1/notifications", header)
 		require.NoError(t, err)
 		require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
-		defer c.Close()
+		defer func() {
+			if err := c.Close(); err != nil {
+				t.Logf("failed to close websocket connection: %v", err)
+			}
+		}()
 
 		// Set a read deadline so we don't wait forever
 		require.NoError(t, c.SetReadDeadline(time.Now().Add(30*time.Second)))

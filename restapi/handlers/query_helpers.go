@@ -181,6 +181,26 @@ func invitationQuery(userProfileID, invitationID string) sq.SelectBuilder {
 		)
 }
 
+// IsPlayerReady returns true if the player has a session_player_race entry with ready=true
+func IsPlayerReady(sqlH database.SQLHelper, sessionID, userProfileID string) (bool, error) {
+	query := database.SQ.Select(models.SessionPlayerRaceDBReadyColumn).
+		From(models.SessionPlayerRaceDBTable).
+		Where(sq.And{
+			sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID},
+			sq.Eq{models.SessionPlayerRaceDBUserProfileIDColumn: userProfileID},
+		})
+
+	var ready bool
+	if err := sqlH.Get(&ready, query); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// No session_player_race entry means player hasn't set up their race yet, so not ready
+			return false, nil
+		}
+		return false, err
+	}
+	return ready, nil
+}
+
 // GetSessionInviteeIDs returns the list of user profile IDs who have pending invitations to the session
 func GetSessionInviteeIDs(sqlH database.SQLHelper, sessionID string, log *zerolog.Logger) ([]string, error) {
 	query := database.SQ.Select(models.InvitationDBUserProfileIDColumn).

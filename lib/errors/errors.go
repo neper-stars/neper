@@ -356,3 +356,24 @@ func (e ErrNotAMember) Error() string {
 func (e ErrNotAMember) Is(target error) bool {
 	return errors.Is(target, ErrPreconditionFailed)
 }
+
+// ErrPlayerShouldNotBeReady is returned when a player tries to leave a session
+// but they have already marked themselves as ready
+type ErrPlayerShouldNotBeReady struct {
+	GivenMessage string
+}
+
+// NewErrPlayerShouldNotBeReady ...
+func NewErrPlayerShouldNotBeReady(msg string) *ErrPlayerShouldNotBeReady {
+	return &ErrPlayerShouldNotBeReady{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrPlayerShouldNotBeReady) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrPlayerShouldNotBeReady) Is(target error) bool {
+	return errors.Is(target, ErrPreconditionFailed)
+}
