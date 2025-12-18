@@ -325,6 +325,32 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/quit:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+    post:
+      operationId: sessionQuit
+      summary: "Leave the session"
+      description: |
+        Leave the session as a member. Managers can only leave if at least
+        one other manager remains in the session.
+      responses:
+        204:
+          description: successfully left the session
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        412:
+          $ref: "#/responses/preconditionfailed"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}/player_race:
     parameters:
       - name: session_id

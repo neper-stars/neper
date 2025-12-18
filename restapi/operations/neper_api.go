@@ -117,6 +117,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		SessionPlayerRaceSetReadyHandler: SessionPlayerRaceSetReadyHandlerFunc(func(params SessionPlayerRaceSetReadyParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPlayerRaceSetReady has not yet been implemented")
 		}),
+		SessionQuitHandler: SessionQuitHandlerFunc(func(params SessionQuitParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation SessionQuit has not yet been implemented")
+		}),
 		SessionReadHandler: SessionReadHandlerFunc(func(params SessionReadParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionRead has not yet been implemented")
 		}),
@@ -255,6 +258,8 @@ type NeperAPI struct {
 	SessionPlayerRaceGetHandler SessionPlayerRaceGetHandler
 	// SessionPlayerRaceSetReadyHandler sets the operation handler for the session player race set ready operation
 	SessionPlayerRaceSetReadyHandler SessionPlayerRaceSetReadyHandler
+	// SessionQuitHandler sets the operation handler for the session quit operation
+	SessionQuitHandler SessionQuitHandler
 	// SessionReadHandler sets the operation handler for the session read operation
 	SessionReadHandler SessionReadHandler
 	// SessionUpdateHandler sets the operation handler for the session update operation
@@ -434,6 +439,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.SessionPlayerRaceSetReadyHandler == nil {
 		unregistered = append(unregistered, "SessionPlayerRaceSetReadyHandler")
+	}
+	if o.SessionQuitHandler == nil {
+		unregistered = append(unregistered, "SessionQuitHandler")
 	}
 	if o.SessionReadHandler == nil {
 		unregistered = append(unregistered, "SessionReadHandler")
@@ -668,6 +676,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"] = NewSessionPlayerRaceSetReady(o.context, o.SessionPlayerRaceSetReadyHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/v1/sessions/{session_id}/quit"] = NewSessionQuit(o.context, o.SessionQuitHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

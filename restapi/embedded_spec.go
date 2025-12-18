@@ -681,6 +681,41 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/quit": {
+      "post": {
+        "description": "Leave the session as a member. Managers can only leave if at least\none other manager remains in the session.\n",
+        "summary": "Leave the session",
+        "operationId": "sessionQuit",
+        "responses": {
+          "204": {
+            "description": "successfully left the session"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "412": {
+            "$ref": "#/responses/preconditionfailed"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/reorder_players": {
       "put": {
         "description": "Update the session player order\n\nThis is restricted to global managers or\nmanagers of the specific session\n",
@@ -2168,6 +2203,56 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/v1/sessions/{session_id}/quit": {
+      "post": {
+        "description": "Leave the session as a member. Managers can only leave if at least\none other manager remains in the session.\n",
+        "summary": "Leave the session",
+        "operationId": "sessionQuit",
+        "responses": {
+          "204": {
+            "description": "successfully left the session"
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Precondition not met",
             "schema": {
               "$ref": "#/definitions/error"
             }

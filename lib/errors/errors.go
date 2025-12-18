@@ -314,3 +314,24 @@ func (e ErrSessionAlreadyStarted) Error() string {
 func (e ErrSessionAlreadyStarted) Is(target error) bool {
 	return errors.Is(target, ErrPreconditionFailed)
 }
+
+// ErrLastManager is returned when a manager tries to leave a session
+// but they are the only manager
+type ErrLastManager struct {
+	GivenMessage string
+}
+
+// NewErrLastManager ...
+func NewErrLastManager(msg string) *ErrLastManager {
+	return &ErrLastManager{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrLastManager) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrLastManager) Is(target error) bool {
+	return errors.Is(target, ErrPreconditionFailed)
+}
