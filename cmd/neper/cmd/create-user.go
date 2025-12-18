@@ -57,7 +57,11 @@ func (cmd *CreateUserCmd) Execute([]string) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Err(err).Msg("failed to close database connection")
+		}
+	}()
 
 	// Set email to username if not provided
 	email := cmd.Email

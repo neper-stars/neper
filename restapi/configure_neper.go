@@ -182,7 +182,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.NotificationsHandler = handlers.NewNotificationsHandler(&config.Log, config.DB, config.NatsClientConn)
 
 	// Downloads
-	api.DownloadStarsExeHandler = handlers.NewDownloadStarsExeHandler()
+	api.DownloadStarsExeHandler = handlers.NewDownloadStarsExeHandler(&config.Log)
 
 	if server.Prometheus {
 		api.PrometheusInstrumentHandlers()

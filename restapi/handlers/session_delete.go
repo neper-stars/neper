@@ -64,7 +64,7 @@ func (h *SessionDeleteHandler) handle(
 	if err != nil {
 		return err
 	}
-	inviteeIDs, err := GetSessionInviteeIDs(sqlH, params.SessionID)
+	inviteeIDs, err := GetSessionInviteeIDs(sqlH, params.SessionID, h.log)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,11 @@ func (h *SessionDeleteHandler) getSessionMemberIDs(sqlH database.SQLHelper, sess
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			h.log.Err(err).Msg("failed to close rows")
+		}
+	}()
 
 	var memberIDs []string
 	for rows.Next() {

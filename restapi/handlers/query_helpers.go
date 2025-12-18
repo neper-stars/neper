@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
 	"github.com/neper-stars/neper/models"
@@ -181,7 +182,7 @@ func invitationQuery(userProfileID, invitationID string) sq.SelectBuilder {
 }
 
 // GetSessionInviteeIDs returns the list of user profile IDs who have pending invitations to the session
-func GetSessionInviteeIDs(sqlH database.SQLHelper, sessionID string) ([]string, error) {
+func GetSessionInviteeIDs(sqlH database.SQLHelper, sessionID string, log *zerolog.Logger) ([]string, error) {
 	query := database.SQ.Select(models.InvitationDBUserProfileIDColumn).
 		From(models.InvitationDBTable).
 		Where(sq.Eq{models.InvitationDBSessionIDColumn: sessionID})
@@ -190,7 +191,11 @@ func GetSessionInviteeIDs(sqlH database.SQLHelper, sessionID string) ([]string, 
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Err(err).Msg("failed to close rows")
+		}
+	}()
 
 	var inviteeIDs []string
 	for rows.Next() {
