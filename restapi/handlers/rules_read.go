@@ -89,6 +89,16 @@ func (h *RulesReadHandler) Authorize(
 	if principal.IsGlobalManager {
 		return true, nil
 	}
-	// members are allowed to get ruleset for the session
+
+	// if session is public, anyone can read the rules
+	isPublic, err := IsSessionPublic(sqlH, params.SessionID)
+	if err != nil {
+		return false, err
+	}
+	if isPublic {
+		return true, nil
+	}
+
+	// if session is private, only members are allowed to get ruleset
 	return IsSessionMember(sqlH, principal.Subject, params.SessionID)
 }

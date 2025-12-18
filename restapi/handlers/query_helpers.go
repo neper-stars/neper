@@ -47,6 +47,26 @@ func sessionMembersFilter(userProfileID, sessionID string) sq.And {
 	}
 }
 
+// IsSessionPublic returns true if the given session is public (not private)
+// Returns false if session is private or not found
+func IsSessionPublic(sqlH database.SQLHelper, sessionID string) (bool, error) {
+	query := database.SQ.
+		Select(models.SessionDBPrivateColumn).
+		From(models.SessionDBTable).
+		Where(sq.Eq{models.SessionDBIDColumn: sessionID})
+
+	var result struct {
+		Private bool `db:"private"`
+	}
+	if err := sqlH.Get(&result, query); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+	return !result.Private, nil
+}
+
 func userProfileSessionRelationQuery(userProfileID, sessionID string) sq.SelectBuilder {
 	return database.SQ.
 		Select().
