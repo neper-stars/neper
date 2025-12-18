@@ -23,6 +23,10 @@ type Invitation struct {
 	// Read Only: true
 	ID string `json:"id,omitempty" db:"id"`
 
+	// the nickname of the user who is invited. Auto-populated by the server.
+	// Read Only: true
+	InviteeNickname string `json:"invitee_nickname,omitempty"`
+
 	// the user profile id of the person who sent the invitation.
 	InviterID string `json:"inviter_id,omitempty" db:"inviter_id"`
 
@@ -54,6 +58,10 @@ func (m *Invitation) ContextValidate(ctx context.Context, formats strfmt.Registr
 		res = append(res, err)
 	}
 
+	if err := m.contextValidateInviteeNickname(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateInviterNickname(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -71,6 +79,15 @@ func (m *Invitation) ContextValidate(ctx context.Context, formats strfmt.Registr
 func (m *Invitation) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Invitation) contextValidateInviteeNickname(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "invitee_nickname", "body", string(m.InviteeNickname)); err != nil {
 		return err
 	}
 

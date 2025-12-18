@@ -214,6 +214,9 @@ paths:
   /v1/invitations:
     get:
       operationId: invitationList
+      summary: List invitations received by the current user
+      description: |
+        Returns all pending invitations where the current user is the invitee.
       responses:
         200:
           description: the complete list of viewable invitations
@@ -225,6 +228,24 @@ paths:
           $ref: "#/responses/unauthorized"
         403:
           $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
+
+  /v1/invitations/sent:
+    get:
+      operationId: invitationSentList
+      summary: List invitations sent by the current user
+      description: |
+        Returns all pending invitations where the current user is the inviter.
+      responses:
+        200:
+          description: the list of invitations sent by the current user
+          schema:
+            type: array
+            items:
+              $ref: "neper-types.yaml#/definitions/invitation"
+        401:
+          $ref: "#/responses/unauthorized"
         default:
           $ref: "#/responses/default"
 

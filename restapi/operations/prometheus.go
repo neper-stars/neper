@@ -30,6 +30,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["GET"]["/v1/invitations"] = InvitationListInstrumentHandler(
 		o.handlers["GET"]["/v1/invitations"])
 
+	o.handlers["GET"]["/v1/invitations/sent"] = InvitationSentListInstrumentHandler(
+		o.handlers["GET"]["/v1/invitations/sent"])
+
 	o.handlers["GET"]["/v1/notifications"] = NotificationsInstrumentHandler(
 		o.handlers["GET"]["/v1/notifications"])
 

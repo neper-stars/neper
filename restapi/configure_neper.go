@@ -147,6 +147,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	// Invitations
 	api.InvitationCreateHandler = handlers.NewInvitationCreateHandler(&config.Log, config.DB, config.NotifyService)
 	api.InvitationListHandler = handlers.NewInvitationListHandler(&config.Log, config.DB)
+	api.InvitationSentListHandler = handlers.NewInvitationSentListHandler(&config.Log, config.DB)
 	api.InvitationAcceptHandler = handlers.NewInvitationAcceptHandler(&config.Log, config.DB, config.NotifyService)
 	api.InvitationDeclineHandler = handlers.NewInvitationDeclineHandler(&config.Log, config.DB, config.NotifyService)
 

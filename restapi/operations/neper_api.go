@@ -66,6 +66,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		InvitationListHandler: InvitationListHandlerFunc(func(params InvitationListParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation InvitationList has not yet been implemented")
 		}),
+		InvitationSentListHandler: InvitationSentListHandlerFunc(func(params InvitationSentListParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation InvitationSentList has not yet been implemented")
+		}),
 		NotificationsHandler: NotificationsHandlerFunc(func(params NotificationsParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation Notifications has not yet been implemented")
 		}),
@@ -218,6 +221,8 @@ type NeperAPI struct {
 	InvitationDeclineHandler InvitationDeclineHandler
 	// InvitationListHandler sets the operation handler for the invitation list operation
 	InvitationListHandler InvitationListHandler
+	// InvitationSentListHandler sets the operation handler for the invitation sent list operation
+	InvitationSentListHandler InvitationSentListHandler
 	// NotificationsHandler sets the operation handler for the notifications operation
 	NotificationsHandler NotificationsHandler
 	// OrdersStatusHandler sets the operation handler for the orders status operation
@@ -378,6 +383,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.InvitationListHandler == nil {
 		unregistered = append(unregistered, "InvitationListHandler")
+	}
+	if o.InvitationSentListHandler == nil {
+		unregistered = append(unregistered, "InvitationSentListHandler")
 	}
 	if o.NotificationsHandler == nil {
 		unregistered = append(unregistered, "NotificationsHandler")
@@ -592,6 +600,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/invitations"] = NewInvitationList(o.context, o.InvitationListHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/invitations/sent"] = NewInvitationSentList(o.context, o.InvitationSentListHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

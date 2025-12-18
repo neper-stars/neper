@@ -36,6 +36,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		invitationListHandlerInFlight,
 	)
 	reg.MustRegister(
+		invitationSentListHandlerDuration,
+		invitationSentListHandlerInFlight,
+	)
+	reg.MustRegister(
 		notificationsHandlerDuration,
 		notificationsHandlerInFlight,
 	)

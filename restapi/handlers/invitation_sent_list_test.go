@@ -17,7 +17,7 @@ import (
 	"github.com/neper-stars/neper/sync"
 )
 
-func TestInvitationListHandler(t *testing.T) {
+func TestInvitationSentListHandler(t *testing.T) {
 	log := testutils.GetLogger(t)
 	ctx := log.WithContext(context.Background())
 	testdb := database.GetTestDB(ctx, t, migration.Source)
@@ -31,9 +31,9 @@ func TestInvitationListHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gollum_nosession.json")
 
 	createHandler := NewInvitationCreateHandler(&log, testdb.DB, nil)
-	listHandler := NewInvitationListHandler(&log, testdb.DB)
+	sentListHandler := NewInvitationSentListHandler(&log, testdb.DB)
 
-	t.Run("user_sees_only_their_own_invitations", func(t *testing.T) {
+	t.Run("inviter_sees_their_sent_invitations", func(t *testing.T) {
 		sessionID := "gondorID"
 		merryID := "merryID"
 		gollumID := "gollumID"
@@ -72,45 +72,43 @@ func TestInvitationListHandler(t *testing.T) {
 		require.NoError(t, err)
 		require.NotEmpty(t, returnedInvForGollum.ID)
 
-		// merry lists their invitations
-		merryPrincipal := models.Principal{
-			StandardClaims: jwt.StandardClaims{
-				Subject:   merryID,
-				ExpiresAt: time.Now().Add(time.Minute).Unix(),
-			},
-			IsGlobalManager: false,
-		}
-		merryInvitations, err := listHandler.handle(ctx, &merryPrincipal)
+		// boromir lists their sent invitations
+		sentInvitations, err := sentListHandler.handle(ctx, &boromirPrincipal)
 		require.NoError(t, err)
-		require.Len(t, merryInvitations, 1)
-		require.Equal(t, returnedInvForMerry.ID, merryInvitations[0].ID)
-		require.Equal(t, "Gondor", merryInvitations[0].SessionName)
-		require.Equal(t, "BoromirDúnedain", merryInvitations[0].InviterNickname)
-		require.Equal(t, "Merry", merryInvitations[0].InviteeNickname)
+		require.Len(t, sentInvitations, 2)
 
-		// gollum lists their invitations
-		gollumPrincipal := models.Principal{
-			StandardClaims: jwt.StandardClaims{
-				Subject:   gollumID,
-				ExpiresAt: time.Now().Add(time.Minute).Unix(),
-			},
-			IsGlobalManager: false,
+		// Verify the invitations have correct details
+		invitationIDs := make(map[string]bool)
+		for _, inv := range sentInvitations {
+			invitationIDs[inv.ID] = true
+			require.Equal(t, "Gondor", inv.SessionName)
+			require.Equal(t, "boromirID", inv.InviterID)
+			// Check invitee nickname is populated
+			if inv.UserProfileID == merryID {
+				require.Equal(t, "Merry", inv.InviteeNickname)
+			} else if inv.UserProfileID == gollumID {
+				require.Equal(t, "SméagolGollum", inv.InviteeNickname)
+			}
 		}
-		gollumInvitations, err := listHandler.handle(ctx, &gollumPrincipal)
-		require.NoError(t, err)
-		require.Len(t, gollumInvitations, 1)
-		require.Equal(t, returnedInvForGollum.ID, gollumInvitations[0].ID)
-		require.Equal(t, "Gondor", gollumInvitations[0].SessionName)
-		require.Equal(t, "BoromirDúnedain", gollumInvitations[0].InviterNickname)
-		require.Equal(t, "SméagolGollum", gollumInvitations[0].InviteeNickname)
-
-		// boromir (the inviter) should not see these invitations when listing
-		boromirInvitations, err := listHandler.handle(ctx, &boromirPrincipal)
-		require.NoError(t, err)
-		require.Len(t, boromirInvitations, 0)
+		require.True(t, invitationIDs[returnedInvForMerry.ID], "merry's invitation should be in the list")
+		require.True(t, invitationIDs[returnedInvForGollum.ID], "gollum's invitation should be in the list")
 	})
 
-	t.Run("user_with_no_invitations_sees_empty_list", func(t *testing.T) {
+	t.Run("invitee_does_not_see_invitation_in_sent_list", func(t *testing.T) {
+		// merry should not see invitations addressed to them in the sent list
+		merryPrincipal := models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		sentInvitations, err := sentListHandler.handle(ctx, &merryPrincipal)
+		require.NoError(t, err)
+		require.Len(t, sentInvitations, 0)
+	})
+
+	t.Run("user_with_no_sent_invitations_sees_empty_list", func(t *testing.T) {
 		finduilasPrincipal := models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "finduilasID",
@@ -118,8 +116,8 @@ func TestInvitationListHandler(t *testing.T) {
 			},
 			IsGlobalManager: false,
 		}
-		invitations, err := listHandler.handle(ctx, &finduilasPrincipal)
+		sentInvitations, err := sentListHandler.handle(ctx, &finduilasPrincipal)
 		require.NoError(t, err)
-		require.Len(t, invitations, 0)
+		require.Len(t, sentInvitations, 0)
 	})
 }

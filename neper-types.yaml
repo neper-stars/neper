@@ -170,6 +170,11 @@ definitions:
         readOnly: true
         description: "the nickname of the user who sent the invitation. Auto-populated by the server."
         x-nullable: false
+      invitee_nickname:
+        type: string
+        readOnly: true
+        description: "the nickname of the user who is invited. Auto-populated by the server."
+        x-nullable: false
 
   user_profile:
     type: object

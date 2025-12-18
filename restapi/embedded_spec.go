@@ -135,6 +135,8 @@ func init() {
     },
     "/v1/invitations": {
       "get": {
+        "description": "Returns all pending invitations where the current user is the invitee.\n",
+        "summary": "List invitations received by the current user",
         "operationId": "invitationList",
         "responses": {
           "200": {
@@ -151,6 +153,30 @@ func init() {
           },
           "403": {
             "$ref": "#/responses/forbidden"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
+    "/v1/invitations/sent": {
+      "get": {
+        "description": "Returns all pending invitations where the current user is the inviter.\n",
+        "summary": "List invitations sent by the current user",
+        "operationId": "invitationSentList",
+        "responses": {
+          "200": {
+            "description": "the list of invitations sent by the current user",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "neper-types.yaml#/definitions/invitation"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -1431,6 +1457,8 @@ func init() {
     },
     "/v1/invitations": {
       "get": {
+        "description": "Returns all pending invitations where the current user is the invitee.\n",
+        "summary": "List invitations received by the current user",
         "operationId": "invitationList",
         "responses": {
           "200": {
@@ -1450,6 +1478,36 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/invitations/sent": {
+      "get": {
+        "description": "Returns all pending invitations where the current user is the inviter.\n",
+        "summary": "List invitations sent by the current user",
+        "operationId": "invitationSentList",
+        "responses": {
+          "200": {
+            "description": "the list of invitations sent by the current user",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/invitation"
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -2840,6 +2898,12 @@ func init() {
         "id": {
           "type": "string",
           "x-go-custom-tag": "db:\"id\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "invitee_nickname": {
+          "description": "the nickname of the user who is invited. Auto-populated by the server.",
+          "type": "string",
           "x-nullable": false,
           "readOnly": true
         },

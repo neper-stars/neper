@@ -53,6 +53,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "invitationList",
 	)(o.handlers["GET"]["/v1/invitations"])
 
+	o.handlers["GET"]["/v1/invitations/sent"] = LogOperation(
+		"", "invitationSentList",
+	)(o.handlers["GET"]["/v1/invitations/sent"])
+
 	o.handlers["GET"]["/v1/notifications"] = LogOperation(
 		"", "notifications",
 	)(o.handlers["GET"]["/v1/notifications"])

@@ -12,29 +12,27 @@ import (
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
-// NewInvitationListHandler ...
-func NewInvitationListHandler(log *zerolog.Logger, db *sqlx.DB) *InvitationList {
-	return &InvitationList{db, log}
+// NewInvitationSentListHandler creates a handler for listing invitations sent by the current user
+func NewInvitationSentListHandler(log *zerolog.Logger, db *sqlx.DB) *InvitationSentList {
+	return &InvitationSentList{db, log}
 }
 
-// InvitationList handles /sessions
-type InvitationList struct {
+// InvitationSentList handles GET /invitations/sent
+type InvitationSentList struct {
 	db  *sqlx.DB
 	log *zerolog.Logger
 }
 
-// invitationWithDetails is used for the JOIN query result
-type invitationWithDetails struct {
+// invitationSentWithDetails is used for the JOIN query result
+type invitationSentWithDetails struct {
 	models.Invitation
 	SessionName     string `db:"session_name"`
-	InviterNickname string `db:"inviter_nickname"`
 	InviteeNickname string `db:"invitee_nickname"`
 }
 
-func (h *InvitationList) handle(
+func (h *InvitationSentList) handle(
 	ctx context.Context, principal *models.Principal,
 ) ([]*models.Invitation, error) {
-	// no authorization here as everyone is allowed to list all invitations on which he is invited
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -43,11 +41,10 @@ func (h *InvitationList) handle(
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
-	// Join with session and user_profile tables to get session_name, inviter_nickname, and invitee_nickname
+	// Join with session and user_profile tables to get session_name and invitee nickname
 	i := models.Schema.InvitationDB.As("i")
 	s := models.Schema.SessionDB.As("s")
-	inviter := models.Schema.UserProfileDB.As("inviter")
-	invitee := models.Schema.UserProfileDB.As("invitee")
+	u := models.Schema.UserProfileDB.As("u")
 
 	q := database.SQ.Select().
 		Column(i.ID.Sql()).
@@ -55,16 +52,14 @@ func (h *InvitationList) handle(
 		Column(i.UserProfileID.Sql()).
 		Column(i.InviterID.Sql()).
 		Column(s.Name.Sql() + " AS session_name").
-		Column(inviter.Nickname.Sql() + " AS inviter_nickname").
-		Column(invitee.Nickname.Sql() + " AS invitee_nickname").
+		Column(u.Nickname.Sql() + " AS invitee_nickname").
 		From(i.Sql()).
 		LeftJoin(i.SessionID.Join(s.ID).Sql()).
-		LeftJoin(i.InviterID.Join(inviter.ID).Sql()).
-		LeftJoin(i.UserProfileID.Join(invitee.ID).Sql()).
-		Where(i.UserProfileID.Eq(principal.Subject)).
+		LeftJoin(i.UserProfileID.Join(u.ID).Sql()).
+		Where(i.InviterID.Eq(principal.Subject)).
 		OrderBy(i.ID.Sql())
 
-	var list []invitationWithDetails
+	var list []invitationSentWithDetails
 	if err := sqlH.Select(&list, q); err != nil {
 		return nil, err
 	}
@@ -73,7 +68,6 @@ func (h *InvitationList) handle(
 	for i := range list {
 		inv := list[i].Invitation
 		inv.SessionName = list[i].SessionName
-		inv.InviterNickname = list[i].InviterNickname
 		inv.InviteeNickname = list[i].InviteeNickname
 		retList = append(retList, &inv)
 	}
@@ -81,12 +75,12 @@ func (h *InvitationList) handle(
 }
 
 // Handle handles the request
-func (h *InvitationList) Handle(
-	params operations.InvitationListParams, principal *models.Principal,
+func (h *InvitationSentList) Handle(
+	params operations.InvitationSentListParams, principal *models.Principal,
 ) middleware.Responder {
-	sessions, err := h.handle(params.HTTPRequest.Context(), principal)
+	invitations, err := h.handle(params.HTTPRequest.Context(), principal)
 	if err != nil {
-		return operations.NewInvitationListDefault(500).WithPayload(models.FromError(err))
+		return operations.NewInvitationSentListDefault(500).WithPayload(models.FromError(err))
 	}
-	return operations.NewInvitationListOK().WithPayload(sessions)
+	return operations.NewInvitationSentListOK().WithPayload(invitations)
 }

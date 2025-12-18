@@ -33,7 +33,10 @@ func NewInvitationList(ctx *middleware.Context, handler InvitationListHandler) *
 
 /* InvitationList swagger:route GET /v1/invitations invitationList
 
-InvitationList invitation list API
+List invitations received by the current user
+
+Returns all pending invitations where the current user is the invitee.
+
 
 */
 type InvitationList struct {
