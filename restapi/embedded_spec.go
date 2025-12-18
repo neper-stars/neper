@@ -3221,6 +3221,12 @@ func init() {
           "x-go-custom-tag": "db:\"name\"",
           "x-nullable": false
         },
+        "pending_invitation": {
+          "description": "True if the current user has a pending invitation to this session\nbut is not yet a member. This field is only set when the session\nis returned in the context of a specific user request.\n",
+          "type": "boolean",
+          "x-nullable": false,
+          "readOnly": true
+        },
         "players": {
           "description": "Array of player info, sorted by player order.\nThis is read-only.\nIn this array this is normal to not always find all members+managers.\nYou will find in this list only people who have already set the race\nwith which they want to play.\n",
           "type": "array",

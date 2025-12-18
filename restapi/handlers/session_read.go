@@ -61,6 +61,21 @@ func (h *SessionReadHandler) handle(
 		return nil, err
 	}
 
+	// Check if user has pending invitation (not yet a member)
+	if !principal.IsGlobalManager {
+		isMember, err := IsSessionMember(sqlH, principal.Subject, sessionID)
+		if err != nil {
+			return nil, err
+		}
+		if !isMember {
+			isInvited, err := IsInvitedToSession(sqlH, principal.Subject, sessionID)
+			if err != nil {
+				return nil, err
+			}
+			sessionDB.Session.PendingInvitation = isInvited
+		}
+	}
+
 	return &sessionDB.Session, nil
 }
 

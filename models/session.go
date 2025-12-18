@@ -34,6 +34,13 @@ type Session struct {
 	// Required: true
 	Name string `json:"name" db:"name"`
 
+	// True if the current user has a pending invitation to this session
+	// but is not yet a member. This field is only set when the session
+	// is returned in the context of a specific user request.
+	//
+	// Read Only: true
+	PendingInvitation bool `json:"pending_invitation,omitempty"`
+
 	// Array of player info, sorted by player order.
 	// This is read-only.
 	// In this array this is normal to not always find all members+managers.
@@ -112,6 +119,10 @@ func (m *Session) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePendingInvitation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidatePlayers(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -125,6 +136,15 @@ func (m *Session) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 func (m *Session) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Session) contextValidatePendingInvitation(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "pending_invitation", "body", bool(m.PendingInvitation)); err != nil {
 		return err
 	}
 

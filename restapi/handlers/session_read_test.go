@@ -91,7 +91,7 @@ func TestSessionReadHandler(t *testing.T) {
 	// Load merry_nosession to get a user without any session membership
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
-	t.Run("invited_user_can_see_private_session", func(t *testing.T) {
+	t.Run("invited_user_can_see_private_session_with_pending_invitation_flag", func(t *testing.T) {
 		// Create an invitation for merry to isengard (private session)
 		_, err := testdb.Exec(`INSERT INTO invitation (id, session_id, user_profile_id, inviter_id) VALUES ('invitationID', 'isengardID', 'merryID', 'gandalfID')`)
 		require.NoError(t, err)
@@ -109,6 +109,46 @@ func TestSessionReadHandler(t *testing.T) {
 		session, err := handler.handle(ctx, params, p)
 		require.NoError(t, err)
 		require.Equal(t, "Isengard", session.Name)
+		// User has pending invitation, so the flag should be true
+		require.True(t, session.PendingInvitation, "pending_invitation should be true for invited users")
+	})
+
+	t.Run("member_does_not_have_pending_invitation_flag", func(t *testing.T) {
+		// Gandalf is a member of gondor (public session)
+		p := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "gandalfID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		params := operations.SessionReadParams{
+			SessionID: "gondorID",
+		}
+		session, err := handler.handle(ctx, params, p)
+		require.NoError(t, err)
+		require.Equal(t, "Gondor", session.Name)
+		// User is a member, so the flag should be false
+		require.False(t, session.PendingInvitation, "pending_invitation should be false for members")
+	})
+
+	t.Run("public_session_viewer_does_not_have_pending_invitation_flag", func(t *testing.T) {
+		// Merry viewing public session gondor (not a member, no invitation)
+		p := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+		params := operations.SessionReadParams{
+			SessionID: "gondorID",
+		}
+		session, err := handler.handle(ctx, params, p)
+		require.NoError(t, err)
+		require.Equal(t, "Gondor", session.Name)
+		// User is viewing public session without invitation, so the flag should be false
+		require.False(t, session.PendingInvitation, "pending_invitation should be false for public session viewers without invitation")
 	})
 }
 

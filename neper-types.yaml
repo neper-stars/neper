@@ -113,6 +113,14 @@ definitions:
         readOnly: true
         items:
           $ref: "#/definitions/session_player"
+      pending_invitation:
+        type: boolean
+        description: |
+          True if the current user has a pending invitation to this session
+          but is not yet a member. This field is only set when the session
+          is returned in the context of a specific user request.
+        readOnly: true
+        x-nullable: false
     required:
       - name
 
