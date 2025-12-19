@@ -88,6 +88,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		sessionDeleteHandlerInFlight,
 	)
 	reg.MustRegister(
+		sessionFilesGetHandlerDuration,
+		sessionFilesGetHandlerInFlight,
+	)
+	reg.MustRegister(
 		sessionJoinHandlerDuration,
 		sessionJoinHandlerInFlight,
 	)

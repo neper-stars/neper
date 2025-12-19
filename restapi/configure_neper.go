@@ -177,6 +177,8 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.TurnGetHandler = handlers.NewTurnGetHandler(&config.Log, config.DB)
 	// turn latest (get the most recent turn for a session)
 	api.TurnLatestHandler = handlers.NewTurnLatestHandler(&config.Log, config.DB)
+	// session files get (managers only - returns all files including host file)
+	api.SessionFilesGetHandler = handlers.NewSessionFilesGetHandler(&config.Log, config.DB)
 
 	turnSubmitter := sessionSubmitter.NewSessionSubmitter(&config.Log, config.NatsClientConn)
 	api.TurnSubmitHandler = handlers.NewTurnSubmitHandler(&config.Log, config.DB, turnSubmitter, config.NotifyService)

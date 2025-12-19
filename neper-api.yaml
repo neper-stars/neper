@@ -675,6 +675,34 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/files:
+    get:
+      operationId: sessionFilesGet
+      summary: "get all session files (managers only)"
+      description: |
+        Returns all session files for the current/latest turn including the host file (.hst),
+        universe file (.xy), all player turn files (.mN), and all order files (.xN).
+        This endpoint is restricted to session managers and global managers only.
+        Regular players should use the /turn/latest endpoint to get their own turn file.
+      parameters:
+        - name: "session_id"
+          in: "path"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: "all session files for the latest turn"
+          schema:
+            $ref: "neper-types.yaml#/definitions/session_files"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}/turn/latest:
     get:
       operationId: turnLatest

@@ -105,6 +105,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "sessionDelete",
 	)(o.handlers["DELETE"]["/v1/sessions/{session_id}"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/files"] = LogOperation(
+		"", "sessionFilesGet",
+	)(o.handlers["GET"]["/v1/sessions/{session_id}/files"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/join"] = LogOperation(
 		"", "sessionJoin",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/join"])

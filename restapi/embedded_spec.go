@@ -397,6 +397,41 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/files": {
+      "get": {
+        "description": "Returns all session files for the current/latest turn including the host file (.hst),\nuniverse file (.xy), all player turn files (.mN), and all order files (.xN).\nThis endpoint is restricted to session managers and global managers only.\nRegular players should use the /turn/latest endpoint to get their own turn file.\n",
+        "summary": "get all session files (managers only)",
+        "operationId": "sessionFilesGet",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "all session files for the latest turn",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/session_files"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
     "/v1/sessions/{session_id}/game": {
       "post": {
         "description": "Generate the first turn for this session, using the previously uploaded ruleset\nand all the player races.\nThis means all players must have uploaded a valid race file,\nthe rules must be set, AND all players must be marked as ready.\nYou must be the session owner/manager to be able to use this endpoint.\n",
@@ -1895,6 +1930,53 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/files": {
+      "get": {
+        "description": "Returns all session files for the current/latest turn including the host file (.hst),\nuniverse file (.xy), all player turn files (.mN), and all order files (.xN).\nThis endpoint is restricted to session managers and global managers only.\nRegular players should use the /turn/latest endpoint to get their own turn file.\n",
+        "summary": "get all session files (managers only)",
+        "operationId": "sessionFilesGet",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "all session files for the latest turn",
+            "schema": {
+              "$ref": "#/definitions/sessionFiles"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/v1/sessions/{session_id}/game": {
       "post": {
         "description": "Generate the first turn for this session, using the previously uploaded ruleset\nand all the player races.\nThis means all players must have uploaded a valid race file,\nthe rules must be set, AND all players must be marked as ready.\nYou must be the session owner/manager to be able to use this endpoint.\n",
@@ -3144,6 +3226,19 @@ func init() {
         "type": "Order"
       }
     },
+    "orderList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/order"
+      },
+      "x-go-custom-tag": "db:\"orders\"",
+      "x-go-type": {
+        "import": {
+          "package": "github.com/neper-stars/neper/models/types"
+        },
+        "type": "OrderList"
+      }
+    },
     "playerOrder": {
       "description": "the order of a player in a game session",
       "type": "object",
@@ -3492,6 +3587,48 @@ func init() {
         }
       }
     },
+    "sessionFiles": {
+      "description": "a session_files is a bundle of all the files a host needs at any point in time to generate the next turn\nThis exists principally so that a host can always get access to all the file of the game and take over\nthe hosting duty from Neper (you never know the reasons...)\n",
+      "type": "object",
+      "properties": {
+        "host_file": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"hostfile\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "id": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"id\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "orders": {
+          "$ref": "#/definitions/orderList"
+        },
+        "session_id": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"session_id\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "turns": {
+          "$ref": "#/definitions/turnList"
+        },
+        "universe": {
+          "type": "string",
+          "x-go-custom-tag": "db:\"universe\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "year": {
+          "type": "integer",
+          "x-go-custom-tag": "db:\"year\"",
+          "x-nullable": false,
+          "readOnly": true
+        }
+      }
+    },
     "sessionPlayer": {
       "description": "Information about a player in a session",
       "type": "object",
@@ -3575,6 +3712,25 @@ func init() {
         }
       }
     },
+    "turn": {
+      "description": "a turn file for a specific player.\nThis is the binary file from the game: .mN file\nThe data is encoded in base64.\n",
+      "type": "object",
+      "required": [
+        "b64_data"
+      ],
+      "properties": {
+        "b64_data": {
+          "type": "string",
+          "x-nullable": false
+        }
+      },
+      "x-go-type": {
+        "import": {
+          "package": "github.com/neper-stars/neper/models/types"
+        },
+        "type": "Turn"
+      }
+    },
     "turnFiles": {
       "description": "a turn_files is a bundle of all the files a player needs at any point in time to generate the next orders\nThis represents all the files you (as a player) would need in a directory to open stars! and play your\nturn.\nyou should find a turn file and a universe file (the same file each time because the universe file does not\nevolve during the game once it has been generated)\nThe Year field indicates for which year you will give orders. The first time you will receive a Year 2400\nand then 2401 and so on...\n",
       "type": "object",
@@ -3600,6 +3756,19 @@ func init() {
           "x-nullable": false,
           "readOnly": true
         }
+      }
+    },
+    "turnList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/turn"
+      },
+      "x-go-custom-tag": "db:\"turns\"",
+      "x-go-type": {
+        "import": {
+          "package": "github.com/neper-stars/neper/models/types"
+        },
+        "type": "TurnList"
       }
     },
     "user": {
