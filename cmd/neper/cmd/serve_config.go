@@ -13,6 +13,7 @@ import (
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/serial"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi"
 )
@@ -55,6 +56,12 @@ func setupServeConfig(config *restapi.Config) error {
 	// Rebuild the logger from parsed options (updates the package-level Logger variable)
 	Logger = *LoggingOptions.Logger()
 	config.Log = Logger
+
+	// Load serial keys into database if not already loaded
+	// This is idempotent and safe to call on every startup
+	if err := serial.LoadKeysIntoDB(context.Background(), config.DB, &config.Log); err != nil {
+		return err
+	}
 
 	config.BaseURL = InfoOptions.BaseURL
 	// This is where the api config can be customized at will
