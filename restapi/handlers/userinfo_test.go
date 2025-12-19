@@ -107,3 +107,75 @@ func TestUserinfo_WithSerialKey(t *testing.T) {
 	assert.Equal(t, "GandalfTheGrey", info.User.Nickname)
 	assert.Equal(t, testSerialKey, info.SerialKey)
 }
+
+func TestUserinfo_AutoAssignsSerialKey(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testDB := database.GetTestDB(ctx, t, migration.Source)
+	defer testDB.Close()
+
+	// Insert some available serial keys for auto-assignment
+	availableKey := "AVAIL001"
+	insertTestSerialKey(t, ctx, testDB, availableKey)
+
+	w, err := sync.NewWorker(testDB.DB, log)
+	require.NoError(t, err)
+	fixtures.LoadFixtureFile(t, w, "fixtures/sessions.json")
+	// Load gandalf WITHOUT a serial key
+	fixtures.LoadFixtureFile(t, w, "fixtures/gandalf.json")
+
+	handler := NewUserinfoHandler(testDB.DB)
+
+	principal := &models.Principal{
+		StandardClaims:  jwt.StandardClaims{Subject: "gandalfID"},
+		IsGlobalManager: true,
+	}
+
+	// First call should auto-assign a serial key
+	info, err := handler.handle(ctx, principal)
+	require.NoError(t, err)
+	require.NotNil(t, info)
+	assert.Equal(t, "gandalfID", info.User.ID)
+	assert.Equal(t, availableKey, info.SerialKey, "serial key should be auto-assigned")
+
+	// Verify the serial key is persisted in the database
+	var serialKeyInDB string
+	err = testDB.DB.GetContext(ctx, &serialKeyInDB,
+		"SELECT serial_key FROM user_profile WHERE id = $1", "gandalfID")
+	require.NoError(t, err)
+	assert.Equal(t, availableKey, serialKeyInDB, "serial key should be persisted in database")
+
+	// Second call should return the same serial key (not assign a new one)
+	info2, err := handler.handle(ctx, principal)
+	require.NoError(t, err)
+	require.NotNil(t, info2)
+	assert.Equal(t, availableKey, info2.SerialKey, "serial key should be the same on subsequent calls")
+}
+
+func TestUserinfo_NoAvailableSerialKeys(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testDB := database.GetTestDB(ctx, t, migration.Source)
+	defer testDB.Close()
+
+	// Don't insert any serial keys - simulate no available keys
+
+	w, err := sync.NewWorker(testDB.DB, log)
+	require.NoError(t, err)
+	fixtures.LoadFixtureFile(t, w, "fixtures/sessions.json")
+	fixtures.LoadFixtureFile(t, w, "fixtures/gandalf.json")
+
+	handler := NewUserinfoHandler(testDB.DB)
+
+	principal := &models.Principal{
+		StandardClaims:  jwt.StandardClaims{Subject: "gandalfID"},
+		IsGlobalManager: true,
+	}
+
+	// Should still return userinfo, just without a serial key
+	info, err := handler.handle(ctx, principal)
+	require.NoError(t, err)
+	require.NotNil(t, info)
+	assert.Equal(t, "gandalfID", info.User.ID)
+	assert.Empty(t, info.SerialKey, "serial key should be empty when no keys available")
+}

@@ -3,9 +3,12 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/dlmiddlecote/sqlstats"
 	"github.com/go-openapi/loads"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/neper-stars/neper/lib/serial"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/restapi"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -61,6 +64,12 @@ func (cmd *ServeCmd) Execute([]string) error {
 	}()
 
 	if err := db.Ping(); err != nil {
+		return err
+	}
+
+	// Load serial keys into database if not already loaded
+	// This is idempotent and safe to call on every startup
+	if err := serial.LoadKeysIntoDB(context.Background(), db, &Logger); err != nil {
 		return err
 	}
 

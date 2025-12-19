@@ -12,6 +12,7 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/serial"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
@@ -59,6 +60,15 @@ func (h *UserProfileCreateHandler) handle(
 	_, err = sqlH.Insert(&userProfileDB)
 	if err != nil {
 		return userProfile, err
+	}
+
+	// Assign a serial key to the new user within the same transaction
+	// This is non-fatal - if it fails, the user can still be created
+	serialKey, err := serial.AssignKeyToUserTx(ctx, tx.Tx, userProfile.ID)
+	if err != nil {
+		log.Warn().Err(err).Str("user_id", userProfile.ID).Msg("failed to assign serial key to new user")
+	} else {
+		log.Info().Str("user_id", userProfile.ID).Str("serial_key", serialKey).Msg("assigned serial key to new user")
 	}
 
 	if err := tx.Commit(); err != nil {

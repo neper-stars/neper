@@ -118,20 +118,13 @@ func LoadKeysIntoDB(ctx context.Context, db *sqlx.DB, log *zerolog.Logger) error
 	return nil
 }
 
-// AssignKeyToUser assigns an available serial key to a user.
+// AssignKeyToUserTx assigns an available serial key to a user within an existing transaction.
 // Returns the assigned key or an error if no keys are available.
-func AssignKeyToUser(ctx context.Context, db *sqlx.DB, userProfileID string) (string, error) {
-	tx, err := db.BeginTxx(ctx, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer func() {
-		_ = tx.Rollback()
-	}()
-
+// The caller is responsible for committing or rolling back the transaction.
+func AssignKeyToUserTx(ctx context.Context, tx *sqlx.Tx, userProfileID string) (string, error) {
 	// Select an available key with FOR UPDATE to lock it
 	var key string
-	err = tx.GetContext(ctx, &key,
+	err := tx.GetContext(ctx, &key,
 		`SELECT key FROM serial_key
 		 WHERE user_profile_id IS NULL
 		 LIMIT 1
@@ -158,6 +151,25 @@ func AssignKeyToUser(ctx context.Context, db *sqlx.DB, userProfileID string) (st
 		key, userProfileID)
 	if err != nil {
 		return "", fmt.Errorf("failed to update user profile: %w", err)
+	}
+
+	return key, nil
+}
+
+// AssignKeyToUser assigns an available serial key to a user.
+// Returns the assigned key or an error if no keys are available.
+func AssignKeyToUser(ctx context.Context, db *sqlx.DB, userProfileID string) (string, error) {
+	tx, err := db.BeginTxx(ctx, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	key, err := AssignKeyToUserTx(ctx, tx, userProfileID)
+	if err != nil {
+		return "", err
 	}
 
 	if err := tx.Commit(); err != nil {

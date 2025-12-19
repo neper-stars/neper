@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	"github.com/neper-stars/neper/lib/serial"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
@@ -61,6 +62,19 @@ func (h *Userinfo) handle(
 	}
 	if user.SerialKey != nil {
 		result.SerialKey = *user.SerialKey
+	} else {
+		// Auto-assign a serial key to existing users who don't have one
+		serialKey, err := serial.AssignKeyToUserTx(ctx, tx.Tx, principal.Subject)
+		if err != nil {
+			log.Warn().Err(err).Str("user_id", principal.Subject).Msg("failed to auto-assign serial key")
+		} else {
+			if err := tx.Commit(); err != nil {
+				log.Warn().Err(err).Str("user_id", principal.Subject).Msg("failed to commit serial key assignment")
+			} else {
+				log.Info().Str("user_id", principal.Subject).Str("serial_key", serialKey).Msg("auto-assigned serial key to user")
+				result.SerialKey = serialKey
+			}
+		}
 	}
 
 	return result, nil
