@@ -412,9 +412,9 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "the created session files",
+            "description": "the turn files for the requesting player",
             "schema": {
-              "$ref": "neper-types.yaml#/definitions/session_files"
+              "$ref": "neper-types.yaml#/definitions/turn_files"
             }
           },
           "400": {
@@ -1910,9 +1910,9 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "the created session files",
+            "description": "the turn files for the requesting player",
             "schema": {
-              "$ref": "#/definitions/sessionFiles"
+              "$ref": "#/definitions/turnFiles"
             }
           },
           "400": {
@@ -3144,19 +3144,6 @@ func init() {
         "type": "Order"
       }
     },
-    "orderList": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/order"
-      },
-      "x-go-custom-tag": "db:\"orders\"",
-      "x-go-type": {
-        "import": {
-          "package": "github.com/neper-stars/neper/models/types"
-        },
-        "type": "OrderList"
-      }
-    },
     "playerOrder": {
       "description": "the order of a player in a game session",
       "type": "object",
@@ -3505,48 +3492,6 @@ func init() {
         }
       }
     },
-    "sessionFiles": {
-      "description": "a session_files is a bundle of all the files a host needs at any point in time to generate the next turn\nThis exists principally so that a host can always get access to all the file of the game and take over\nthe hosting duty from Neper (you never know the reasons...)\n",
-      "type": "object",
-      "properties": {
-        "host_file": {
-          "type": "string",
-          "x-go-custom-tag": "db:\"hostfile\"",
-          "x-nullable": false,
-          "readOnly": true
-        },
-        "id": {
-          "type": "string",
-          "x-go-custom-tag": "db:\"id\"",
-          "x-nullable": false,
-          "readOnly": true
-        },
-        "orders": {
-          "$ref": "#/definitions/orderList"
-        },
-        "session_id": {
-          "type": "string",
-          "x-go-custom-tag": "db:\"session_id\"",
-          "x-nullable": false,
-          "readOnly": true
-        },
-        "turns": {
-          "$ref": "#/definitions/turnList"
-        },
-        "universe": {
-          "type": "string",
-          "x-go-custom-tag": "db:\"universe\"",
-          "x-nullable": false,
-          "readOnly": true
-        },
-        "year": {
-          "type": "integer",
-          "x-go-custom-tag": "db:\"year\"",
-          "x-nullable": false,
-          "readOnly": true
-        }
-      }
-    },
     "sessionPlayer": {
       "description": "Information about a player in a session",
       "type": "object",
@@ -3630,25 +3575,6 @@ func init() {
         }
       }
     },
-    "turn": {
-      "description": "a turn file for a specific player.\nThis is the binary file from the game: .mN file\nThe data is encoded in base64.\n",
-      "type": "object",
-      "required": [
-        "b64_data"
-      ],
-      "properties": {
-        "b64_data": {
-          "type": "string",
-          "x-nullable": false
-        }
-      },
-      "x-go-type": {
-        "import": {
-          "package": "github.com/neper-stars/neper/models/types"
-        },
-        "type": "Turn"
-      }
-    },
     "turnFiles": {
       "description": "a turn_files is a bundle of all the files a player needs at any point in time to generate the next orders\nThis represents all the files you (as a player) would need in a directory to open stars! and play your\nturn.\nyou should find a turn file and a universe file (the same file each time because the universe file does not\nevolve during the game once it has been generated)\nThe Year field indicates for which year you will give orders. The first time you will receive a Year 2400\nand then 2401 and so on...\n",
       "type": "object",
@@ -3674,19 +3600,6 @@ func init() {
           "x-nullable": false,
           "readOnly": true
         }
-      }
-    },
-    "turnList": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/turn"
-      },
-      "x-go-custom-tag": "db:\"turns\"",
-      "x-go-type": {
-        "import": {
-          "package": "github.com/neper-stars/neper/models/types"
-        },
-        "type": "TurnList"
       }
     },
     "user": {

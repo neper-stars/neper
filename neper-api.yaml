@@ -661,9 +661,9 @@ paths:
           required: true
       responses:
         201:
-          description: the created session files
+          description: the turn files for the requesting player
           schema:
-            $ref: "neper-types.yaml#/definitions/session_files"
+            $ref: "neper-types.yaml#/definitions/turn_files"
         400:
           $ref: "#/responses/invalid"
         401:

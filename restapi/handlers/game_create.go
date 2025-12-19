@@ -34,7 +34,7 @@ type GameCreateHandler struct {
 
 func (h *GameCreateHandler) handle(
 	ctx context.Context, params operations.GameCreateParams, principal *models.Principal,
-) (*models.SessionFiles, error) {
+) (*models.TurnFiles, error) {
 	authorized, err := h.Authorize(ctx, params, principal)
 	if err != nil {
 		return nil, err
@@ -128,14 +128,24 @@ func (h *GameCreateHandler) handle(
 		_ = h.notifyService.PublishSessionTurnReady(sessionID, sfDB.Year)
 	}
 
-	return &sfDB.SessionFiles, nil
+	// Find the requesting user's player order to return their turn file
+	var playerOrder int64
+	for _, spr := range sessionPlayerRaces {
+		if spr.UserProfileID == principal.Subject {
+			playerOrder = spr.PlayerOrder
+			break
+		}
+	}
+
+	turnFiles := sfDB.ToTurnFiles(playerOrder)
+	return &turnFiles, nil
 }
 
 // Handle handles the request
 func (h *GameCreateHandler) Handle(
 	params operations.GameCreateParams, principal *models.Principal,
 ) middleware.Responder {
-	sessionFiles, err := h.handle(params.HTTPRequest.Context(), params, principal)
+	turnFiles, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrForbidden):
@@ -153,7 +163,7 @@ func (h *GameCreateHandler) Handle(
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
-	return operations.NewGameCreateCreated().WithPayload(sessionFiles)
+	return operations.NewGameCreateCreated().WithPayload(turnFiles)
 }
 
 func (h *GameCreateHandler) Authorize(

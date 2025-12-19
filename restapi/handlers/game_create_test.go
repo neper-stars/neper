@@ -55,14 +55,15 @@ func TestGameCreateHandler(t *testing.T) {
 		params := operations.NewGameCreateParams()
 		params.SessionID = sessionID
 
-		// the handler returns all the game files
+		// the handler returns the requesting player's turn files (not all session files)
 		returnedFiles, err := createHandler.handle(ctx, params, &merryPrincipal)
 		require.NoError(t, err)
 		require.Equal(t, sessionID, returnedFiles.SessionID)
-		require.Equal(t, 2, len(returnedFiles.Turns))
-		require.Equal(t, 0, len(returnedFiles.Orders))
-		require.True(t, len(returnedFiles.HostFile) > 0)
-		print(returnedFiles.HostFile)
+		require.Equal(t, int64(2400), returnedFiles.Year)
+		// Player gets their own turn file
+		require.NotNil(t, returnedFiles.Turn)
+		require.True(t, len(returnedFiles.Turn.Turn) > 0, "player should receive their turn file")
+		require.True(t, len(returnedFiles.Turn.Universe) > 0, "player should receive the universe file")
 
 		// Verify the session is marked as started
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
@@ -70,8 +71,13 @@ func TestGameCreateHandler(t *testing.T) {
 		require.NoError(t, sqlH.GetByPKey(&sessionDB, sessionID))
 		require.True(t, sessionDB.Started, "session should be marked as started after game creation")
 
-		var rawData []byte
-		_, err = stars.B64Decode(returnedFiles.HostFile)
+		// Verify host file is stored in database (but NOT returned to client)
+		var sessionFilesDB models.SessionFilesDB
+		require.NoError(t, sqlH.GetBy(&sessionFilesDB, "session_id", sessionID))
+		require.True(t, len(sessionFilesDB.HostFile) > 0, "host file should be stored in database")
+
+		// Verify we can parse race names from the stored host file
+		rawData, err := stars.B64Decode(sessionFilesDB.HostFile)
 		require.NoError(t, err)
 		raceNames, err := stars.RaceNamesFromHostFile(rawData)
 		require.NoError(t, err)
@@ -82,7 +88,8 @@ func TestGameCreateHandler(t *testing.T) {
 				require.Equal(t, "Hobbits", raceNames[i])
 			case 1:
 				// second player plays with halflings
-				require.Equal(t, "Halflings", raceNames[i])
+				// Note: The binary race data has "Halfings" (typo in the original race file)
+				require.Equal(t, "Halfings", raceNames[i])
 			default:
 				t.Fail()
 			}

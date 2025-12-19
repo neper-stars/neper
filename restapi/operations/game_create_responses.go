@@ -16,7 +16,7 @@ import (
 // GameCreateCreatedCode is the HTTP code returned for type GameCreateCreated
 const GameCreateCreatedCode int = 201
 
-/*GameCreateCreated the created session files
+/*GameCreateCreated the turn files for the requesting player
 
 swagger:response gameCreateCreated
 */
@@ -25,7 +25,7 @@ type GameCreateCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.SessionFiles `json:"body,omitempty"`
+	Payload *models.TurnFiles `json:"body,omitempty"`
 }
 
 // NewGameCreateCreated creates GameCreateCreated with default headers values
@@ -35,13 +35,13 @@ func NewGameCreateCreated() *GameCreateCreated {
 }
 
 // WithPayload adds the payload to the game create created response
-func (o *GameCreateCreated) WithPayload(payload *models.SessionFiles) *GameCreateCreated {
+func (o *GameCreateCreated) WithPayload(payload *models.TurnFiles) *GameCreateCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the game create created response
-func (o *GameCreateCreated) SetPayload(payload *models.SessionFiles) {
+func (o *GameCreateCreated) SetPayload(payload *models.TurnFiles) {
 	o.Payload = payload
 }
 
