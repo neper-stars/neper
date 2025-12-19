@@ -8,14 +8,23 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // SessionPlayer Information about a player in a session
 //
 // swagger:model sessionPlayer
 type SessionPlayer struct {
+
+	// The order number for this player in the game.
+	// As there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15
+	//
+	// Maximum: 15
+	// Minimum: 0
+	PlayerOrder int64 `json:"player_order,omitempty"`
 
 	// whether the player has marked their race as ready
 	Ready bool `json:"ready,omitempty"`
@@ -26,6 +35,31 @@ type SessionPlayer struct {
 
 // Validate validates this session player
 func (m *SessionPlayer) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validatePlayerOrder(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *SessionPlayer) validatePlayerOrder(formats strfmt.Registry) error {
+	if swag.IsZero(m.PlayerOrder) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("player_order", "body", m.PlayerOrder, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("player_order", "body", m.PlayerOrder, 15, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 

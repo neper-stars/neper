@@ -181,13 +181,15 @@ func TestSessionReadHandler_PlayersReady(t *testing.T) {
 		require.Equal(t, "MerryVSGollum", session.Name)
 		require.Equal(t, 2, len(session.Players))
 
-		// First player is merry, ready
+		// First player is merry, ready, player_order=0
 		require.Equal(t, "merryID", session.Players[0].UserProfileID)
 		require.True(t, session.Players[0].Ready)
+		require.Equal(t, int64(0), session.Players[0].PlayerOrder)
 
-		// Second player is gollum, ready
+		// Second player is gollum, ready, player_order=1
 		require.Equal(t, "gollumID", session.Players[1].UserProfileID)
 		require.True(t, session.Players[1].Ready)
+		require.Equal(t, int64(1), session.Players[1].PlayerOrder)
 	})
 
 	t.Run("players_not_ready_state_is_returned", func(t *testing.T) {

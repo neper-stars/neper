@@ -136,6 +136,15 @@ definitions:
         type: boolean
         description: whether the player has marked their race as ready
         x-nullable: false
+      player_order:
+        type: integer
+        format: int64
+        description: |
+          The order number for this player in the game.
+          As there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15
+        minimum: 0
+        maximum: 15
+        x-nullable: false
 
   invitation:
     type: object

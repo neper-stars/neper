@@ -67,6 +67,7 @@ func (c *SessionDB) PlayersID(sql *database.SQLHelper) ([]string, error) {
 type sessionPlayerInfo struct {
 	UserProfileID string `db:"user_profile_id"`
 	Ready         bool   `db:"ready"`
+	PlayerOrder   int64  `db:"player_order"`
 }
 
 // PlayersInfo returns the list of Players with their ready status, sorted by player order
@@ -74,7 +75,7 @@ func (c *SessionDB) PlayersInfo(sql *database.SQLHelper) ([]*SessionPlayer, erro
 	var infos []sessionPlayerInfo
 
 	if err := sql.Select(&infos,
-		sq.Select(SessionPlayerRaceDBUserProfileIDColumn, SessionPlayerRaceDBReadyColumn).
+		sq.Select(SessionPlayerRaceDBUserProfileIDColumn, SessionPlayerRaceDBReadyColumn, SessionPlayerRaceDBPlayerOrderColumn).
 			From(SessionPlayerRaceDBTable).
 			Where(sq.And{
 				sq.Eq{SessionPlayerRaceDBSessionIDColumn: c.ID},
@@ -88,6 +89,7 @@ func (c *SessionDB) PlayersInfo(sql *database.SQLHelper) ([]*SessionPlayer, erro
 		players = append(players, &SessionPlayer{
 			UserProfileID: info.UserProfileID,
 			Ready:         info.Ready,
+			PlayerOrder:   info.PlayerOrder,
 		})
 	}
 	return players, nil

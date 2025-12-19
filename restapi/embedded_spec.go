@@ -3551,6 +3551,14 @@ func init() {
       "description": "Information about a player in a session",
       "type": "object",
       "properties": {
+        "player_order": {
+          "description": "The order number for this player in the game.\nAs there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15\n",
+          "type": "integer",
+          "format": "int64",
+          "maximum": 15,
+          "minimum": 0,
+          "x-nullable": false
+        },
         "ready": {
           "description": "whether the player has marked their race as ready",
           "type": "boolean",
