@@ -122,6 +122,12 @@ func (h *GameCreateHandler) handle(
 		return nil, err
 	}
 
+	// Cleanup session directory after successful DB commit
+	if err := h.runner.CleanupSessionDir(sessionID); err != nil {
+		// Log but don't fail - files are safely in DB
+		h.log.Warn().Err(err).Str("sessionID", sessionID).Msg("failed to cleanup session directory after game creation")
+	}
+
 	// Publish notifications after successful commit
 	if h.notifyService != nil {
 		_ = h.notifyService.PublishSessionUpdate(sessionID)

@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"os"
 	"testing"
 	"time"
 
@@ -94,6 +95,11 @@ func TestGameCreateHandler(t *testing.T) {
 				t.Fail()
 			}
 		}
+
+		// Verify session directory was cleaned up after game creation
+		sessionDir := runner.SessionDir(sessionID)
+		_, err = os.Stat(sessionDir)
+		require.True(t, os.IsNotExist(err), "session directory should be cleaned up after game creation")
 	})
 }
 

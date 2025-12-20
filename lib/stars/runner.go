@@ -277,3 +277,20 @@ func (r *Runner) ensureStars() error {
 func (r *Runner) Prefix() *wine.Prefix {
 	return r.prefix
 }
+
+// CleanupSessionDir removes the session directory and all its contents.
+// This should be called after successfully saving game files to the database.
+func (r *Runner) CleanupSessionDir(sessionID string) error {
+	sessionDir := r.localSessionSaveDir(sessionID)
+	if err := os.RemoveAll(sessionDir); err != nil {
+		r.log.Err(err).Str("sessionID", sessionID).Str("dir", sessionDir).Msg("failed to cleanup session directory")
+		return err
+	}
+	r.log.Debug().Str("sessionID", sessionID).Str("dir", sessionDir).Msg("cleaned up session directory")
+	return nil
+}
+
+// SessionDir returns the path to the session directory for testing purposes.
+func (r *Runner) SessionDir(sessionID string) string {
+	return r.localSessionSaveDir(sessionID)
+}

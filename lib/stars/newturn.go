@@ -247,6 +247,12 @@ func (g *TurnGenerator) genTurn(ctx context.Context, sessionID string, year int)
 		return err
 	}
 
+	// Cleanup session directory after successful DB commit
+	if err := g.runner.CleanupSessionDir(sessionID); err != nil {
+		// Log but don't fail - files are safely in DB
+		g.log.Warn().Err(err).Str("sessionID", sessionID).Msg("failed to cleanup session directory after turn generation")
+	}
+
 	return nil
 }
 
