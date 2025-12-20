@@ -75,6 +75,15 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		OrdersStatusHandler: OrdersStatusHandlerFunc(func(params OrdersStatusParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation OrdersStatus has not yet been implemented")
 		}),
+		PendingRegistrationApproveHandler: PendingRegistrationApproveHandlerFunc(func(params PendingRegistrationApproveParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation PendingRegistrationApprove has not yet been implemented")
+		}),
+		PendingRegistrationListHandler: PendingRegistrationListHandlerFunc(func(params PendingRegistrationListParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation PendingRegistrationList has not yet been implemented")
+		}),
+		PendingRegistrationRejectHandler: PendingRegistrationRejectHandlerFunc(func(params PendingRegistrationRejectParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation PendingRegistrationReject has not yet been implemented")
+		}),
 		RaceCreateHandler: RaceCreateHandlerFunc(func(params RaceCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RaceCreate has not yet been implemented")
 		}),
@@ -89,6 +98,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		}),
 		RefreshTokenHandler: RefreshTokenHandlerFunc(func(params RefreshTokenParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RefreshToken has not yet been implemented")
+		}),
+		RegisterHandler: RegisterHandlerFunc(func(params RegisterParams) middleware.Responder {
+			return middleware.NotImplemented("operation Register has not yet been implemented")
 		}),
 		ReorderPlayersHandler: ReorderPlayersHandlerFunc(func(params ReorderPlayersParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation ReorderPlayers has not yet been implemented")
@@ -146,6 +158,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		}),
 		UserProfileCreateHandler: UserProfileCreateHandlerFunc(func(params UserProfileCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation UserProfileCreate has not yet been implemented")
+		}),
+		UserProfileDeleteHandler: UserProfileDeleteHandlerFunc(func(params UserProfileDeleteParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation UserProfileDelete has not yet been implemented")
 		}),
 		UserProfileListHandler: UserProfileListHandlerFunc(func(params UserProfileListParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation UserProfileList has not yet been implemented")
@@ -236,6 +251,12 @@ type NeperAPI struct {
 	NotificationsHandler NotificationsHandler
 	// OrdersStatusHandler sets the operation handler for the orders status operation
 	OrdersStatusHandler OrdersStatusHandler
+	// PendingRegistrationApproveHandler sets the operation handler for the pending registration approve operation
+	PendingRegistrationApproveHandler PendingRegistrationApproveHandler
+	// PendingRegistrationListHandler sets the operation handler for the pending registration list operation
+	PendingRegistrationListHandler PendingRegistrationListHandler
+	// PendingRegistrationRejectHandler sets the operation handler for the pending registration reject operation
+	PendingRegistrationRejectHandler PendingRegistrationRejectHandler
 	// RaceCreateHandler sets the operation handler for the race create operation
 	RaceCreateHandler RaceCreateHandler
 	// RaceDeleteHandler sets the operation handler for the race delete operation
@@ -246,6 +267,8 @@ type NeperAPI struct {
 	RacesListHandler RacesListHandler
 	// RefreshTokenHandler sets the operation handler for the refresh token operation
 	RefreshTokenHandler RefreshTokenHandler
+	// RegisterHandler sets the operation handler for the register operation
+	RegisterHandler RegisterHandler
 	// ReorderPlayersHandler sets the operation handler for the reorder players operation
 	ReorderPlayersHandler ReorderPlayersHandler
 	// RulesCreateHandler sets the operation handler for the rules create operation
@@ -284,6 +307,8 @@ type NeperAPI struct {
 	TurnSubmitHandler TurnSubmitHandler
 	// UserProfileCreateHandler sets the operation handler for the user profile create operation
 	UserProfileCreateHandler UserProfileCreateHandler
+	// UserProfileDeleteHandler sets the operation handler for the user profile delete operation
+	UserProfileDeleteHandler UserProfileDeleteHandler
 	// UserProfileListHandler sets the operation handler for the user profile list operation
 	UserProfileListHandler UserProfileListHandler
 	// UserProfileReadHandler sets the operation handler for the user profile read operation
@@ -408,6 +433,15 @@ func (o *NeperAPI) Validate() error {
 	if o.OrdersStatusHandler == nil {
 		unregistered = append(unregistered, "OrdersStatusHandler")
 	}
+	if o.PendingRegistrationApproveHandler == nil {
+		unregistered = append(unregistered, "PendingRegistrationApproveHandler")
+	}
+	if o.PendingRegistrationListHandler == nil {
+		unregistered = append(unregistered, "PendingRegistrationListHandler")
+	}
+	if o.PendingRegistrationRejectHandler == nil {
+		unregistered = append(unregistered, "PendingRegistrationRejectHandler")
+	}
 	if o.RaceCreateHandler == nil {
 		unregistered = append(unregistered, "RaceCreateHandler")
 	}
@@ -422,6 +456,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.RefreshTokenHandler == nil {
 		unregistered = append(unregistered, "RefreshTokenHandler")
+	}
+	if o.RegisterHandler == nil {
+		unregistered = append(unregistered, "RegisterHandler")
 	}
 	if o.ReorderPlayersHandler == nil {
 		unregistered = append(unregistered, "ReorderPlayersHandler")
@@ -479,6 +516,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.UserProfileCreateHandler == nil {
 		unregistered = append(unregistered, "UserProfileCreateHandler")
+	}
+	if o.UserProfileDeleteHandler == nil {
+		unregistered = append(unregistered, "UserProfileDeleteHandler")
 	}
 	if o.UserProfileListHandler == nil {
 		unregistered = append(unregistered, "UserProfileListHandler")
@@ -639,6 +679,18 @@ func (o *NeperAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/v1/pending_registrations/{user_profile_id}/approve"] = NewPendingRegistrationApprove(o.context, o.PendingRegistrationApproveHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/pending_registrations"] = NewPendingRegistrationList(o.context, o.PendingRegistrationListHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/v1/pending_registrations/{user_profile_id}/reject"] = NewPendingRegistrationReject(o.context, o.PendingRegistrationRejectHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"] = NewRaceCreate(o.context, o.RaceCreateHandler)
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
@@ -656,6 +708,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/auth/refresh_token"] = NewRefreshToken(o.context, o.RefreshTokenHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/v1/auth/register"] = NewRegister(o.context, o.RegisterHandler)
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
@@ -732,6 +788,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/user_profiles"] = NewUserProfileCreate(o.context, o.UserProfileCreateHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/v1/user_profiles/{user_profile_id}"] = NewUserProfileDelete(o.context, o.UserProfileDeleteHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

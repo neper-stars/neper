@@ -65,6 +65,18 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "ordersStatus",
 	)(o.handlers["GET"]["/v1/sessions/{session_id}/orders/{year}"])
 
+	o.handlers["POST"]["/v1/pending_registrations/{user_profile_id}/approve"] = LogOperation(
+		"", "pendingRegistrationApprove",
+	)(o.handlers["POST"]["/v1/pending_registrations/{user_profile_id}/approve"])
+
+	o.handlers["GET"]["/v1/pending_registrations"] = LogOperation(
+		"", "pendingRegistrationList",
+	)(o.handlers["GET"]["/v1/pending_registrations"])
+
+	o.handlers["DELETE"]["/v1/pending_registrations/{user_profile_id}/reject"] = LogOperation(
+		"", "pendingRegistrationReject",
+	)(o.handlers["DELETE"]["/v1/pending_registrations/{user_profile_id}/reject"])
+
 	o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"] = LogOperation(
 		"", "raceCreate",
 	)(o.handlers["POST"]["/v1/user_profiles/{user_profile_id}/races"])
@@ -84,6 +96,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 	o.handlers["POST"]["/v1/auth/refresh_token"] = LogOperation(
 		"", "refresh-token",
 	)(o.handlers["POST"]["/v1/auth/refresh_token"])
+
+	o.handlers["POST"]["/v1/auth/register"] = LogOperation(
+		"", "register",
+	)(o.handlers["POST"]["/v1/auth/register"])
 
 	o.handlers["PUT"]["/v1/sessions/{session_id}/reorder_players"] = LogOperation(
 		"", "reorderPlayers",
@@ -160,6 +176,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 	o.handlers["POST"]["/v1/user_profiles"] = LogOperation(
 		"", "userProfileCreate",
 	)(o.handlers["POST"]["/v1/user_profiles"])
+
+	o.handlers["DELETE"]["/v1/user_profiles/{user_profile_id}"] = LogOperation(
+		"", "userProfileDelete",
+	)(o.handlers["DELETE"]["/v1/user_profiles/{user_profile_id}"])
 
 	o.handlers["GET"]["/v1/user_profiles"] = LogOperation(
 		"", "userProfileList",

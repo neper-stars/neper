@@ -215,10 +215,60 @@ definitions:
         readOnly: true
         x-go-custom-tag: db:"is_manager"
         x-nullable: false
+      pending:
+        type: boolean
+        description: |
+          true if this is a pending registration that needs approval by a global manager.
+          Pending users cannot authenticate until approved.
+        readOnly: true
+        x-go-custom-tag: db:"pending"
+        x-nullable: false
+      registration_message:
+        type: string
+        description: "optional message provided during registration explaining why they want to join"
+        readOnly: true
+        x-go-custom-tag: db:"registration_message"
+        x-nullable: true
 
     required:
       - firstname
       - lastname
+      - email
+
+  registration_request:
+    type: object
+    description: Request body for user registration
+    properties:
+      nickname:
+        type: string
+        description: requested user nickname (must be unique)
+        x-nullable: false
+      email:
+        type: string
+        description: user email address (must be unique)
+        x-nullable: false
+      message:
+        type: string
+        description: optional message explaining why you want to join
+        x-nullable: true
+    required:
+      - nickname
+      - email
+
+  user_profile_create_request:
+    type: object
+    description: Request body for creating a user profile (global managers only)
+    properties:
+      nickname:
+        type: string
+        description: user nickname (must be unique)
+        x-nullable: false
+      email:
+        type: string
+        description: user email address (must be unique)
+        x-nullable: false
+    required:
+      - nickname
       - email
 
   player_order:

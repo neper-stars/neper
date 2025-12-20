@@ -30,6 +30,15 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
+// GenerateAPIKey generates a random API key (32 bytes = 64 hex characters)
+func GenerateAPIKey() (string, error) {
+	apiKey := make([]byte, 32)
+	if _, err := rand.Read(apiKey); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(apiKey), nil
+}
+
 // TokenOptions holds options related to the JWT
 type TokenOptions struct {
 	Secret             string             `long:"token-secret" env:"TOKEN_SECRET" ini-name:"token-secret" description:"hex HMAC256 secret for signing/verifying JWT (<= 32 bytes)"`

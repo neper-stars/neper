@@ -37,6 +37,16 @@ type UserProfile struct {
 
 	// user nickname (name displayed to other users)
 	Nickname string `json:"nickname,omitempty" db:"nickname"`
+
+	// true if this is a pending registration that needs approval by a global manager.
+	// Pending users cannot authenticate until approved.
+	//
+	// Read Only: true
+	Pending bool `json:"pending,omitempty" db:"pending"`
+
+	// optional message provided during registration explaining why they want to join
+	// Read Only: true
+	RegistrationMessage *string `json:"registration_message,omitempty" db:"registration_message"`
 }
 
 // Validate validates this user profile
@@ -78,6 +88,14 @@ func (m *UserProfile) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
+	if err := m.contextValidatePending(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRegistrationMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -105,6 +123,24 @@ func (m *UserProfile) contextValidateIsActive(ctx context.Context, formats strfm
 func (m *UserProfile) contextValidateIsManager(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "is_manager", "body", bool(m.IsManager)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UserProfile) contextValidatePending(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "pending", "body", bool(m.Pending)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UserProfile) contextValidateRegistrationMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "registration_message", "body", m.RegistrationMessage); err != nil {
 		return err
 	}
 

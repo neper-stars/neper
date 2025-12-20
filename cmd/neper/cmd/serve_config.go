@@ -13,6 +13,7 @@ import (
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/registration"
 	"github.com/neper-stars/neper/lib/serial"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi"
@@ -24,6 +25,7 @@ var (
 	StarsRunnerOptions  = stars.NewRunnerOptions()
 	EmbeddedNatsOptions = embeddednats.NewEmbeddedNatsOptions()
 	NatsClientOptions   = embeddednats.NewNatsClientOptions()
+	RegistrationOptions = registration.NewOptions()
 )
 
 func setupServerCmd(cmd *ServeCmd) {
@@ -48,6 +50,11 @@ func setupServerCmd(cmd *ServeCmd) {
 			ShortDescription: "nats-client",
 			LongDescription:  "nats client config",
 			Options:          NatsClientOptions,
+		},
+		swag.CommandLineOptionsGroup{
+			ShortDescription: "registration",
+			LongDescription:  "registration settings",
+			Options:          RegistrationOptions,
 		},
 	)
 }
@@ -74,6 +81,10 @@ func setupServeConfig(config *restapi.Config) error {
 
 	// Initialize the authenticator
 	config.Authenticator = auth.NewAuth(config.TokenOptions, config.DB, config.Now, config.Log)
+
+	// Initialize registration options and rate limiter
+	config.RegistrationOptions = RegistrationOptions
+	config.RegistrationLimiter = registration.NewRateLimiter(RegistrationOptions)
 
 	runner, err := stars.NewRunner(&config.Log, StarsRunnerOptions)
 	if err != nil {

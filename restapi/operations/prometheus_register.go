@@ -48,6 +48,18 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		ordersStatusHandlerInFlight,
 	)
 	reg.MustRegister(
+		pendingRegistrationApproveHandlerDuration,
+		pendingRegistrationApproveHandlerInFlight,
+	)
+	reg.MustRegister(
+		pendingRegistrationListHandlerDuration,
+		pendingRegistrationListHandlerInFlight,
+	)
+	reg.MustRegister(
+		pendingRegistrationRejectHandlerDuration,
+		pendingRegistrationRejectHandlerInFlight,
+	)
+	reg.MustRegister(
 		raceCreateHandlerDuration,
 		raceCreateHandlerInFlight,
 	)
@@ -66,6 +78,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 	reg.MustRegister(
 		refreshTokenHandlerDuration,
 		refreshTokenHandlerInFlight,
+	)
+	reg.MustRegister(
+		registerHandlerDuration,
+		registerHandlerInFlight,
 	)
 	reg.MustRegister(
 		reorderPlayersHandlerDuration,
@@ -142,6 +158,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 	reg.MustRegister(
 		userProfileCreateHandlerDuration,
 		userProfileCreateHandlerInFlight,
+	)
+	reg.MustRegister(
+		userProfileDeleteHandlerDuration,
+		userProfileDeleteHandlerInFlight,
 	)
 	reg.MustRegister(
 		userProfileListHandlerDuration,

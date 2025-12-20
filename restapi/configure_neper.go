@@ -18,6 +18,7 @@ import (
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/registration"
 	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi/handlers"
@@ -47,6 +48,10 @@ type Config struct {
 	NatsClientOptions   *embeddednats.ClientOptions
 	NatsClientConn      *nats.Conn
 	NotifyService       *notify.Service
+
+	// Registration options
+	RegistrationOptions *registration.Options
+	RegistrationLimiter *registration.RateLimiter
 }
 
 // OnShutdown add a shutdown callback
@@ -131,6 +136,14 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.AuthenticateHandler = handlers.NewAuthenticateHandler(config.DB, config.Authenticator)
 	api.RefreshTokenHandler = handlers.NewRefreshTokenHandler(&config.Log, config.DB, config.Authenticator)
 
+	// Registration (public endpoint - no auth required)
+	api.RegisterHandler = handlers.NewRegisterHandler(&config.Log, config.DB, config.RegistrationOptions, config.RegistrationLimiter)
+
+	// Pending registrations management (global managers only)
+	api.PendingRegistrationListHandler = handlers.NewPendingRegistrationListHandler(&config.Log, config.DB)
+	api.PendingRegistrationApproveHandler = handlers.NewPendingRegistrationApproveHandler(&config.Log, config.DB)
+	api.PendingRegistrationRejectHandler = handlers.NewPendingRegistrationRejectHandler(&config.Log, config.DB)
+
 	// Sessions
 	api.SessionsListHandler = handlers.NewSessionsListHandler(config.DB)
 	api.SessionReadHandler = handlers.NewSessionReadHandler(&config.Log, config.DB)
@@ -146,6 +159,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.UserProfileReadHandler = handlers.NewUserProfileReadHandler(config.DB)
 	api.UserProfileListHandler = handlers.NewUserProfilesListHandler(config.DB)
 	api.UserProfileUpdateHandler = handlers.NewUserProfileUpdateHandler(config.DB)
+	api.UserProfileDeleteHandler = handlers.NewUserProfileDeleteHandler(&config.Log, config.DB)
 	api.UserProfileResetApikeyHandler = handlers.NewUserProfileResetApikeyHandler(config.DB)
 
 	// Races

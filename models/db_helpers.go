@@ -148,6 +148,21 @@ const (
 	// InvitationDBUserProfileIDColumn is the name of the column containing field "UserProfileID" data
 	InvitationDBUserProfileIDColumn = "user_profile_id"
 
+	// PendingUserProfileCreatedAtColumn is the name of the column containing field "CreatedAt" data
+	PendingUserProfileCreatedAtColumn = "created_at"
+
+	// PendingUserProfileEmailColumn is the name of the column containing field "Email" data
+	PendingUserProfileEmailColumn = "email"
+
+	// PendingUserProfileIDColumn is the name of the column containing field "ID" data
+	PendingUserProfileIDColumn = "id"
+
+	// PendingUserProfileMessageColumn is the name of the column containing field "Message" data
+	PendingUserProfileMessageColumn = "message"
+
+	// PendingUserProfileNicknameColumn is the name of the column containing field "Nickname" data
+	PendingUserProfileNicknameColumn = "nickname"
+
 	// RaceDataColumn is the name of the column containing field "Data" data
 	RaceDataColumn = "data"
 
@@ -544,6 +559,12 @@ const (
 	// UserProfileNicknameColumn is the name of the column containing field "Nickname" data
 	UserProfileNicknameColumn = "nickname"
 
+	// UserProfilePendingColumn is the name of the column containing field "Pending" data
+	UserProfilePendingColumn = "pending"
+
+	// UserProfileRegistrationMessageColumn is the name of the column containing field "RegistrationMessage" data
+	UserProfileRegistrationMessageColumn = "registration_message"
+
 	// UserProfileDBTable is the name of the table where UserProfileDB are stored
 	UserProfileDBTable = "user_profile"
 
@@ -564,6 +585,12 @@ const (
 
 	// UserProfileDBNicknameColumn is the name of the column containing field "Nickname" data
 	UserProfileDBNicknameColumn = "nickname"
+
+	// UserProfileDBPendingColumn is the name of the column containing field "Pending" data
+	UserProfileDBPendingColumn = "pending"
+
+	// UserProfileDBRegistrationMessageColumn is the name of the column containing field "RegistrationMessage" data
+	UserProfileDBRegistrationMessageColumn = "registration_message"
 
 	// UserProfileDBAPIKeyColumn is the name of the column containing field "APIKey" data
 	UserProfileDBAPIKeyColumn = "apikey"
@@ -591,6 +618,9 @@ const (
 
 	// sessionPlayerInfoReadyColumn is the name of the column containing field "Ready" data
 	sessionPlayerInfoReadyColumn = "ready"
+
+	// sessionPlayerInfoPlayerOrderColumn is the name of the column containing field "PlayerOrder" data
+	sessionPlayerInfoPlayerOrderColumn = "player_order"
 )
 
 var (
@@ -625,6 +655,14 @@ var (
 		[]string{ InvitationDBIDColumn },
 		InvitationDBDataColumns...,
 	)
+	// PendingUserProfileColumns is the list of the columns for the PendingUserProfile structure
+	PendingUserProfileColumns = []string{
+		PendingUserProfileCreatedAtColumn,
+		PendingUserProfileEmailColumn,
+		PendingUserProfileIDColumn,
+		PendingUserProfileMessageColumn,
+		PendingUserProfileNicknameColumn,
+	}
 	// RaceColumns is the list of the columns for the Race structure
 	RaceColumns = []string{
 		RaceDataColumn,
@@ -816,6 +854,8 @@ var (
 		UserProfileIsActiveColumn,
 		UserProfileIsManagerColumn,
 		UserProfileNicknameColumn,
+		UserProfilePendingColumn,
+		UserProfileRegistrationMessageColumn,
 	}
 	// UserProfileDBDataColumns is the list of the columns for the UserProfileDB structure, expect its primary key
 	UserProfileDBDataColumns = []string{
@@ -823,6 +863,8 @@ var (
 		UserProfileDBIsActiveColumn,
 		UserProfileDBIsManagerColumn,
 		UserProfileDBNicknameColumn,
+		UserProfileDBPendingColumn,
+		UserProfileDBRegistrationMessageColumn,
 		UserProfileDBAPIKeyColumn,
 		UserProfileDBSerialKeyColumn,
 	}
@@ -847,6 +889,7 @@ var (
 	sessionPlayerInfoColumns = []string{
 		sessionPlayerInfoUserProfileIDColumn,
 		sessionPlayerInfoReadyColumn,
+		sessionPlayerInfoPlayerOrderColumn,
 	}
 )
 
@@ -1019,6 +1062,53 @@ func (t InvitationDBTableSchema) ToSql() (string, []interface{}, error) {
 
 func (t InvitationDBTableSchema) Select() squirrel.SelectBuilder {
 	return squirrel.Select(t.Columns(true)...).From(t.Sql())
+}
+
+// Columns returns the database table column names
+func (s PendingUserProfile) Columns() []string {
+	return PendingUserProfileColumns
+}
+
+// Values returns the values for a list of columns. If a column does not exits,
+// the corresponding value is left empty
+func (s PendingUserProfile) Values(columns ...string) []interface{} {
+	values := make([]interface{}, len(columns))
+	for i, column := range columns {
+		switch column {
+		case "created_at":
+			values[i] = s.CreatedAt
+		case "email":
+			values[i] = s.Email
+		case "id":
+			values[i] = s.ID
+		case "message":
+			values[i] = s.Message
+		case "nickname":
+			values[i] = s.Nickname
+		}
+	}
+	return values
+}
+
+// ValuesMap returns the values map for a list of columns. If a column does not
+// exits, the corresponding value is left empty
+func (s PendingUserProfile) ValuesMap(columns ...string) map[string]interface{} {
+	values := make(map[string]interface{})
+	for _, column := range columns {
+		switch column {
+		case "created_at":
+			values["created_at"] = s.CreatedAt
+		case "email":
+			values["email"] = s.Email
+		case "id":
+			values["id"] = s.ID
+		case "message":
+			values["message"] = s.Message
+		case "nickname":
+			values["nickname"] = s.Nickname
+		}
+	}
+	return values
 }
 
 // Columns returns the database table column names
@@ -2465,6 +2555,10 @@ func (s UserProfile) Values(columns ...string) []interface{} {
 			values[i] = s.IsManager
 		case "nickname":
 			values[i] = s.Nickname
+		case "pending":
+			values[i] = s.Pending
+		case "registration_message":
+			values[i] = s.RegistrationMessage
 		}
 	}
 	return values
@@ -2486,6 +2580,10 @@ func (s UserProfile) ValuesMap(columns ...string) map[string]interface{} {
 			values["is_manager"] = s.IsManager
 		case "nickname":
 			values["nickname"] = s.Nickname
+		case "pending":
+			values["pending"] = s.Pending
+		case "registration_message":
+			values["registration_message"] = s.RegistrationMessage
 		}
 	}
 	return values
@@ -2525,6 +2623,10 @@ func (s UserProfileDB) Values(columns ...string) []interface{} {
 			values[i] = s.IsManager
 		case "nickname":
 			values[i] = s.Nickname
+		case "pending":
+			values[i] = s.Pending
+		case "registration_message":
+			values[i] = s.RegistrationMessage
 		case "apikey":
 			values[i] = s.APIKey
 		case "serial_key":
@@ -2550,6 +2652,10 @@ func (s UserProfileDB) ValuesMap(columns ...string) map[string]interface{} {
 			values["is_manager"] = s.IsManager
 		case "nickname":
 			values["nickname"] = s.Nickname
+		case "pending":
+			values["pending"] = s.Pending
+		case "registration_message":
+			values["registration_message"] = s.RegistrationMessage
 		case "apikey":
 			values["apikey"] = s.APIKey
 		case "serial_key":
@@ -2566,6 +2672,8 @@ func NewUserProfileDBTableSchema() *UserProfileDBTableSchema {
 	t.IsActive = NewColumn(&t, "is_active")
 	t.IsManager = NewColumn(&t, "is_manager")
 	t.Nickname = NewColumn(&t, "nickname")
+	t.Pending = NewColumn(&t, "pending")
+	t.RegistrationMessage = NewColumn(&t, "registration_message")
 	t.APIKey = NewColumn(&t, "apikey")
 	t.SerialKey = NewColumn(&t, "serial_key")
 	return &t
@@ -2578,6 +2686,8 @@ type UserProfileDBTableSchema struct {
 	IsActive Column
 	IsManager Column
 	Nickname Column
+	Pending Column
+	RegistrationMessage Column
 	APIKey Column
 	SerialKey Column
 }
@@ -2613,6 +2723,8 @@ func (t UserProfileDBTableSchema) As(name string) *UserProfileDBTableSchema {
 	t.IsActive = NewColumn(&t, "is_active")
 	t.IsManager = NewColumn(&t, "is_manager")
 	t.Nickname = NewColumn(&t, "nickname")
+	t.Pending = NewColumn(&t, "pending")
+	t.RegistrationMessage = NewColumn(&t, "registration_message")
 	t.APIKey = NewColumn(&t, "apikey")
 	t.SerialKey = NewColumn(&t, "serial_key")
 	return &t
@@ -2776,6 +2888,8 @@ func (s sessionPlayerInfo) Values(columns ...string) []interface{} {
 			values[i] = s.UserProfileID
 		case "ready":
 			values[i] = s.Ready
+		case "player_order":
+			values[i] = s.PlayerOrder
 		}
 	}
 	return values
@@ -2791,6 +2905,8 @@ func (s sessionPlayerInfo) ValuesMap(columns ...string) map[string]interface{} {
 			values["user_profile_id"] = s.UserProfileID
 		case "ready":
 			values["ready"] = s.Ready
+		case "player_order":
+			values["player_order"] = s.PlayerOrder
 		}
 	}
 	return values

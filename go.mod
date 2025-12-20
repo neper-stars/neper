@@ -18,6 +18,7 @@ require (
 	github.com/go-openapi/swag v0.23.0
 	github.com/go-openapi/validate v0.22.1
 	github.com/golang-migrate/migrate/v4 v4.16.2
+	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/jackc/pgtype v1.14.0
 	github.com/jmoiron/sqlx v1.4.0
@@ -42,6 +43,7 @@ require (
 	golang.org/x/sys v0.31.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 	github.com/neper-stars/houston v0.0.0-00010101000000-000000000000
+	orus.io/orus-io/go-orusapi v0.0.0-20251126135628-189926b48099
 )
 
 require (
@@ -49,7 +51,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/getsentry/sentry-go v0.28.1 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
@@ -87,7 +88,6 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	orus.io/orus-io/go-orusapi v0.0.0-20251126135628-189926b48099 // indirect
 )
 
 tool orus.io/orus-io/go-orusapi/tools/generate_db_helpers

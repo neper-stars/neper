@@ -38,7 +38,7 @@ func (h *UserProfileCreateHandler) handle(
 		return nil, errs.ErrForbidden
 	}
 
-	userProfile := params.UserProfile
+	createRequest := params.UserProfile
 
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
@@ -48,27 +48,35 @@ func (h *UserProfileCreateHandler) handle(
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
-	var userProfileDB models.UserProfileDB
-	sessionUID, err := uuid.V4()
+	userUID, err := uuid.V4()
 	if err != nil {
 		return nil, err
 	}
-	// force our ID not the one from the client
-	userProfile.ID = sessionUID.String()
 
-	userProfileDB.UserProfile = *userProfile
+	// Build the user profile from the create request
+	userProfileDB := models.UserProfileDB{
+		UserProfile: models.UserProfile{
+			ID:        userUID.String(),
+			Nickname:  createRequest.Nickname,
+			Email:     createRequest.Email,
+			IsActive:  true,  // Users created by global managers are active immediately
+			IsManager: false, // New users are not managers by default
+			Pending:   false, // No approval needed when created by global manager
+		},
+	}
+
 	_, err = sqlH.Insert(&userProfileDB)
 	if err != nil {
-		return userProfile, err
+		return nil, err
 	}
 
 	// Assign a serial key to the new user within the same transaction
 	// This is non-fatal - if it fails, the user can still be created
-	serialKey, err := serial.AssignKeyToUserTx(ctx, tx.Tx, userProfile.ID)
+	serialKey, err := serial.AssignKeyToUserTx(ctx, tx.Tx, userProfileDB.ID)
 	if err != nil {
-		log.Warn().Err(err).Str("user_id", userProfile.ID).Msg("failed to assign serial key to new user")
+		log.Warn().Err(err).Str("user_id", userProfileDB.ID).Msg("failed to assign serial key to new user")
 	} else {
-		log.Info().Str("user_id", userProfile.ID).Str("serial_key", serialKey).Msg("assigned serial key to new user")
+		log.Info().Str("user_id", userProfileDB.ID).Str("serial_key", serialKey).Msg("assigned serial key to new user")
 	}
 
 	if err := tx.Commit(); err != nil {

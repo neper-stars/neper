@@ -76,8 +76,8 @@ func (h *InvitationAcceptHandler) handle(
 	}
 	_, err = sqlH.Insert(&relation)
 	if err != nil {
-		pqErr, ok := err.(*pq.Error) // nolint:errorlint
-		if ok {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
 			// we received an error from PG
 			if pqErr.Constraint == "user_profile_session_rel_user_profile_id_session_id_key" {
 				// and this error is specific to a constraint we know how to interpret as: session membership already exists

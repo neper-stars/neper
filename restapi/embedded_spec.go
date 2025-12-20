@@ -90,6 +90,56 @@ func init() {
         }
       }
     },
+    "/v1/auth/register": {
+      "post": {
+        "security": [],
+        "description": "Submit a registration request for a new user account.\nThe request will be reviewed by a global manager who can approve or reject it.\nThis endpoint does not require authentication.\nThe created user profile will have pending=true and is_active=false until approved.\n",
+        "summary": "request a new user account",
+        "operationId": "register",
+        "parameters": [
+          {
+            "name": "registration",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/registration_request"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Registration request submitted successfully. User is pending approval.",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/user_profile"
+            }
+          },
+          "400": {
+            "$ref": "#/responses/invalid"
+          },
+          "409": {
+            "description": "Email or nickname already exists",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/error"
+            }
+          },
+          "429": {
+            "description": "Too many registration attempts. Please try again later.",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/error"
+            }
+          },
+          "503": {
+            "description": "Registration is currently disabled",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
     "/v1/auth/userinfo": {
       "get": {
         "operationId": "userinfo",
@@ -253,6 +303,102 @@ func init() {
           },
           "401": {
             "$ref": "#/responses/unauthorized"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
+    "/v1/pending_registrations": {
+      "get": {
+        "description": "Returns the list of all user profiles with pending=true.\nOnly global managers can access this endpoint.\n",
+        "summary": "list all pending registration requests",
+        "operationId": "pendingRegistrationList",
+        "responses": {
+          "200": {
+            "description": "the list of pending user profiles",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "neper-types.yaml#/definitions/user_profile"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
+    "/v1/pending_registrations/{user_profile_id}/approve": {
+      "post": {
+        "description": "Approves a pending user profile by setting pending=false, is_active=true,\nand generating an API key for the user.\nOnly global managers can approve registrations.\n",
+        "summary": "approve a pending registration request",
+        "operationId": "pendingRegistrationApprove",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the ID of the pending user profile to approve",
+            "name": "user_profile_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the approved user profile with API key",
+            "schema": {
+              "$ref": "#/definitions/apikeyReset"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
+    },
+    "/v1/pending_registrations/{user_profile_id}/reject": {
+      "delete": {
+        "description": "Rejects and deletes a pending user profile.\nOnly global managers can reject registrations.\n",
+        "summary": "reject a pending registration request",
+        "operationId": "pendingRegistrationReject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the ID of the pending user profile to reject",
+            "name": "user_profile_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "registration request rejected and user profile deleted"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -1052,14 +1198,14 @@ func init() {
         }
       },
       "post": {
-        "description": "Creates a user profile.\n",
+        "description": "Creates a user profile. Only global managers can use this endpoint.\nThe created user will be active immediately (no approval needed).\n",
         "operationId": "userProfileCreate",
         "parameters": [
           {
             "name": "user_profile",
             "in": "body",
             "schema": {
-              "$ref": "neper-types.yaml#/definitions/user_profile"
+              "$ref": "neper-types.yaml#/definitions/user_profile_create_request"
             }
           }
         ],
@@ -1122,6 +1268,30 @@ func init() {
           },
           "403": {
             "$ref": "#/responses/forbidden"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a user profile. Only global managers can delete user profiles.\nReturns 409 Conflict if the user is a member of any session.\n",
+        "operationId": "userProfileDelete",
+        "responses": {
+          "204": {
+            "$ref": "#/responses/nocontent"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "409": {
+            "$ref": "#/responses/conflict"
+          },
+          "default": {
+            "$ref": "#/responses/default"
           }
         }
       },
@@ -1521,6 +1691,62 @@ func init() {
         }
       }
     },
+    "/v1/auth/register": {
+      "post": {
+        "security": [],
+        "description": "Submit a registration request for a new user account.\nThe request will be reviewed by a global manager who can approve or reject it.\nThis endpoint does not require authentication.\nThe created user profile will have pending=true and is_active=false until approved.\n",
+        "summary": "request a new user account",
+        "operationId": "register",
+        "parameters": [
+          {
+            "name": "registration",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Registration request submitted successfully. User is pending approval.",
+            "schema": {
+              "$ref": "#/definitions/userProfile"
+            }
+          },
+          "400": {
+            "description": "invalid client request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "409": {
+            "description": "Email or nickname already exists",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "429": {
+            "description": "Too many registration attempts. Please try again later.",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "503": {
+            "description": "Registration is currently disabled",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
     "/v1/auth/userinfo": {
       "get": {
         "operationId": "userinfo",
@@ -1732,6 +1958,135 @@ func init() {
           },
           "401": {
             "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/pending_registrations": {
+      "get": {
+        "description": "Returns the list of all user profiles with pending=true.\nOnly global managers can access this endpoint.\n",
+        "summary": "list all pending registration requests",
+        "operationId": "pendingRegistrationList",
+        "responses": {
+          "200": {
+            "description": "the list of pending user profiles",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/userProfile"
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/pending_registrations/{user_profile_id}/approve": {
+      "post": {
+        "description": "Approves a pending user profile by setting pending=false, is_active=true,\nand generating an API key for the user.\nOnly global managers can approve registrations.\n",
+        "summary": "approve a pending registration request",
+        "operationId": "pendingRegistrationApprove",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the ID of the pending user profile to approve",
+            "name": "user_profile_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the approved user profile with API key",
+            "schema": {
+              "$ref": "#/definitions/apikeyReset"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/v1/pending_registrations/{user_profile_id}/reject": {
+      "delete": {
+        "description": "Rejects and deletes a pending user profile.\nOnly global managers can reject registrations.\n",
+        "summary": "reject a pending registration request",
+        "operationId": "pendingRegistrationReject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "the ID of the pending user profile to reject",
+            "name": "user_profile_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "registration request rejected and user profile deleted"
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -2792,14 +3147,14 @@ func init() {
         }
       },
       "post": {
-        "description": "Creates a user profile.\n",
+        "description": "Creates a user profile. Only global managers can use this endpoint.\nThe created user will be active immediately (no approval needed).\n",
         "operationId": "userProfileCreate",
         "parameters": [
           {
             "name": "user_profile",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/userProfile"
+              "$ref": "#/definitions/userProfileCreateRequest"
             }
           }
         ],
@@ -2877,6 +3232,45 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a user profile. Only global managers can delete user profiles.\nReturns 409 Conflict if the user is a member of any session.\n",
+        "operationId": "userProfileDelete",
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "409": {
+            "description": "Resource already exists",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -3333,6 +3727,31 @@ func init() {
           "x-go-custom-tag": "db:\"user_id\"",
           "x-nullable": false,
           "readOnly": true
+        }
+      }
+    },
+    "registrationRequest": {
+      "description": "Request body for user registration",
+      "type": "object",
+      "required": [
+        "nickname",
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "description": "user email address (must be unique)",
+          "type": "string",
+          "x-nullable": false
+        },
+        "message": {
+          "description": "optional message explaining why you want to join",
+          "type": "string",
+          "x-nullable": true
+        },
+        "nickname": {
+          "description": "requested user nickname (must be unique)",
+          "type": "string",
+          "x-nullable": false
         }
       }
     },
@@ -3825,6 +4244,40 @@ func init() {
           "description": "user nickname (name displayed to other users)",
           "type": "string",
           "x-go-custom-tag": "db:\"nickname\"",
+          "x-nullable": false
+        },
+        "pending": {
+          "description": "true if this is a pending registration that needs approval by a global manager.\nPending users cannot authenticate until approved.\n",
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"pending\"",
+          "x-nullable": false,
+          "readOnly": true
+        },
+        "registration_message": {
+          "description": "optional message provided during registration explaining why they want to join",
+          "type": "string",
+          "x-go-custom-tag": "db:\"registration_message\"",
+          "x-nullable": true,
+          "readOnly": true
+        }
+      }
+    },
+    "userProfileCreateRequest": {
+      "description": "Request body for creating a user profile (global managers only)",
+      "type": "object",
+      "required": [
+        "nickname",
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "description": "user email address (must be unique)",
+          "type": "string",
+          "x-nullable": false
+        },
+        "nickname": {
+          "description": "user nickname (must be unique)",
+          "type": "string",
           "x-nullable": false
         }
       }

@@ -69,8 +69,8 @@ func (h *SessionJoinHandler) handle(
 	}
 	_, err = sqlH.Insert(&relation)
 	if err != nil {
-		pqErr, ok := err.(*pq.Error) // nolint:errorlint
-		if ok {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
 			// Handle both possible constraint names for duplicate membership
 			if pqErr.Constraint == "user_profile_session_rel_user_profile_id_session_id_key" ||
 				pqErr.Constraint == "user_profile_session_rel_pkey" {

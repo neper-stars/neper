@@ -47,6 +47,45 @@ paths:
           description: generic error response
           schema:
             $ref: "neper-types.yaml#/definitions/error"
+
+  /v1/auth/register:
+    post:
+      operationId: register
+      summary: "request a new user account"
+      description: |
+        Submit a registration request for a new user account.
+        The request will be reviewed by a global manager who can approve or reject it.
+        This endpoint does not require authentication.
+        The created user profile will have pending=true and is_active=false until approved.
+      security: []
+      parameters:
+        - name: registration
+          in: body
+          required: true
+          schema:
+            $ref: "neper-types.yaml#/definitions/registration_request"
+      responses:
+        201:
+          description: Registration request submitted successfully. User is pending approval.
+          schema:
+            $ref: "neper-types.yaml#/definitions/user_profile"
+        400:
+          $ref: "#/responses/invalid"
+        409:
+          description: Email or nickname already exists
+          schema:
+            $ref: "neper-types.yaml#/definitions/error"
+        429:
+          description: Too many registration attempts. Please try again later.
+          schema:
+            $ref: "neper-types.yaml#/definitions/error"
+        503:
+          description: Registration is currently disabled
+          schema:
+            $ref: "neper-types.yaml#/definitions/error"
+        default:
+          $ref: "#/responses/default"
+
   /v1/downloads/stars.exe:
     get:
       operationId: downloadStarsExe
@@ -830,6 +869,80 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/pending_registrations:
+    get:
+      operationId: pendingRegistrationList
+      summary: "list all pending registration requests"
+      description: |
+        Returns the list of all user profiles with pending=true.
+        Only global managers can access this endpoint.
+      responses:
+        200:
+          description: the list of pending user profiles
+          schema:
+            type: array
+            items:
+              $ref: "neper-types.yaml#/definitions/user_profile"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        default:
+          $ref: "#/responses/default"
+
+  /v1/pending_registrations/{user_profile_id}/approve:
+    post:
+      operationId: pendingRegistrationApprove
+      summary: "approve a pending registration request"
+      description: |
+        Approves a pending user profile by setting pending=false, is_active=true,
+        and generating an API key for the user.
+        Only global managers can approve registrations.
+      parameters:
+        - name: user_profile_id
+          in: path
+          type: string
+          required: true
+          description: the ID of the pending user profile to approve
+      responses:
+        200:
+          description: the approved user profile with API key
+          schema:
+            $ref: "#/definitions/apikeyReset"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
+
+  /v1/pending_registrations/{user_profile_id}/reject:
+    delete:
+      operationId: pendingRegistrationReject
+      summary: "reject a pending registration request"
+      description: |
+        Rejects and deletes a pending user profile.
+        Only global managers can reject registrations.
+      parameters:
+        - name: user_profile_id
+          in: path
+          type: string
+          required: true
+          description: the ID of the pending user profile to reject
+      responses:
+        204:
+          description: registration request rejected and user profile deleted
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
+
   /v1/user_profiles:
     get:
       operationId: userProfileList
@@ -847,12 +960,13 @@ paths:
     post:
       operationId: userProfileCreate
       description: |
-        Creates a user profile.
+        Creates a user profile. Only global managers can use this endpoint.
+        The created user will be active immediately (no approval needed).
       parameters:
         - name: user_profile
           in: body
           schema:
-            $ref: "neper-types.yaml#/definitions/user_profile"
+            $ref: "neper-types.yaml#/definitions/user_profile_create_request"
       responses:
         201:
           description: the created user profile
@@ -900,6 +1014,24 @@ paths:
           $ref: "#/responses/unauthorized"
         403:
           $ref: "#/responses/forbidden"
+    delete:
+      operationId: userProfileDelete
+      description: |
+        Delete a user profile. Only global managers can delete user profiles.
+        Returns 409 Conflict if the user is a member of any session.
+      responses:
+        204:
+          $ref: "#/responses/nocontent"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        409:
+          $ref: "#/responses/conflict"
+        default:
+          $ref: "#/responses/default"
 
   /v1/user_profiles/{user_profile_id}/reset_apikey:
     parameters:

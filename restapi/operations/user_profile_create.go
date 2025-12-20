@@ -33,7 +33,8 @@ func NewUserProfileCreate(ctx *middleware.Context, handler UserProfileCreateHand
 
 /* UserProfileCreate swagger:route POST /v1/user_profiles userProfileCreate
 
-Creates a user profile.
+Creates a user profile. Only global managers can use this endpoint.
+The created user will be active immediately (no approval needed).
 
 
 */

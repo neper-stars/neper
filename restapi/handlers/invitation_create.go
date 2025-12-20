@@ -98,9 +98,8 @@ func (h *InvitationCreateHandler) handle(
 
 	_, err = sqlH.Insert(&invitationDB)
 	if err != nil {
-		// we don't want errorlint because we NEED to get the real pq.Error in order to extract the constraint
-		pqErr, ok := err.(*pq.Error) // nolint:errorlint
-		if ok {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
 			// we received an error from PG
 			if pqErr.Constraint == "invitation_session_id_user_profile_id_key" {
 				// and this error is specific to a constraint we know how to interpret as: Invitation already exists

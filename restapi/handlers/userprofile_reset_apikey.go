@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"context"
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"errors"
 	"net/http"
 
@@ -13,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	"github.com/neper-stars/neper/auth"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -53,12 +52,11 @@ func (h *UserProfileResetApikeyHandler) handle(
 		return nil, errs.ErrForbidden
 	}
 
-	// Generate a random API key (32 bytes = 64 hex characters)
-	apiKey := make([]byte, 32)
-	if _, err := rand.Read(apiKey); err != nil {
+	// Generate a random API key
+	apiKeyHex, err := auth.GenerateAPIKey()
+	if err != nil {
 		return nil, err
 	}
-	apiKeyHex := hex.EncodeToString(apiKey)
 
 	// Update the API key in the database
 	_, err = tx.ExecContext(ctx, `UPDATE user_profile SET apikey = $1 WHERE id = $2`, apiKeyHex, profileID)
