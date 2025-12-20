@@ -75,7 +75,7 @@ func (h *SessionsList) handle(
 		query = query.Where(filter).Distinct()
 
 		// Query invited session IDs separately to know which ones to flag
-		invitedSessionIDs, _ = h.getInvitedSessionIDs(sqlH, principal.Subject)
+		invitedSessionIDs, _ = GetUserInvitedSessionIDs(sqlH, principal.Subject)
 	}
 
 	var list []*models.SessionDB
@@ -116,24 +116,6 @@ func (h *SessionsList) handle(
 		retList = append(retList, &list[i].Session)
 	}
 	return retList, nil
-}
-
-// getInvitedSessionIDs returns a map of session IDs that the user has pending invitations for
-func (h *SessionsList) getInvitedSessionIDs(sqlH database.SQLHelper, userProfileID string) (map[string]bool, error) {
-	query := database.SQ.Select(models.InvitationDBSessionIDColumn).
-		From(models.InvitationDBTable).
-		Where(sq.Eq{models.InvitationDBUserProfileIDColumn: userProfileID})
-
-	var sessionIDs []string
-	if err := sqlH.Select(&sessionIDs, query); err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]bool)
-	for _, id := range sessionIDs {
-		result[id] = true
-	}
-	return result, nil
 }
 
 // Handle handles the request

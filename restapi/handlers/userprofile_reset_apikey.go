@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
@@ -28,8 +29,16 @@ type UserProfileResetApikeyHandler struct {
 }
 
 func (h *UserProfileResetApikeyHandler) handle(
-	ctx context.Context, profileID string, principal *models.Principal,
+	ctx context.Context, params operations.UserProfileResetApikeyParams, principal *models.Principal,
 ) (*models.ApikeyReset, error) {
+	authorized, err := h.Authorize(ctx, params, principal)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errs.ErrForbidden
+	}
+
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -40,16 +49,11 @@ func (h *UserProfileResetApikeyHandler) handle(
 
 	// Check if user exists
 	var userProfileDB models.UserProfileDB
-	if err := sqlH.GetByPKey(&userProfileDB, profileID); err != nil {
+	if err := sqlH.GetByPKey(&userProfileDB, params.UserProfileID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewErrUserProfileNotFound("user_profile not found with ID: " + profileID)
+			return nil, errs.NewErrUserProfileNotFound("user_profile not found with ID: " + params.UserProfileID)
 		}
 		return nil, err
-	}
-
-	// Check authorization: user can reset their own key, or manager can reset any key
-	if principal.Subject != profileID && !principal.IsGlobalManager {
-		return nil, errs.ErrForbidden
 	}
 
 	// Generate a random API key
@@ -59,7 +63,10 @@ func (h *UserProfileResetApikeyHandler) handle(
 	}
 
 	// Update the API key in the database
-	_, err = tx.ExecContext(ctx, `UPDATE user_profile SET apikey = $1 WHERE id = $2`, apiKeyHex, profileID)
+	_, err = sqlH.Exec(database.SQ.
+		Update(models.UserProfileDBTable).
+		Set(models.UserProfileDBAPIKeyColumn, apiKeyHex).
+		Where(sq.Eq{models.UserProfileDBIDColumn: params.UserProfileID}))
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +76,7 @@ func (h *UserProfileResetApikeyHandler) handle(
 	}
 
 	return &models.ApikeyReset{
-		UserID: profileID,
+		UserID: params.UserProfileID,
 		Apikey: apiKeyHex,
 	}, nil
 }
@@ -80,7 +87,7 @@ var forbiddenMsg = "forbidden"
 func (h *UserProfileResetApikeyHandler) Handle(
 	params operations.UserProfileResetApikeyParams, principal *models.Principal,
 ) middleware.Responder {
-	result, err := h.handle(params.HTTPRequest.Context(), params.UserProfileID, principal)
+	result, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrNotFound):
@@ -95,4 +102,15 @@ func (h *UserProfileResetApikeyHandler) Handle(
 		}
 	}
 	return operations.NewUserProfileResetApikeyOK().WithPayload(result)
+}
+
+// Authorize checks if the principal is allowed to reset the API key
+func (h *UserProfileResetApikeyHandler) Authorize(
+	ctx context.Context, params operations.UserProfileResetApikeyParams, principal *models.Principal,
+) (bool, error) {
+	// User can reset their own key, or global manager can reset any key
+	if principal.Subject == params.UserProfileID || principal.IsGlobalManager {
+		return true, nil
+	}
+	return false, nil
 }

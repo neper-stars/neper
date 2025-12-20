@@ -215,6 +215,24 @@ func IsPlayerReady(sqlH database.SQLHelper, sessionID, userProfileID string) (bo
 	return ready, nil
 }
 
+// GetUserInvitedSessionIDs returns a map of session IDs that the user has pending invitations for
+func GetUserInvitedSessionIDs(sqlH database.SQLHelper, userProfileID string) (map[string]bool, error) {
+	query := database.SQ.Select(models.InvitationDBSessionIDColumn).
+		From(models.InvitationDBTable).
+		Where(sq.Eq{models.InvitationDBUserProfileIDColumn: userProfileID})
+
+	var sessionIDs []string
+	if err := sqlH.Select(&sessionIDs, query); err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]bool)
+	for _, id := range sessionIDs {
+		result[id] = true
+	}
+	return result, nil
+}
+
 // GetSessionInviteeIDs returns the list of user profile IDs who have pending invitations to the session
 func GetSessionInviteeIDs(sqlH database.SQLHelper, sessionID string, log *zerolog.Logger) ([]string, error) {
 	query := database.SQ.Select(models.InvitationDBUserProfileIDColumn).
