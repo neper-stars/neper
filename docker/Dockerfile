@@ -11,11 +11,7 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN apk add --no-cache wine xvfb su-exec \
 	&& chmod +x /usr/local/bin/entrypoint.sh \
-	&& adduser \
-	    --disabled-password \
-	    --gecos "" \
-	    --uid 1337 \
-	    neper \
+	&& adduser -D -g "" -u 1337 neper
 
 VOLUME /home/neper
 WORKDIR /home/neper
