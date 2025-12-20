@@ -194,8 +194,19 @@ paths:
         }
         ```
 
-        Types: session, session_turn, invitation, race, ruleset, session_player_race, order_status
-        Actions: created, updated, deleted, ready, member_left
+        For pending_registration notifications (global managers only):
+        ```json
+        {
+          "type": "pending_registration",
+          "id": "user-profile-id",
+          "action": "created",
+          "timestamp": 1234567890
+        }
+        ```
+        Actions for pending_registration: created, approved, rejected
+
+        Types: session, session_turn, invitation, race, ruleset, session_player_race, order_status, pending_registration
+        Actions: created, updated, deleted, ready, member_left, approved, rejected
       responses:
         101:
           description: WebSocket upgrade successful

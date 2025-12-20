@@ -3,4 +3,4 @@
 #./build/neper -c config.ini serve --nkey=SUAJCLVU6OD5S7ASLIWKBSX2AYZ7CFRHR3RELODW64VSEB6O5O3KY62WKM -vvv
 #./build/neper -c config.ini serve --nkey=SUAJCLVU6OD5S7ASLIWKBSX2AYZ7CFRHR3RELODW64VSEB6O5O3KY62WKM
 
-./build/neper -c config.ini serve -vvv
+./build/neper -c config.ini serve --registration-enabled -vvv

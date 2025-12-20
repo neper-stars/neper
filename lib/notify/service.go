@@ -188,3 +188,18 @@ func (s *Service) PublishOrderStatusUpdate(sessionID string, year int64) error {
 		Year: year,
 	})
 }
+
+// PublishPendingRegistrationCreate is a convenience method for new pending registration
+func (s *Service) PublishPendingRegistrationCreate(userProfileID string) error {
+	return s.Publish(TypePendingRegistration, userProfileID, ActionCreated)
+}
+
+// PublishPendingRegistrationApprove is a convenience method for approved registration
+func (s *Service) PublishPendingRegistrationApprove(userProfileID string) error {
+	return s.Publish(TypePendingRegistration, userProfileID, ActionApproved)
+}
+
+// PublishPendingRegistrationReject is a convenience method for rejected registration
+func (s *Service) PublishPendingRegistrationReject(userProfileID string) error {
+	return s.Publish(TypePendingRegistration, userProfileID, ActionRejected)
+}

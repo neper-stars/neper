@@ -8,13 +8,14 @@ const (
 
 // Resource types
 const (
-	TypeSession           = "session"
-	TypeSessionTurn       = "session_turn"
-	TypeOrderStatus       = "order_status"
-	TypeInvitation        = "invitation"
-	TypeRace              = "race"
-	TypeRuleset           = "ruleset"
-	TypeSessionPlayerRace = "session_player_race"
+	TypeSession             = "session"
+	TypeSessionTurn         = "session_turn"
+	TypeOrderStatus         = "order_status"
+	TypeInvitation          = "invitation"
+	TypeRace                = "race"
+	TypeRuleset             = "ruleset"
+	TypeSessionPlayerRace   = "session_player_race"
+	TypePendingRegistration = "pending_registration"
 )
 
 // Actions
@@ -24,4 +25,6 @@ const (
 	ActionDeleted    = "deleted"
 	ActionReady      = "ready"
 	ActionMemberLeft = "member_left"
+	ActionApproved   = "approved"
+	ActionRejected   = "rejected"
 )

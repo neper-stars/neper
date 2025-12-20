@@ -224,6 +224,10 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 	case notify.TypeOrderStatus:
 		// Order status access is based on session membership
 		return r.canAccessSession(sqlH, change.ID)
+	case notify.TypePendingRegistration:
+		// Pending registration notifications are only for global managers
+		// (already handled at the top of this function)
+		return false, nil
 	default:
 		return false, nil
 	}

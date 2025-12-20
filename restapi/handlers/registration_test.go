@@ -28,7 +28,7 @@ func TestRegisterHandler(t *testing.T) {
 	// Enable registration for tests (disabled by default)
 	opts := registration.NewOptions()
 	opts.Enabled = true
-	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil)
+	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil, nil)
 
 	t.Run("successful_registration", func(t *testing.T) {
 		params := operations.RegisterParams{
@@ -111,7 +111,7 @@ func TestPendingRegistrationListHandler(t *testing.T) {
 
 	opts := registration.NewOptions()
 	opts.Enabled = true
-	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil)
+	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil, nil)
 	listHandler := NewPendingRegistrationListHandler(&log, testdb.DB)
 
 	// Create some pending registrations
@@ -169,8 +169,8 @@ func TestPendingRegistrationApproveHandler(t *testing.T) {
 
 	opts := registration.NewOptions()
 	opts.Enabled = true
-	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil)
-	approveHandler := NewPendingRegistrationApproveHandler(&log, testdb.DB)
+	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil, nil)
+	approveHandler := NewPendingRegistrationApproveHandler(&log, testdb.DB, nil)
 
 	// Create a pending registration
 	regParams := operations.RegisterParams{
@@ -264,8 +264,8 @@ func TestPendingRegistrationRejectHandler(t *testing.T) {
 
 	opts := registration.NewOptions()
 	opts.Enabled = true
-	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil)
-	rejectHandler := NewPendingRegistrationRejectHandler(&log, testdb.DB)
+	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil, nil)
+	rejectHandler := NewPendingRegistrationRejectHandler(&log, testdb.DB, nil)
 
 	t.Run("global_manager_can_reject", func(t *testing.T) {
 		// Create a pending registration
@@ -334,7 +334,7 @@ func TestRegisterHandler_Disabled(t *testing.T) {
 
 	// Create handler with default options (registration disabled by default)
 	opts := registration.NewOptions()
-	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil)
+	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil, nil)
 
 	t.Run("registration_disabled_returns_503", func(t *testing.T) {
 		params := operations.RegisterParams{
@@ -364,7 +364,7 @@ func TestRegisterHandler_RateLimiting(t *testing.T) {
 	limiter := registration.NewRateLimiter(opts)
 	defer limiter.Close()
 
-	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, limiter)
+	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, limiter, nil)
 
 	t.Run("rate_limiting_returns_429", func(t *testing.T) {
 		// Make requests until we hit the rate limit

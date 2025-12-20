@@ -13,19 +13,21 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewPendingRegistrationRejectHandler creates a new handler
-func NewPendingRegistrationRejectHandler(log *zerolog.Logger, db *sqlx.DB) *PendingRegistrationRejectHandler {
-	return &PendingRegistrationRejectHandler{db: db, log: log}
+func NewPendingRegistrationRejectHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *PendingRegistrationRejectHandler {
+	return &PendingRegistrationRejectHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // PendingRegistrationRejectHandler handles DELETE /pending_registrations/{user_profile_id}/reject
 type PendingRegistrationRejectHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *PendingRegistrationRejectHandler) handle(
@@ -78,6 +80,13 @@ func (h *PendingRegistrationRejectHandler) handle(
 		Str("nickname", userDB.Nickname).
 		Str("rejected_by", principal.Subject).
 		Msg("pending registration rejected")
+
+	// Notify global managers about the rejection
+	if h.notifyService != nil {
+		if err := h.notifyService.PublishPendingRegistrationReject(params.UserProfileID); err != nil {
+			log.Err(err).Msg("failed to publish pending registration rejection notification")
+		}
+	}
 
 	return nil
 }

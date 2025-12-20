@@ -137,12 +137,12 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.RefreshTokenHandler = handlers.NewRefreshTokenHandler(&config.Log, config.DB, config.Authenticator)
 
 	// Registration (public endpoint - no auth required)
-	api.RegisterHandler = handlers.NewRegisterHandler(&config.Log, config.DB, config.RegistrationOptions, config.RegistrationLimiter)
+	api.RegisterHandler = handlers.NewRegisterHandler(&config.Log, config.DB, config.RegistrationOptions, config.RegistrationLimiter, config.NotifyService)
 
 	// Pending registrations management (global managers only)
 	api.PendingRegistrationListHandler = handlers.NewPendingRegistrationListHandler(&config.Log, config.DB)
-	api.PendingRegistrationApproveHandler = handlers.NewPendingRegistrationApproveHandler(&config.Log, config.DB)
-	api.PendingRegistrationRejectHandler = handlers.NewPendingRegistrationRejectHandler(&config.Log, config.DB)
+	api.PendingRegistrationApproveHandler = handlers.NewPendingRegistrationApproveHandler(&config.Log, config.DB, config.NotifyService)
+	api.PendingRegistrationRejectHandler = handlers.NewPendingRegistrationRejectHandler(&config.Log, config.DB, config.NotifyService)
 
 	// Sessions
 	api.SessionsListHandler = handlers.NewSessionsListHandler(config.DB)

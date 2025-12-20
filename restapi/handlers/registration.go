@@ -15,22 +15,24 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/registration"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewRegisterHandler creates a new handler for user registration
-func NewRegisterHandler(log *zerolog.Logger, db *sqlx.DB, opts *registration.Options, limiter *registration.RateLimiter) *RegisterHandler {
-	return &RegisterHandler{db: db, log: log, opts: opts, limiter: limiter}
+func NewRegisterHandler(log *zerolog.Logger, db *sqlx.DB, opts *registration.Options, limiter *registration.RateLimiter, notifyService *notify.Service) *RegisterHandler {
+	return &RegisterHandler{db: db, log: log, opts: opts, limiter: limiter, notifyService: notifyService}
 }
 
 // RegisterHandler handles POST /auth/register
 type RegisterHandler struct {
-	db      *sqlx.DB
-	log     *zerolog.Logger
-	opts    *registration.Options
-	limiter *registration.RateLimiter
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	opts          *registration.Options
+	limiter       *registration.RateLimiter
+	notifyService *notify.Service
 }
 
 func (h *RegisterHandler) handle(
@@ -89,6 +91,13 @@ func (h *RegisterHandler) handle(
 		Str("nickname", userProfileDB.Nickname).
 		Str("email", userProfileDB.Email).
 		Msg("new pending registration created")
+
+	// Notify global managers about the new pending registration
+	if h.notifyService != nil {
+		if err := h.notifyService.PublishPendingRegistrationCreate(userProfileDB.ID); err != nil {
+			log.Err(err).Msg("failed to publish pending registration notification")
+		}
+	}
 
 	return &userProfileDB.UserProfile, nil
 }

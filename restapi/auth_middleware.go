@@ -34,13 +34,12 @@ var (
 		regexp.MustCompile("^/favicon.ico"),
 		// auth
 		regexp.MustCompile("^/api/v1/auth/authenticate$"),
+		regexp.MustCompile("^/api/v1/auth/register$"),
 		regexp.MustCompile("^/assets"),
 		regexp.MustCompile("^/docs$"),
 		regexp.MustCompile("^/swagger.json$"),
 		// metrics
 		regexp.MustCompile("^/metrics$"),
-		// api public entry-points
-		// if any
 	}
 	basicAuthAccess = []*regexp.Regexp{
 		regexp.MustCompile("^/swagger.json$"),

@@ -14,20 +14,22 @@ import (
 
 	"github.com/neper-stars/neper/auth"
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/serial"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewPendingRegistrationApproveHandler creates a new handler
-func NewPendingRegistrationApproveHandler(log *zerolog.Logger, db *sqlx.DB) *PendingRegistrationApproveHandler {
-	return &PendingRegistrationApproveHandler{db: db, log: log}
+func NewPendingRegistrationApproveHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *PendingRegistrationApproveHandler {
+	return &PendingRegistrationApproveHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // PendingRegistrationApproveHandler handles POST /pending_registrations/{user_profile_id}/approve
 type PendingRegistrationApproveHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService *notify.Service
 }
 
 func (h *PendingRegistrationApproveHandler) handle(
@@ -97,6 +99,13 @@ func (h *PendingRegistrationApproveHandler) handle(
 		Str("nickname", userDB.Nickname).
 		Str("approved_by", principal.Subject).
 		Msg("pending registration approved")
+
+	// Notify global managers about the approval
+	if h.notifyService != nil {
+		if err := h.notifyService.PublishPendingRegistrationApprove(params.UserProfileID); err != nil {
+			log.Err(err).Msg("failed to publish pending registration approval notification")
+		}
+	}
 
 	return &models.ApikeyReset{
 		UserID: params.UserProfileID,
