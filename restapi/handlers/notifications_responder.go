@@ -135,8 +135,8 @@ func (r *NotificationsResponder) WriteResponse(rw http.ResponseWriter, producer 
 			canAccess, err := r.canAccess(ctx, &change)
 			if err != nil {
 				r.logger.Err(err).
-					Str("type", change.Type).
-					Str("id", change.ID).
+					Str("type", ptrStr(change.Type)).
+					Str("id", ptrStr(change.ID)).
 					Msg("failed to check access for resource change")
 				continue
 			}
@@ -151,9 +151,9 @@ func (r *NotificationsResponder) WriteResponse(rw http.ResponseWriter, producer 
 				return
 			}
 			r.logger.Debug().
-				Str("type", change.Type).
-				Str("id", change.ID).
-				Str("action", change.Action).
+				Str("type", ptrStr(change.Type)).
+				Str("id", ptrStr(change.ID)).
+				Str("action", ptrStr(change.Action)).
 				Msg("sent resource change notification")
 		}
 	}
@@ -184,6 +184,14 @@ func (r *NotificationsResponder) handleIncoming(ctx context.Context, c *websocke
 	}
 }
 
+// ptrStr safely dereferences a string pointer, returning empty string if nil
+func ptrStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
 // canAccess checks if the current user has access to the resource in the notification
 func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.ResourceChange) (bool, error) {
 	// Global managers can see everything
@@ -199,32 +207,36 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
-	switch change.Type {
-	case notify.TypeSession:
+	resourceType := ptrStr(change.Type)
+	resourceID := ptrStr(change.ID)
+	action := ptrStr(change.Action)
+
+	switch resourceType {
+	case notify.ResourceChangeTypeSession:
 		// For deleted sessions, check metadata since the record is gone
-		if change.Action == notify.ActionDeleted {
+		if action == notify.ResourceChangeActionDeleted {
 			return r.canAccessDeletedSession(change), nil
 		}
 		// For member left, check if user is the one who left or can access session
-		if change.Action == notify.ActionMemberLeft {
-			return r.canAccessSessionMemberLeft(sqlH, change)
+		if action == notify.ResourceChangeActionMemberLeft {
+			return r.canAccessSessionMemberLeft(sqlH, change, resourceID)
 		}
-		return r.canAccessSession(sqlH, change.ID)
-	case notify.TypeInvitation:
-		return r.canAccessInvitation(sqlH, change)
-	case notify.TypeRace:
-		return r.canAccessRace(sqlH, change.ID)
-	case notify.TypeRuleset:
-		return r.canAccessRuleset(sqlH, change.ID)
-	case notify.TypeSessionPlayerRace:
-		return r.canAccessSessionPlayerRace(sqlH, change.ID)
-	case notify.TypeSessionTurn:
+		return r.canAccessSession(sqlH, resourceID)
+	case notify.ResourceChangeTypeInvitation:
+		return r.canAccessInvitation(sqlH, change, resourceID, action)
+	case notify.ResourceChangeTypeRace:
+		return r.canAccessRace(sqlH, resourceID)
+	case notify.ResourceChangeTypeRuleset:
+		return r.canAccessRuleset(sqlH, resourceID)
+	case notify.ResourceChangeTypeSessionPlayerRace:
+		return r.canAccessSessionPlayerRace(sqlH, resourceID)
+	case notify.ResourceChangeTypeSessionTurn:
 		// Session turn access is based on session membership
-		return r.canAccessSession(sqlH, change.ID)
-	case notify.TypeOrderStatus:
+		return r.canAccessSession(sqlH, resourceID)
+	case notify.ResourceChangeTypeOrderStatus:
 		// Order status access is based on session membership
-		return r.canAccessSession(sqlH, change.ID)
-	case notify.TypePendingRegistration:
+		return r.canAccessSession(sqlH, resourceID)
+	case notify.ResourceChangeTypePendingRegistration:
 		// Pending registration notifications are only for global managers
 		// (already handled at the top of this function)
 		return false, nil
@@ -262,11 +274,11 @@ func (r *NotificationsResponder) canAccessSession(sqlH database.SQLHelper, sessi
 
 // canAccessSessionMemberLeft checks if user can see a member left notification
 // The user who left should still receive the notification even for private sessions
-func (r *NotificationsResponder) canAccessSessionMemberLeft(sqlH database.SQLHelper, change *notify.ResourceChange) (bool, error) {
+func (r *NotificationsResponder) canAccessSessionMemberLeft(sqlH database.SQLHelper, change *notify.ResourceChange, resourceID string) (bool, error) {
 	meta := notify.ParseMetadata[notify.SessionMemberLeftMeta](change)
 	if meta == nil {
 		// No metadata, fall back to normal session access check
-		return r.canAccessSession(sqlH, change.ID)
+		return r.canAccessSession(sqlH, resourceID)
 	}
 
 	// The user who left should receive the notification
@@ -275,13 +287,13 @@ func (r *NotificationsResponder) canAccessSessionMemberLeft(sqlH database.SQLHel
 	}
 
 	// For other users, check normal session access
-	return r.canAccessSession(sqlH, change.ID)
+	return r.canAccessSession(sqlH, resourceID)
 }
 
 // canAccessInvitation checks if invitation is for this user
-func (r *NotificationsResponder) canAccessInvitation(sqlH database.SQLHelper, change *notify.ResourceChange) (bool, error) {
+func (r *NotificationsResponder) canAccessInvitation(sqlH database.SQLHelper, change *notify.ResourceChange, resourceID, action string) (bool, error) {
 	// For deleted invitations, the record is gone so we check metadata
-	if change.Action == notify.ActionDeleted {
+	if action == notify.ResourceChangeActionDeleted {
 		meta := notify.ParseMetadata[notify.InvitationDeleteMeta](change)
 		if meta == nil {
 			return false, nil
@@ -291,7 +303,7 @@ func (r *NotificationsResponder) canAccessInvitation(sqlH database.SQLHelper, ch
 
 	// For create/update, look up the invitation in the database
 	var invitation models.InvitationDB
-	if err := sqlH.GetWhere(&invitation, sq.Eq{models.InvitationDBIDColumn: change.ID}); err != nil {
+	if err := sqlH.GetWhere(&invitation, sq.Eq{models.InvitationDBIDColumn: resourceID}); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
 		}

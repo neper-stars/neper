@@ -66,6 +66,14 @@ func TestNotificationsFiltering(t *testing.T) {
 		return conn
 	}
 
+	// Helper to safely dereference string pointer
+	ptrStr := func(s *string) string {
+		if s == nil {
+			return ""
+		}
+		return *s
+	}
+
 	// Helper to read notification with timeout
 	readNotification := func(conn *websocket.Conn, timeout time.Duration) (*notify.ResourceChange, error) {
 		_ = conn.SetReadDeadline(time.Now().Add(timeout))
@@ -115,7 +123,7 @@ func TestNotificationsFiltering(t *testing.T) {
 				}
 				mu.Lock()
 				*notifications = append(*notifications, change)
-				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, change.Type, change.ID, change.Action)
+				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, ptrStr(change.Type), ptrStr(change.ID), ptrStr(change.Action))
 				mu.Unlock()
 			}
 		}
@@ -150,7 +158,7 @@ func TestNotificationsFiltering(t *testing.T) {
 		// Find invitation notifications
 		findInvitationNotification := func(notifications []*notify.ResourceChange) *notify.ResourceChange {
 			for _, n := range notifications {
-				if n.Type == notify.TypeInvitation && n.ID == invite.ID {
+				if ptrStr(n.Type) == notify.ResourceChangeTypeInvitation && ptrStr(n.ID) == invite.ID {
 					return n
 				}
 			}
@@ -163,11 +171,11 @@ func TestNotificationsFiltering(t *testing.T) {
 
 		// Gandalf is global manager, sees everything
 		require.NotNil(t, gandalfInviteNotif, "gandalf (global manager) should receive invitation notification")
-		require.Equal(t, notify.ActionCreated, gandalfInviteNotif.Action)
+		require.Equal(t, notify.ResourceChangeActionCreated, ptrStr(gandalfInviteNotif.Action))
 
 		// Merry is the invitee, should see the notification
 		require.NotNil(t, merryInviteNotif, "merry (invitee) should receive invitation notification")
-		require.Equal(t, notify.ActionCreated, merryInviteNotif.Action)
+		require.Equal(t, notify.ResourceChangeActionCreated, ptrStr(merryInviteNotif.Action))
 
 		// Boromir is NOT the invitee, should NOT see the invitation notification
 		require.Nil(t, boromirInviteNotif, "boromir (not invitee) should NOT receive invitation notification")
@@ -205,7 +213,7 @@ func TestNotificationsFiltering(t *testing.T) {
 				}
 				mu.Lock()
 				*notifications = append(*notifications, change)
-				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, change.Type, change.ID, change.Action)
+				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, ptrStr(change.Type), ptrStr(change.ID), ptrStr(change.Action))
 				mu.Unlock()
 			}
 		}
@@ -237,7 +245,7 @@ func TestNotificationsFiltering(t *testing.T) {
 		// Find session update notifications for gondorID
 		findSessionNotification := func(notifications []*notify.ResourceChange, sessionID string) *notify.ResourceChange {
 			for _, n := range notifications {
-				if n.Type == notify.TypeSession && n.ID == sessionID {
+				if ptrStr(n.Type) == notify.ResourceChangeTypeSession && ptrStr(n.ID) == sessionID {
 					return n
 				}
 			}
@@ -287,7 +295,7 @@ func TestNotificationsFiltering(t *testing.T) {
 				}
 				mu.Lock()
 				*notifications = append(*notifications, change)
-				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, change.Type, change.ID, change.Action)
+				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, ptrStr(change.Type), ptrStr(change.ID), ptrStr(change.Action))
 				mu.Unlock()
 			}
 		}
@@ -321,7 +329,7 @@ func TestNotificationsFiltering(t *testing.T) {
 		// Find session update notification for isengardID
 		var isengardSessionNotif *notify.ResourceChange
 		for _, n := range merryNotifications {
-			if n.Type == notify.TypeSession && n.ID == "isengardID" && n.Action == notify.ActionUpdated {
+			if ptrStr(n.Type) == notify.ResourceChangeTypeSession && ptrStr(n.ID) == "isengardID" && ptrStr(n.Action) == notify.ResourceChangeActionUpdated {
 				isengardSessionNotif = n
 				break
 			}
@@ -364,6 +372,14 @@ func TestOrderStatusNotificationSentToAllSessionMembers(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
 		return conn
+	}
+
+	// Helper to safely dereference string pointer
+	ptrStr := func(s *string) string {
+		if s == nil {
+			return ""
+		}
+		return *s
 	}
 
 	readNotification := func(conn *websocket.Conn, timeout time.Duration) (*notify.ResourceChange, error) {
@@ -409,7 +425,7 @@ func TestOrderStatusNotificationSentToAllSessionMembers(t *testing.T) {
 				}
 				mu.Lock()
 				*notifications = append(*notifications, change)
-				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, change.Type, change.ID, change.Action)
+				t.Logf("%s received notification: type=%s, id=%s, action=%s", name, ptrStr(change.Type), ptrStr(change.ID), ptrStr(change.Action))
 				mu.Unlock()
 			}
 		}
@@ -445,7 +461,7 @@ func TestOrderStatusNotificationSentToAllSessionMembers(t *testing.T) {
 		// Helper to find order_status notification for our session
 		findOrderStatusNotification := func(notifications []*notify.ResourceChange) *notify.ResourceChange {
 			for _, n := range notifications {
-				if n.Type == notify.TypeOrderStatus && n.ID == sessionID {
+				if ptrStr(n.Type) == notify.ResourceChangeTypeOrderStatus && ptrStr(n.ID) == sessionID {
 					return n
 				}
 			}
@@ -457,12 +473,12 @@ func TestOrderStatusNotificationSentToAllSessionMembers(t *testing.T) {
 		gollumOrderStatus := findOrderStatusNotification(gollumNotifications)
 
 		require.NotNil(t, merryOrderStatus, "merry (session member) should receive order_status notification when gollum submits")
-		require.Equal(t, notify.ActionUpdated, merryOrderStatus.Action)
+		require.Equal(t, notify.ResourceChangeActionUpdated, ptrStr(merryOrderStatus.Action))
 		merryMeta := notify.ParseMetadata[notify.OrderStatusMeta](merryOrderStatus)
 		require.NotNil(t, merryMeta, "year should be present in metadata")
 		require.Equal(t, int64(year), merryMeta.Year)
 
 		require.NotNil(t, gollumOrderStatus, "gollum (submitter) should also receive order_status notification")
-		require.Equal(t, notify.ActionUpdated, gollumOrderStatus.Action)
+		require.Equal(t, notify.ResourceChangeActionUpdated, ptrStr(gollumOrderStatus.Action))
 	})
 }

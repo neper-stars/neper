@@ -75,6 +75,14 @@ func TestTurnSubmit(t *testing.T) {
 		turn := types.Order{B64Data: gollumOrderContentB64}
 		require.Equal(t, http.StatusOK, tester.MustPutJSON(submitURL, &turn, &token))
 
+		// Helper to safely dereference string pointer
+		ptrStr := func(s *string) string {
+			if s == nil {
+				return ""
+			}
+			return *s
+		}
+
 		// Wait for session_turn notification
 		var notification notify.ResourceChange
 		for {
@@ -85,9 +93,9 @@ func TestTurnSubmit(t *testing.T) {
 			require.NoError(t, err)
 
 			// Look for session_turn notification for our session
-			if notification.Type == notify.TypeSessionTurn &&
-				notification.ID == sessionID &&
-				notification.Action == notify.ActionReady {
+			if ptrStr(notification.Type) == notify.ResourceChangeTypeSessionTurn &&
+				ptrStr(notification.ID) == sessionID &&
+				ptrStr(notification.Action) == notify.ResourceChangeActionReady {
 				break
 			}
 			// Continue waiting for more notifications

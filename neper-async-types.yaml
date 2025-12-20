@@ -1,0 +1,113 @@
+definitions:
+  # Base notification message
+  resource-change:
+    type: object
+    x-go-name: ResourceChange
+    description: |
+      Base message format for all WebSocket notifications.
+      Sent when resources the user has access to are modified.
+    required:
+      - type
+      - id
+      - action
+      - timestamp
+    properties:
+      type:
+        type: string
+        description: The resource type
+        enum:
+          - session
+          - session_turn
+          - order_status
+          - invitation
+          - race
+          - ruleset
+          - session_player_race
+          - pending_registration
+      id:
+        type: string
+        description: The resource ID
+      action:
+        type: string
+        description: The action performed on the resource
+        enum:
+          - created
+          - updated
+          - deleted
+          - ready
+          - member_left
+          - approved
+          - rejected
+      timestamp:
+        type: integer
+        format: int64
+        description: Unix timestamp when the event occurred
+      metadata:
+        type: object
+        description: Optional action-specific metadata (see specific metadata types)
+
+  # Metadata types for specific notifications
+
+  session-delete-meta:
+    type: object
+    x-go-name: SessionDeleteMeta
+    description: |
+      Metadata for session deletion notifications.
+      Included because the session record is deleted before the notification is sent.
+    properties:
+      member_ids:
+        type: array
+        x-go-name: MemberIDs
+        description: List of user profile IDs who were members of the session
+        items:
+          type: string
+      is_private:
+        type: boolean
+        description: Whether the session was private
+
+  session-member-left-meta:
+    type: object
+    x-go-name: SessionMemberLeftMeta
+    description: |
+      Metadata for session member_left notifications.
+      Allows the leaving user to receive the notification for private sessions.
+    properties:
+      left_user_id:
+        type: string
+        x-go-name: LeftUserID
+        description: The user profile ID of the member who left
+      is_private:
+        type: boolean
+        description: Whether the session is private
+
+  invitation-delete-meta:
+    type: object
+    x-go-name: InvitationDeleteMeta
+    description: |
+      Metadata for invitation deletion notifications.
+      Included because the invitation record is deleted before the notification is sent.
+    properties:
+      user_profile_id:
+        type: string
+        x-go-name: UserProfileID
+        description: The user profile ID the invitation was for
+
+  session-turn-meta:
+    type: object
+    x-go-name: SessionTurnMeta
+    description: Metadata for session_turn notifications (action=ready)
+    properties:
+      year:
+        type: integer
+        format: int64
+        description: The game year that is now ready
+
+  order-status-meta:
+    type: object
+    x-go-name: OrderStatusMeta
+    description: Metadata for order_status notifications
+    properties:
+      year:
+        type: integer
+        format: int64
+        description: The game year for which orders were submitted

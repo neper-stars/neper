@@ -109,7 +109,7 @@ tasks:
 
   generate-all:
     desc: meta task to generate all things that need code generation in one command
-    deps: [generate-migration, generate-swagger, generate-models, generate-sync]
+    deps: [generate-migration, generate-swagger, generate-models, generate-sync, generate-async]
 
   generate-migration:
     run: once
@@ -165,6 +165,21 @@ tasks:
     cmds:
       - (cd ./dependencies/json-schema-generate && go build -buildvcs=false -o ../../tools/bin/schema-generate ./cmd/schema-generate)
       - go generate ./sync
+
+  generate-async:
+    desc: generate async notification models from neper-async-types.yaml
+    deps: [go-swagger]
+    cmds:
+      - ./{{.GOSWAGGER_BIN}} generate model --accept-definitions-only -f neper-async-types.yaml -t . -m lib/notify
+    sources:
+      - neper-async-types.yaml
+    generates:
+      - lib/notify/resource_change.go
+      - lib/notify/session_delete_meta.go
+      - lib/notify/session_member_left_meta.go
+      - lib/notify/invitation_delete_meta.go
+      - lib/notify/session_turn_meta.go
+      - lib/notify/order_status_meta.go
 
   docker:
     desc: build the docker image
