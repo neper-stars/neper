@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Allow configurable UID/GID via environment variables
 # Defaults to 1000:1000 if not set
@@ -9,13 +9,15 @@ NEPER_GID=${NEPER_GID:-1000}
 if [ "$(id -u)" = "0" ]; then
     echo "Root mode, fixing permissions and dropping privileges"
     # Modify neper user/group to match requested UID/GID
-    deluser neper 2>/dev/null || true
-    delgroup neper 2>/dev/null || true
-    addgroup -g "$NEPER_GID" neper
-    adduser -D -u "$NEPER_UID" -G neper neper
+    # Delete existing user/group if they exist
+    userdel neper 2>/dev/null || true
+    groupdel neper 2>/dev/null || true
+    # Create group and user with specified IDs
+    groupadd -g "$NEPER_GID" neper
+    useradd -m -u "$NEPER_UID" -g neper -s /bin/bash neper
 
     chown -R neper:neper /home/neper
-    exec su-exec neper /usr/local/bin/neper "$@"
+    exec gosu neper /usr/local/bin/neper "$@"
 else
     echo "non root mode, running as is"
     exec /usr/local/bin/neper "$@"

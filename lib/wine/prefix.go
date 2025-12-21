@@ -74,6 +74,11 @@ func (p *Prefix) Env() []string {
 	if p.log.GetLevel() > zerolog.DebugLevel {
 		env = append(env, "WINEDEBUG=-all")
 	}
+	// Inherit WINEARCH from environment if set (required for 16-bit apps like Stars!)
+	// WINEARCH=win32 creates a 32-bit prefix that can run 16-bit Windows 3.1 apps
+	if winearch := os.Getenv("WINEARCH"); winearch != "" {
+		env = append(env, "WINEARCH="+winearch)
+	}
 	return env
 }
 
@@ -154,7 +159,12 @@ func (p *Prefix) EnsureDriveLetter(letter, targetDir string) error {
 				Str("letter", letter).
 				Str("current", target).
 				Str("expected", targetDir).
-				Msg("drive letter points to different directory")
+				Msg("drive letter points to different directory, updating symlink")
+			// Remove old symlink and create new one pointing to correct directory
+			if err := os.Remove(linkPath); err != nil {
+				return err
+			}
+			return os.Symlink(targetDir, linkPath)
 		}
 		return nil
 	}

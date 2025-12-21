@@ -226,7 +226,8 @@ func (r *Runner) ensureSaveDir() error {
 
 func (r *Runner) ensureStarsINI() error {
 	starsINIFilePath := filepath.Join(r.prefix.WindowsDir(), starsININame)
-	targetStarsINI, err := os.OpenFile(starsINIFilePath, os.O_RDWR|os.O_CREATE, 0660)
+	// Use O_TRUNC to ensure we overwrite any existing content completely
+	targetStarsINI, err := os.OpenFile(starsINIFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0660)
 	if err != nil {
 		return err
 	}
