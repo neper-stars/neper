@@ -188,42 +188,45 @@ func (r *Runner) newRaceFiles(players []models.SessionPlayerRace, races []models
 func (r *Runner) saveRaceFilesToSessionDir(sessionID string, rf RaceFiles) error {
 	sessionDir := r.localSessionSaveDir(sessionID)
 	for i := range rf {
-		if err := saveRaceFile(r.log, sessionDir, rf[i]); err != nil {
+		if err := r.saveRaceFile(sessionDir, rf[i]); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func saveRaceFile(log *zerolog.Logger, sessionDir string, raceFile RaceFile) error {
+func (r *Runner) saveRaceFile(sessionDir string, raceFile RaceFile) error {
 	raceFileName := filepath.Join(sessionDir, fmt.Sprintf("game.r%d", raceFile.PlayerOrder+1))
 	targetRace, err := os.OpenFile(raceFileName, os.O_RDWR|os.O_CREATE, 0660)
 	if err != nil {
-		log.Err(err).Str("filename", raceFileName).Msg("failed to open race file for creation")
+		r.log.Err(err).Str("filename", raceFileName).Msg("failed to open race file for creation")
 		return err
 	}
 	defer func() {
 		if err := targetRace.Close(); err != nil {
-			log.Err(err).Str("filename", raceFileName).Msg("failed to close race file")
+			r.log.Err(err).Str("filename", raceFileName).Msg("failed to close race file")
 		}
 	}()
 
-	// Strip password from race file as a precaution before writing to disk
 	data := raceFile.Data
-	cleanedData, result, err := hs.RemoveRacePasswordBytes(data)
-	if err != nil {
-		log.Warn().Err(err).Str("filename", raceFileName).Msg("failed to check race file for password, using original data")
-	} else if result.PasswordRemoved {
-		log.Debug().Str("filename", raceFileName).Msg("stripped password from race file")
-		data = cleanedData
+
+	// Strip password from race file if enabled
+	if r.stripRacePasswords {
+		cleanedData, result, err := hs.RemoveRacePasswordBytes(data)
+		if err != nil {
+			r.log.Warn().Err(err).Str("filename", raceFileName).Msg("failed to check race file for password, using original data")
+		} else if result.PasswordRemoved {
+			r.log.Debug().Str("filename", raceFileName).Msg("stripped password from race file")
+			data = cleanedData
+		}
 	}
 
 	n, err := targetRace.Write(data)
 	if err != nil {
-		log.Err(err).Str("filename", raceFileName).Msg("failed to write into race file")
+		r.log.Err(err).Str("filename", raceFileName).Msg("failed to write into race file")
 		return err
 	}
-	log.Debug().Int("# bytes", n).Str("racefile", raceFileName).Msg("wrote race file")
+	r.log.Debug().Int("# bytes", n).Str("racefile", raceFileName).Msg("wrote race file")
 
 	return nil
 }

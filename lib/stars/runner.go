@@ -26,12 +26,13 @@ const (
 )
 
 type RunnerOptions struct {
-	ExecutableDir    string `long:"stars-executable-dir" env:"STARS_EXECUTABLE_DIR" ini-name:"stars_executable_dir" description:"directory that will be used to put stars.exe" default:"~/.local/share/neper/stars"`
-	SaveDir          string `long:"stars-save-dir" env:"STARS_SAVE_DIR" ini-name:"stars_save_dir" description:"directory that will be used as a base to create all savegame dirs" default:"~/.local/share/neper/saves"`
-	WinePrefix       string `long:"wine-prefix" env:"WINE_PREFIX" ini-name:"wine_prefix" description:"wine prefix to use for running wine apps" default:"~/.wine"`
-	CommandsTimeout  int    `long:"wine-commands-timeout" env:"WINE_COMMANDS_TIMEOUT" ini-name:"wine_commands_timeout" description:"time in seconds after which the wine process is considered unresponsive and killed" default:"30"`
-	DisplayNumber    int    `long:"display" env:"DISPLAY" ini-name:"display" description:"the display number to provide for wine commands" default:"99"`
-	PreserveSaveFiles bool  `long:"preserve-save-files" env:"PRESERVE_SAVE_FILES" ini-name:"preserve_save_files" description:"preserve session save files on disk for debugging (do not cleanup after game creation/turn generation)"`
+	ExecutableDir        string `long:"stars-executable-dir" env:"STARS_EXECUTABLE_DIR" ini-name:"stars_executable_dir" description:"directory that will be used to put stars.exe" default:"~/.local/share/neper/stars"`
+	SaveDir              string `long:"stars-save-dir" env:"STARS_SAVE_DIR" ini-name:"stars_save_dir" description:"directory that will be used as a base to create all savegame dirs" default:"~/.local/share/neper/saves"`
+	WinePrefix           string `long:"wine-prefix" env:"WINE_PREFIX" ini-name:"wine_prefix" description:"wine prefix to use for running wine apps" default:"~/.wine"`
+	CommandsTimeout      int    `long:"wine-commands-timeout" env:"WINE_COMMANDS_TIMEOUT" ini-name:"wine_commands_timeout" description:"time in seconds after which the wine process is considered unresponsive and killed" default:"30"`
+	DisplayNumber        int    `long:"display" env:"DISPLAY" ini-name:"display" description:"the display number to provide for wine commands" default:"99"`
+	PreserveSaveFiles    bool   `long:"preserve-save-files" env:"PRESERVE_SAVE_FILES" ini-name:"preserve_save_files" description:"preserve session save files on disk for debugging (do not cleanup after game creation/turn generation)"`
+	StripRacePasswords   bool   `long:"strip-race-passwords" env:"STRIP_RACE_PASSWORDS" ini-name:"strip_race_passwords" description:"strip passwords from race files when uploaded and before game creation"`
 }
 
 // NewRunnerOptions ...
@@ -41,14 +42,15 @@ func NewRunnerOptions() *RunnerOptions {
 }
 
 type Runner struct {
-	log               *zerolog.Logger
-	ExecutableDir     string // will be mapped to x: for executables
-	SaveDir           string // will be mapped to s: for saves
-	DisplayNumber     int
-	preserveSaveFiles bool              // if true, don't cleanup session directories after operations
-	prefix            *wine.Prefix      // wine prefix manager
-	xvfbProcess       *cmd.Cmd          // the xvfbProcess we launch at startup
-	xvfbStatusChan    <-chan cmd.Status
+	log                *zerolog.Logger
+	ExecutableDir      string // will be mapped to x: for executables
+	SaveDir            string // will be mapped to s: for saves
+	DisplayNumber      int
+	preserveSaveFiles  bool              // if true, don't cleanup session directories after operations
+	stripRacePasswords bool              // if true, strip passwords from race files
+	prefix             *wine.Prefix      // wine prefix manager
+	xvfbProcess        *cmd.Cmd          // the xvfbProcess we launch at startup
+	xvfbStatusChan     <-chan cmd.Status
 }
 
 func expand(input string) (string, error) {
@@ -80,12 +82,13 @@ func NewRunner(log *zerolog.Logger, opts *RunnerOptions) (*Runner, error) {
 	}
 
 	return &Runner{
-		log:               log,
-		ExecutableDir:     absExecutableDir,
-		SaveDir:           absSaveDir,
-		DisplayNumber:     opts.DisplayNumber,
-		preserveSaveFiles: opts.PreserveSaveFiles,
-		prefix:            prefix,
+		log:                log,
+		ExecutableDir:      absExecutableDir,
+		SaveDir:            absSaveDir,
+		DisplayNumber:      opts.DisplayNumber,
+		preserveSaveFiles:  opts.PreserveSaveFiles,
+		stripRacePasswords: opts.StripRacePasswords,
+		prefix:             prefix,
 	}, nil
 }
 
@@ -302,4 +305,9 @@ func (r *Runner) CleanupSessionDir(sessionID string) error {
 // SessionDir returns the path to the session directory for testing purposes.
 func (r *Runner) SessionDir(sessionID string) string {
 	return r.localSessionSaveDir(sessionID)
+}
+
+// StripRacePasswords returns whether race password stripping is enabled.
+func (r *Runner) StripRacePasswords() bool {
+	return r.stripRacePasswords
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/neper-stars/neper/models"
 )
 
-func RaceFromString(data string) (*models.Race, error) {
+func RaceFromString(data string, stripPassword bool) (*models.Race, error) {
 	r := models.Race{}
 	r.Data = data
 
@@ -21,13 +21,15 @@ func RaceFromString(data string) (*models.Race, error) {
 		return nil, err
 	}
 
-	// Strip password from race file if present
-	rawData, err = stripRacePassword(rawData)
-	if err != nil {
-		return nil, err
+	// Strip password from race file if enabled
+	if stripPassword {
+		rawData, err = stripRacePassword(rawData)
+		if err != nil {
+			return nil, err
+		}
+		// Update the stored data with password-stripped version
+		r.Data = base64.StdEncoding.EncodeToString(rawData)
 	}
-	// Update the stored data with password-stripped version
-	r.Data = base64.StdEncoding.EncodeToString(rawData)
 
 	// parse data
 	if err := ParseRaceData(&r, rawData); err != nil {
@@ -54,25 +56,27 @@ func stripRacePassword(data []byte) ([]byte, error) {
 	return data, nil
 }
 
-func RaceFromFile(fn string) (*models.Race, error) {
+func RaceFromFile(fn string, stripPassword bool) (*models.Race, error) {
 	f, err := os.Open(fn) // #nosec G304 -- filename comes from trusted source
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = f.Close() }()
-	return RaceFromReader(f)
+	return RaceFromReader(f, stripPassword)
 }
 
-func RaceFromReader(r io.Reader) (*models.Race, error) {
+func RaceFromReader(r io.Reader, stripPassword bool) (*models.Race, error) {
 	rawData, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 
-	// Strip password from race file if present
-	rawData, err = stripRacePassword(rawData)
-	if err != nil {
-		return nil, err
+	// Strip password from race file if enabled
+	if stripPassword {
+		rawData, err = stripRacePassword(rawData)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	race := models.RaceFromRaw(rawData)

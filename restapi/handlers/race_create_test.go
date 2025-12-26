@@ -35,7 +35,7 @@ func TestRaceCreateHandler(t *testing.T) {
 	// hobbits are owned by Merry
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
-	handler := NewRaceCreateHandler(&log, testdb.DB, nil)
+	handler := NewRaceCreateHandler(&log, testdb.DB, nil, nil)
 
 	t.Run("boromir_creates_humans", func(t *testing.T) {
 		rf, err := os.Open("fixtures/humans.r1")

@@ -14,19 +14,21 @@ import (
 	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewRaceCreateHandler ...
-func NewRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *RaceCreateHandler {
-	return &RaceCreateHandler{db: db, log: log, notifyService: notifyService}
+func NewRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB, runner *stars.Runner, notifyService *notify.Service) *RaceCreateHandler {
+	return &RaceCreateHandler{db: db, log: log, runner: runner, notifyService: notifyService}
 }
 
 // RaceCreateHandler handles /Races
 type RaceCreateHandler struct {
 	db            *sqlx.DB
 	log           *zerolog.Logger
+	runner        *stars.Runner
 	notifyService *notify.Service
 }
 
@@ -56,7 +58,8 @@ func (h *RaceCreateHandler) handle(
 		return nil, err
 	}
 
-	race, err := neper.RaceFromString(inputRace.Data)
+	stripPasswords := h.runner != nil && h.runner.StripRacePasswords()
+	race, err := neper.RaceFromString(inputRace.Data, stripPasswords)
 	if err != nil {
 		h.log.Err(err).Msg("failed to parse race data from input")
 		return nil, errs.NewErrInvalidRace("failed to parse race file:" + err.Error())

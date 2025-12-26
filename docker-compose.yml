@@ -47,6 +47,10 @@ services:
       # WARNING: setting this to true will rapidely clutter your disk with a lot of session directories
       # and files that YOU will need to cleanup manually.
       NEPER_SERVE_PRESERVE_SAVE_FILES: false
+      # set this to true in order to systematically remove passwords from race files
+      # WARNING, ATM this will not remove change password orders in the order files
+      # so a user can still protect its turn files
+      NEPER_SERVE_STRIP_RACE_PASSWORDS: false
     volumes:
       - "./neper_data/etc:/etc/neper"
       - "./neper_data:/home/neper"

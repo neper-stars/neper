@@ -36,7 +36,7 @@ func TestRaceDeleteHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/races.json")
 
-	createHandler := NewRaceCreateHandler(&log, testdb.DB, nil)
+	createHandler := NewRaceCreateHandler(&log, testdb.DB, nil, nil)
 	deleteHandler := NewRaceDeleteHandler(testdb.DB, nil)
 	sessionPlayerRaceHandler := NewSessionPlayerRaceCreateHandler(&log, testdb.DB, nil)
 
