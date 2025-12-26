@@ -41,6 +41,12 @@ services:
       NEPER_SERVE_NATS_CLIENT_NKEY:
       # use your own token secret here, see command: generate-token-secret in docker-compose.yml
       NEPER_SERVE_TOKEN_SECRET:
+      NEPER_SERVE_REGISTRATION_ENABLED: false
+      # set this to true in order to be able to access the stars files and debug some issues
+      # in production you should not need this and can safely keep this option to false
+      # WARNING: setting this to true will rapidely clutter your disk with a lot of session directories
+      # and files that YOU will need to cleanup manually.
+      NEPER_SERVE_PRESERVE_SAVE_FILES: false
     volumes:
       - "./neper_data/etc:/etc/neper"
       - "./neper_data:/home/neper"

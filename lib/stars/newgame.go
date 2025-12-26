@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
+	hs "github.com/neper-stars/houston"
 
 	"github.com/neper-stars/neper/models"
 )
@@ -207,7 +208,17 @@ func saveRaceFile(log *zerolog.Logger, sessionDir string, raceFile RaceFile) err
 		}
 	}()
 
-	n, err := targetRace.Write(raceFile.Data)
+	// Strip password from race file as a precaution before writing to disk
+	data := raceFile.Data
+	cleanedData, result, err := hs.RemoveRacePasswordBytes(data)
+	if err != nil {
+		log.Warn().Err(err).Str("filename", raceFileName).Msg("failed to check race file for password, using original data")
+	} else if result.PasswordRemoved {
+		log.Debug().Str("filename", raceFileName).Msg("stripped password from race file")
+		data = cleanedData
+	}
+
+	n, err := targetRace.Write(data)
 	if err != nil {
 		log.Err(err).Str("filename", raceFileName).Msg("failed to write into race file")
 		return err

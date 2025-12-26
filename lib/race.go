@@ -1,6 +1,7 @@
 package neper
 
 import (
+	"encoding/base64"
 	"errors"
 	"io"
 	"os"
@@ -20,11 +21,37 @@ func RaceFromString(data string) (*models.Race, error) {
 		return nil, err
 	}
 
+	// Strip password from race file if present
+	rawData, err = stripRacePassword(rawData)
+	if err != nil {
+		return nil, err
+	}
+	// Update the stored data with password-stripped version
+	r.Data = base64.StdEncoding.EncodeToString(rawData)
+
 	// parse data
 	if err := ParseRaceData(&r, rawData); err != nil {
 		return nil, err
 	}
 	return &r, nil
+}
+
+// stripRacePassword removes any password from race file data.
+// Password-protected race files have been observed to cause issues
+// during game generation, though the exact mechanism is not fully understood.
+// Stripping passwords at upload time ensures clean race files in the database.
+func stripRacePassword(data []byte) ([]byte, error) {
+	result, repairResult, err := hs.RemoveRacePasswordBytes(data)
+	if err != nil {
+		return nil, err
+	}
+	// If no password was present or removal succeeded, return the result
+	if repairResult.Success {
+		return result, nil
+	}
+	// If removal failed for some reason, return original data
+	// (the game creation will fail later with a more specific error)
+	return data, nil
 }
 
 func RaceFromFile(fn string) (*models.Race, error) {
@@ -41,6 +68,13 @@ func RaceFromReader(r io.Reader) (*models.Race, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Strip password from race file if present
+	rawData, err = stripRacePassword(rawData)
+	if err != nil {
+		return nil, err
+	}
+
 	race := models.RaceFromRaw(rawData)
 
 	if err := ParseRaceData(race, rawData); err != nil {
