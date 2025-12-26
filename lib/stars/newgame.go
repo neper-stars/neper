@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog"
-	hs "github.com/neper-stars/houston"
 
+	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/models"
 )
 
@@ -208,18 +208,13 @@ func (r *Runner) saveRaceFile(sessionDir string, raceFile RaceFile) error {
 		}
 	}()
 
-	data := raceFile.Data
-
-	// Strip password from race file if enabled
-	if r.stripRacePasswords {
-		cleanedData, result, err := hs.RemoveRacePasswordBytes(data)
-		if err != nil {
-			r.log.Warn().Err(err).Str("filename", raceFileName).Msg("failed to check race file for password, using original data")
-		} else if result.PasswordRemoved {
-			r.log.Debug().Str("filename", raceFileName).Msg("stripped password from race file")
-			data = cleanedData
-		}
+	// Process race file using the racefiles processor
+	opts := racefiles.ProcessorOptions{
+		StripPassword: r.stripRacePasswords,
+		FixCorrupted:  r.fixRaceFiles,
 	}
+	data, analysis := racefiles.ProcessData(r.log, raceFile.Data, opts)
+	racefiles.LogAnalysis(r.log, analysis, raceFileName)
 
 	n, err := targetRace.Write(data)
 	if err != nil {

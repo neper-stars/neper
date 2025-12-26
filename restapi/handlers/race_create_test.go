@@ -15,7 +15,7 @@ import (
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/fixtures"
-	"github.com/neper-stars/neper/lib/stars"
+	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -88,12 +88,12 @@ func TestRaceCreateHandler(t *testing.T) {
 		hook := &loghook.CaptureHook{}
 		testLog := testutils.GetLogger(t).Hook(hook)
 
-		// Create handler without fix enabled (runner with FixRaceFiles=false)
-		mockRunner := stars.NewMockRunner(stars.MockRunnerOptions{
-			StripRacePasswords: false,
-			FixRaceFiles:       false,
+		// Create handler without fix enabled (processor with FixCorrupted=false)
+		processor := racefiles.NewProcessor(racefiles.ProcessorOptions{
+			StripPassword: false,
+			FixCorrupted:  false,
 		})
-		handlerNoFix := NewRaceCreateHandler(&testLog, testdb.DB, mockRunner, nil)
+		handlerNoFix := NewRaceCreateHandler(&testLog, testdb.DB, processor, nil)
 
 		rf, err := os.Open("fixtures/needsrepair.r1")
 		require.NoError(t, err)
@@ -143,11 +143,11 @@ func TestRaceCreateHandler(t *testing.T) {
 		testLog := testutils.GetLogger(t).Hook(hook)
 
 		// Create handler with fix enabled
-		mockRunner := stars.NewMockRunner(stars.MockRunnerOptions{
-			StripRacePasswords: false,
-			FixRaceFiles:       true,
+		processor := racefiles.NewProcessor(racefiles.ProcessorOptions{
+			StripPassword: false,
+			FixCorrupted:  true,
 		})
-		handlerWithFix := NewRaceCreateHandler(&testLog, testdb.DB, mockRunner, nil)
+		handlerWithFix := NewRaceCreateHandler(&testLog, testdb.DB, processor, nil)
 
 		rf, err := os.Open("fixtures/needsrepair.r1")
 		require.NoError(t, err)

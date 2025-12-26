@@ -13,6 +13,7 @@ import (
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/lib/registration"
 	"github.com/neper-stars/neper/lib/serial"
 	"github.com/neper-stars/neper/lib/stars"
@@ -94,6 +95,12 @@ func setupServeConfig(config *restapi.Config) error {
 	if err := config.StarsRunner.Init(); err != nil {
 		return err
 	}
+
+	// Initialize the race file processor with options from runner settings
+	config.RaceProcessor = racefiles.NewProcessor(racefiles.ProcessorOptions{
+		StripPassword: StarsRunnerOptions.StripRacePasswords,
+		FixCorrupted:  StarsRunnerOptions.FixRaceFiles,
+	})
 
 	// ----------------------------
 	// NATS configuration

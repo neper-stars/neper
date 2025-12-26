@@ -14,21 +14,21 @@ import (
 	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
-	"github.com/neper-stars/neper/lib/stars"
+	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewRaceCreateHandler ...
-func NewRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB, runner *stars.Runner, notifyService *notify.Service) *RaceCreateHandler {
-	return &RaceCreateHandler{db: db, log: log, runner: runner, notifyService: notifyService}
+func NewRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB, raceProcessor *racefiles.Processor, notifyService *notify.Service) *RaceCreateHandler {
+	return &RaceCreateHandler{db: db, log: log, raceProcessor: raceProcessor, notifyService: notifyService}
 }
 
 // RaceCreateHandler handles /Races
 type RaceCreateHandler struct {
 	db            *sqlx.DB
 	log           *zerolog.Logger
-	runner        *stars.Runner
+	raceProcessor *racefiles.Processor
 	notifyService *notify.Service
 }
 
@@ -58,9 +58,9 @@ func (h *RaceCreateHandler) handle(
 		return nil, err
 	}
 
-	opts := neper.RaceFileOptions{
-		StripPassword: h.runner != nil && h.runner.StripRacePasswords(),
-		FixCorrupted:  h.runner != nil && h.runner.FixRaceFiles(),
+	var opts neper.RaceFileOptions
+	if h.raceProcessor != nil {
+		opts = h.raceProcessor.Options()
 	}
 	race, analysis, err := neper.RaceFromString(inputRace.Data, opts)
 	if err != nil {
@@ -69,24 +69,7 @@ func (h *RaceCreateHandler) handle(
 	}
 
 	// Log analysis results
-	if analysis != nil {
-		if analysis.NeedsRepair {
-			if analysis.WasRepaired {
-				h.log.Info().Str("user", principal.Subject).Msg("corrupted race file was automatically repaired")
-			} else if analysis.RepairError != "" {
-				h.log.Warn().Str("user", principal.Subject).Str("error", analysis.RepairError).Msg("race file is corrupted and repair failed")
-			} else {
-				h.log.Warn().Str("user", principal.Subject).Msg("race file is corrupted but automatic repair is disabled")
-			}
-		}
-		if analysis.HasPassword {
-			if analysis.PasswordStripped {
-				h.log.Debug().Str("user", principal.Subject).Msg("password was stripped from race file")
-			} else {
-				h.log.Debug().Str("user", principal.Subject).Msg("race file has a password")
-			}
-		}
-	}
+	racefiles.LogAnalysis(h.log, analysis, "user:"+principal.Subject)
 
 	// force our ID not the one from the client
 	race.ID = raceUID.String()

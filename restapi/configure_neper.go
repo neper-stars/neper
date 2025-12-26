@@ -18,6 +18,7 @@ import (
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/lib/registration"
 	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
@@ -48,6 +49,7 @@ type Config struct {
 	NatsClientOptions   *embeddednats.ClientOptions
 	NatsClientConn      *nats.Conn
 	NotifyService       *notify.Service
+	RaceProcessor       *racefiles.Processor
 
 	// Registration options
 	RegistrationOptions *registration.Options
@@ -163,7 +165,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.UserProfileResetApikeyHandler = handlers.NewUserProfileResetApikeyHandler(config.DB)
 
 	// Races
-	api.RaceCreateHandler = handlers.NewRaceCreateHandler(&config.Log, config.DB, config.StarsRunner, config.NotifyService)
+	api.RaceCreateHandler = handlers.NewRaceCreateHandler(&config.Log, config.DB, config.RaceProcessor, config.NotifyService)
 	api.RacesListHandler = handlers.NewRacesListHandler(config.DB)
 	api.RaceReadHandler = handlers.NewRaceReadHandler(config.DB)
 	api.RaceDeleteHandler = handlers.NewRaceDeleteHandler(config.DB, config.NotifyService)
