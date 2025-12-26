@@ -58,11 +58,34 @@ func (h *RaceCreateHandler) handle(
 		return nil, err
 	}
 
-	stripPasswords := h.runner != nil && h.runner.StripRacePasswords()
-	race, err := neper.RaceFromString(inputRace.Data, stripPasswords)
+	opts := neper.RaceFileOptions{
+		StripPassword: h.runner != nil && h.runner.StripRacePasswords(),
+		FixCorrupted:  h.runner != nil && h.runner.FixRaceFiles(),
+	}
+	race, analysis, err := neper.RaceFromString(inputRace.Data, opts)
 	if err != nil {
 		h.log.Err(err).Msg("failed to parse race data from input")
 		return nil, errs.NewErrInvalidRace("failed to parse race file:" + err.Error())
+	}
+
+	// Log analysis results
+	if analysis != nil {
+		if analysis.NeedsRepair {
+			if analysis.WasRepaired {
+				h.log.Info().Str("user", principal.Subject).Msg("corrupted race file was automatically repaired")
+			} else if analysis.RepairError != "" {
+				h.log.Warn().Str("user", principal.Subject).Str("error", analysis.RepairError).Msg("race file is corrupted and repair failed")
+			} else {
+				h.log.Warn().Str("user", principal.Subject).Msg("race file is corrupted but automatic repair is disabled")
+			}
+		}
+		if analysis.HasPassword {
+			if analysis.PasswordStripped {
+				h.log.Debug().Str("user", principal.Subject).Msg("password was stripped from race file")
+			} else {
+				h.log.Debug().Str("user", principal.Subject).Msg("race file has a password")
+			}
+		}
 	}
 
 	// force our ID not the one from the client

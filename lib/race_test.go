@@ -32,7 +32,7 @@ func TestRaceFromFile(t *testing.T) {
 	}
 	for _, tCase := range testCases {
 		t.Run(tCase.Name, func(t *testing.T) {
-			r, err := RaceFromFile(tCase.Filename)
+			r, _, err := RaceFromFile(tCase.Filename, RaceFileOptions{})
 			require.NoError(t, err)
 			require.Equal(t, tCase.ExpectedNameSingular, r.NameSingular)
 		})

@@ -9,6 +9,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// MockRunnerOptions configures a mock runner for unit tests that don't need
+// the full Stars! runner infrastructure (wine, Xvfb, etc).
+type MockRunnerOptions struct {
+	StripRacePasswords bool
+	FixRaceFiles       bool
+}
+
+// NewMockRunner creates a minimal Runner for unit tests.
+// It only sets the flags needed for race file processing and does not
+// initialize wine, Xvfb, or any directories.
+func NewMockRunner(opts MockRunnerOptions) *Runner {
+	return &Runner{
+		stripRacePasswords: opts.StripRacePasswords,
+		fixRaceFiles:       opts.FixRaceFiles,
+	}
+}
+
 type ShutdownFunc func()
 
 // GetTestStarsRunner is the easiest way to get a runner for testing.

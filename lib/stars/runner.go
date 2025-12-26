@@ -33,6 +33,7 @@ type RunnerOptions struct {
 	DisplayNumber        int    `long:"display" env:"DISPLAY" ini-name:"display" description:"the display number to provide for wine commands" default:"99"`
 	PreserveSaveFiles    bool   `long:"preserve-save-files" env:"PRESERVE_SAVE_FILES" ini-name:"preserve_save_files" description:"preserve session save files on disk for debugging (do not cleanup after game creation/turn generation)"`
 	StripRacePasswords   bool   `long:"strip-race-passwords" env:"STRIP_RACE_PASSWORDS" ini-name:"strip_race_passwords" description:"strip passwords from race files when uploaded and before game creation"`
+	FixRaceFiles         bool   `long:"fix-race-files" env:"FIX_RACE_FILES" ini-name:"fix_race_files" description:"automatically repair corrupted race files when uploaded (fixes checksum issues from different Stars! installations)"`
 }
 
 // NewRunnerOptions ...
@@ -48,6 +49,7 @@ type Runner struct {
 	DisplayNumber      int
 	preserveSaveFiles  bool              // if true, don't cleanup session directories after operations
 	stripRacePasswords bool              // if true, strip passwords from race files
+	fixRaceFiles       bool              // if true, repair corrupted race files
 	prefix             *wine.Prefix      // wine prefix manager
 	xvfbProcess        *cmd.Cmd          // the xvfbProcess we launch at startup
 	xvfbStatusChan     <-chan cmd.Status
@@ -88,6 +90,7 @@ func NewRunner(log *zerolog.Logger, opts *RunnerOptions) (*Runner, error) {
 		DisplayNumber:      opts.DisplayNumber,
 		preserveSaveFiles:  opts.PreserveSaveFiles,
 		stripRacePasswords: opts.StripRacePasswords,
+		fixRaceFiles:       opts.FixRaceFiles,
 		prefix:             prefix,
 	}, nil
 }
@@ -310,4 +313,9 @@ func (r *Runner) SessionDir(sessionID string) string {
 // StripRacePasswords returns whether race password stripping is enabled.
 func (r *Runner) StripRacePasswords() bool {
 	return r.stripRacePasswords
+}
+
+// FixRaceFiles returns whether automatic race file repair is enabled.
+func (r *Runner) FixRaceFiles() bool {
+	return r.fixRaceFiles
 }

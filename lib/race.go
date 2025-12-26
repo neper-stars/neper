@@ -11,80 +11,169 @@ import (
 	"github.com/neper-stars/neper/models"
 )
 
-func RaceFromString(data string, stripPassword bool) (*models.Race, error) {
+// RaceFileOptions controls race file processing behavior
+type RaceFileOptions struct {
+	StripPassword bool // Remove password from race file
+	FixCorrupted  bool // Repair corrupted race files (checksum issues)
+}
+
+// RaceAnalysis contains analysis results for a race file
+type RaceAnalysis struct {
+	NeedsRepair    bool   // True if the race file has corruption issues
+	WasRepaired    bool   // True if the race file was repaired
+	RepairError    string // Error message if repair was attempted but failed
+	HasPassword    bool   // True if the race file has a password
+	PasswordStripped bool // True if password was removed
+}
+
+func RaceFromString(data string, opts RaceFileOptions) (*models.Race, *RaceAnalysis, error) {
 	r := models.Race{}
 	r.Data = data
+	analysis := &RaceAnalysis{}
 
 	// first decode the base64 to binary
 	rawData, err := r.RawData()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	// Track if we modified the data
+	modified := false
+
+	// Always analyze race file for corruption issues
+	rawData, modified, err = analyzeAndRepairRaceFile(rawData, opts.FixCorrupted, analysis)
+	if err != nil {
+		return nil, analysis, err
 	}
 
 	// Strip password from race file if enabled
-	if stripPassword {
-		rawData, err = stripRacePassword(rawData)
+	if opts.StripPassword {
+		var stripped bool
+		rawData, stripped, err = stripRacePassword(rawData)
 		if err != nil {
-			return nil, err
+			return nil, analysis, err
 		}
-		// Update the stored data with password-stripped version
+		if stripped {
+			analysis.PasswordStripped = true
+			modified = true
+		}
+	}
+
+	// Update the stored data if we modified it
+	if modified {
 		r.Data = base64.StdEncoding.EncodeToString(rawData)
 	}
 
 	// parse data
 	if err := ParseRaceData(&r, rawData); err != nil {
-		return nil, err
+		return nil, analysis, err
 	}
-	return &r, nil
+	return &r, analysis, nil
+}
+
+// analyzeAndRepairRaceFile always analyzes a race file for corruption issues.
+// If doRepair is true and the file needs repair, it attempts to fix it.
+// Race files can become corrupted when manipulated in different Stars! installations.
+// Returns the (possibly repaired) data, whether it was modified, and any error.
+func analyzeAndRepairRaceFile(data []byte, doRepair bool, analysis *RaceAnalysis) ([]byte, bool, error) {
+	info, err := hs.AnalyzeRaceFileBytes("", data)
+	if err != nil {
+		// Analysis failed, return original data without marking as needing repair
+		return data, false, nil
+	}
+
+	// Always record if file needs repair (for warning purposes)
+	analysis.NeedsRepair = info.NeedsRepair
+	analysis.HasPassword = info.HasPassword
+
+	if !info.NeedsRepair {
+		return data, false, nil
+	}
+
+	// File needs repair - only attempt if enabled
+	if !doRepair {
+		return data, false, nil
+	}
+
+	// Attempt repair
+	repaired, result, err := hs.RepairRaceFileBytes(data)
+	if err != nil {
+		analysis.RepairError = err.Error()
+		return data, false, nil
+	}
+	if result.Success {
+		analysis.WasRepaired = true
+		return repaired, true, nil
+	}
+
+	// Repair failed
+	analysis.RepairError = "repair was not successful"
+	return data, false, nil
 }
 
 // stripRacePassword removes any password from race file data.
-// Password-protected race files have been observed to cause issues
-// during game generation, though the exact mechanism is not fully understood.
-// Stripping passwords at upload time ensures clean race files in the database.
-func stripRacePassword(data []byte) ([]byte, error) {
+// Returns the (possibly modified) data, whether it was modified, and any error.
+func stripRacePassword(data []byte) ([]byte, bool, error) {
 	result, repairResult, err := hs.RemoveRacePasswordBytes(data)
 	if err != nil {
-		return nil, err
+		// Password removal failed, return original data
+		return data, false, nil
 	}
-	// If no password was present or removal succeeded, return the result
-	if repairResult.Success {
-		return result, nil
+	if repairResult.Success && repairResult.PasswordRemoved {
+		return result, true, nil
 	}
-	// If removal failed for some reason, return original data
-	// (the game creation will fail later with a more specific error)
-	return data, nil
+	// No password was present or removal wasn't needed
+	return data, false, nil
 }
 
-func RaceFromFile(fn string, stripPassword bool) (*models.Race, error) {
+func RaceFromFile(fn string, opts RaceFileOptions) (*models.Race, *RaceAnalysis, error) {
 	f, err := os.Open(fn) // #nosec G304 -- filename comes from trusted source
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer func() { _ = f.Close() }()
-	return RaceFromReader(f, stripPassword)
+	return RaceFromReader(f, opts)
 }
 
-func RaceFromReader(r io.Reader, stripPassword bool) (*models.Race, error) {
+func RaceFromReader(r io.Reader, opts RaceFileOptions) (*models.Race, *RaceAnalysis, error) {
 	rawData, err := io.ReadAll(r)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	analysis := &RaceAnalysis{}
+	modified := false
+
+	// Always analyze race file for corruption issues
+	rawData, modified, err = analyzeAndRepairRaceFile(rawData, opts.FixCorrupted, analysis)
+	if err != nil {
+		return nil, analysis, err
 	}
 
 	// Strip password from race file if enabled
-	if stripPassword {
-		rawData, err = stripRacePassword(rawData)
+	if opts.StripPassword {
+		var stripped bool
+		rawData, stripped, err = stripRacePassword(rawData)
 		if err != nil {
-			return nil, err
+			return nil, analysis, err
+		}
+		if stripped {
+			analysis.PasswordStripped = true
+			modified = true
 		}
 	}
 
 	race := models.RaceFromRaw(rawData)
 
-	if err := ParseRaceData(race, rawData); err != nil {
-		return nil, err
+	// Update data if modified
+	if modified {
+		race.Data = base64.StdEncoding.EncodeToString(rawData)
 	}
-	return race, nil
+
+	if err := ParseRaceData(race, rawData); err != nil {
+		return nil, analysis, err
+	}
+	return race, analysis, nil
 }
 
 func ParseRaceData(race *models.Race, rawData []byte) error {

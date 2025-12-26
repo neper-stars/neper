@@ -14,12 +14,12 @@ import (
 func GetTestRaces(t *testing.T) []models.Race {
 	t.Helper()
 	var races []models.Race
-	hobbits, err := neper.RaceFromFile("fixtures/hobbits.r1")
+	hobbits, _, err := neper.RaceFromFile("fixtures/hobbits.r1", neper.RaceFileOptions{})
 	require.NoError(t, err)
 	hobbits.ID = "hobbitsID"
 	races = append(races, *hobbits)
 
-	halflings, err := neper.RaceFromFile("fixtures/halflings.r1")
+	halflings, _, err := neper.RaceFromFile("fixtures/halflings.r1", neper.RaceFileOptions{})
 	require.NoError(t, err)
 	halflings.ID = "halflingsID"
 	races = append(races, *halflings)

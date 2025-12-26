@@ -51,6 +51,11 @@ services:
       # WARNING, ATM this will not remove change password orders in the order files
       # so a user can still protect its turn files
       NEPER_SERVE_STRIP_RACE_PASSWORDS: false
+      # if set to true, the server will attempt to fix race files that are corrupted
+      # this happens when editing a race file with different "machines" or wine prefixes
+      # the checksum gets corrupted because only part or the file is rewritten
+      # the server can recompute a proper checksum for the file
+      NEPER_SERVE_FIX_RACE_FILES: false
     volumes:
       - "./neper_data/etc:/etc/neper"
       - "./neper_data:/home/neper"
