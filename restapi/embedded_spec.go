@@ -294,7 +294,7 @@ func init() {
     },
     "/v1/notifications": {
       "get": {
-        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session_turn notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session_turn\",\n  \"id\": \"session-id\",\n  \"action\": \"ready\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor order_status notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"order_status\",\n  \"id\": \"session-id\",\n  \"action\": \"updated\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session member_left notifications, metadata contains the user who left:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"session-id\",\n  \"action\": \"member_left\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"left_user_id\": \"user-id\", \"is_private\": false}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session deleted notifications, metadata contains the member IDs:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"session-id\",\n  \"action\": \"deleted\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"member_ids\": [\"user1\", \"user2\"], \"is_private\": true}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, session_turn, invitation, race, ruleset, session_player_race, order_status\nActions: created, updated, deleted, ready, member_left\n",
+        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nSee neper-async-types.yaml for message schema definitions:\n- resource-change: Base message format for all notifications\n- session-delete-metadata: Metadata for session deletion\n- session-member-left-metadata: Metadata for member_left action\n- invitation-delete-metadata: Metadata for invitation deletion\n- session-turn-metadata: Metadata for session_turn ready\n- order-status-metadata: Metadata for order status updates\n\nAccess control:\n- session: Public sessions visible to all, private sessions to members/invitees only\n- invitation: Only visible to the invited user\n- race: Only visible to the race owner\n- ruleset: Visible to session members\n- session_player_race: Visible to session members\n- session_turn: Visible to session members\n- order_status: Visible to session members\n- pending_registration: Global managers only\n\nExample message:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n",
         "summary": "WebSocket endpoint for real-time resource change notifications",
         "operationId": "notifications",
         "responses": {
@@ -542,6 +542,50 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/v1/sessions/{session_id}/backup": {
+      "get": {
+        "description": "Returns a ZIP file containing all historic game files for a session.\n\nFor regular players (session members):\n- Gets their own turn files (.mN) for all years\n- Gets universe files (.xy) for all years\n- Gets their race file (.rN)\n- Files are named with year suffix: game-2400.m1, game-2401.m1, etc.\n\nFor session managers and global managers:\n- Gets ALL files including host files (.hst)\n- Gets ALL player turn files (.mN for all players)\n- Gets ALL race files (.rN for all players)\n- Gets universe files (.xy) for all years\n- Files are named with year suffix\n\nThe session must be started (have at least one turn generated) for this endpoint to work.\n",
+        "produces": [
+          "application/zip"
+        ],
+        "summary": "download a zip backup of all historic game files",
+        "operationId": "historicBackup",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ZIP file containing all historic game files",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "412": {
+            "description": "Session has not started yet (no turns generated)",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/error"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      }
     },
     "/v1/sessions/{session_id}/files": {
       "get": {
@@ -1949,7 +1993,7 @@ func init() {
     },
     "/v1/notifications": {
       "get": {
-        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nMessage format:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session_turn notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session_turn\",\n  \"id\": \"session-id\",\n  \"action\": \"ready\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor order_status notifications, metadata contains the year:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"order_status\",\n  \"id\": \"session-id\",\n  \"action\": \"updated\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"year\": 2400}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session member_left notifications, metadata contains the user who left:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"session-id\",\n  \"action\": \"member_left\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"left_user_id\": \"user-id\", \"is_private\": false}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nFor session deleted notifications, metadata contains the member IDs:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"session-id\",\n  \"action\": \"deleted\",\n  \"timestamp\": 1234567890,\n  \"metadata\": {\"member_ids\": [\"user1\", \"user2\"], \"is_private\": true}\n}\n` + "`" + `` + "`" + `` + "`" + `\n\nTypes: session, session_turn, invitation, race, ruleset, session_player_race, order_status\nActions: created, updated, deleted, ready, member_left\n",
+        "description": "Upgrades to WebSocket connection. Sends JSON notifications when\nresources the user has access to are modified.\n\nSee neper-async-types.yaml for message schema definitions:\n- resource-change: Base message format for all notifications\n- session-delete-metadata: Metadata for session deletion\n- session-member-left-metadata: Metadata for member_left action\n- invitation-delete-metadata: Metadata for invitation deletion\n- session-turn-metadata: Metadata for session_turn ready\n- order-status-metadata: Metadata for order status updates\n\nAccess control:\n- session: Public sessions visible to all, private sessions to members/invitees only\n- invitation: Only visible to the invited user\n- race: Only visible to the race owner\n- ruleset: Visible to session members\n- session_player_race: Visible to session members\n- session_turn: Visible to session members\n- order_status: Visible to session members\n- pending_registration: Global managers only\n\nExample message:\n` + "`" + `` + "`" + `` + "`" + `json\n{\n  \"type\": \"session\",\n  \"id\": \"abc123\",\n  \"action\": \"updated\",\n  \"timestamp\": 1702400000,\n  \"metadata\": {}\n}\n` + "`" + `` + "`" + `` + "`" + `\n",
         "summary": "WebSocket endpoint for real-time resource change notifications",
         "operationId": "notifications",
         "responses": {
@@ -2284,6 +2328,62 @@ func init() {
           "required": true
         }
       ]
+    },
+    "/v1/sessions/{session_id}/backup": {
+      "get": {
+        "description": "Returns a ZIP file containing all historic game files for a session.\n\nFor regular players (session members):\n- Gets their own turn files (.mN) for all years\n- Gets universe files (.xy) for all years\n- Gets their race file (.rN)\n- Files are named with year suffix: game-2400.m1, game-2401.m1, etc.\n\nFor session managers and global managers:\n- Gets ALL files including host files (.hst)\n- Gets ALL player turn files (.mN for all players)\n- Gets ALL race files (.rN for all players)\n- Gets universe files (.xy) for all years\n- Files are named with year suffix\n\nThe session must be started (have at least one turn generated) for this endpoint to work.\n",
+        "produces": [
+          "application/zip"
+        ],
+        "summary": "download a zip backup of all historic game files",
+        "operationId": "historicBackup",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "session_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ZIP file containing all historic game files",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Session has not started yet (no turns generated)",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
     },
     "/v1/sessions/{session_id}/files": {
       "get": {

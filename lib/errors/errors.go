@@ -357,6 +357,27 @@ func (e ErrNotAMember) Is(target error) bool {
 	return errors.Is(target, ErrPreconditionFailed)
 }
 
+// ErrSessionNotStarted is returned when an operation requires the session
+// to be started but it is not
+type ErrSessionNotStarted struct {
+	GivenMessage string
+}
+
+// NewErrSessionNotStarted ...
+func NewErrSessionNotStarted(msg string) *ErrSessionNotStarted {
+	return &ErrSessionNotStarted{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrSessionNotStarted) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrSessionNotStarted) Is(target error) bool {
+	return errors.Is(target, ErrPreconditionFailed)
+}
+
 // ErrPlayerShouldNotBeReady is returned when a player tries to leave a session
 // but they have already marked themselves as ready
 type ErrPlayerShouldNotBeReady struct {

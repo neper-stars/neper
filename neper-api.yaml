@@ -713,6 +713,52 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/backup:
+    get:
+      operationId: historicBackup
+      summary: "download a zip backup of all historic game files"
+      description: |
+        Returns a ZIP file containing all historic game files for a session.
+
+        For regular players (session members):
+        - Gets their own turn files (.mN) for all years
+        - Gets universe files (.xy) for all years
+        - Gets their race file (.rN)
+        - Files are named with year suffix: game-2400.m1, game-2401.m1, etc.
+
+        For session managers and global managers:
+        - Gets ALL files including host files (.hst)
+        - Gets ALL player turn files (.mN for all players)
+        - Gets ALL race files (.rN for all players)
+        - Gets universe files (.xy) for all years
+        - Files are named with year suffix
+
+        The session must be started (have at least one turn generated) for this endpoint to work.
+      produces:
+        - application/zip
+      parameters:
+        - name: "session_id"
+          in: "path"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: "ZIP file containing all historic game files"
+          schema:
+            type: file
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        412:
+          description: "Session has not started yet (no turns generated)"
+          schema:
+            $ref: "neper-types.yaml#/definitions/error"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}/turn/latest:
     get:
       operationId: turnLatest

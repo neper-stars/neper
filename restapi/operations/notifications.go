@@ -38,7 +38,25 @@ WebSocket endpoint for real-time resource change notifications
 Upgrades to WebSocket connection. Sends JSON notifications when
 resources the user has access to are modified.
 
-Message format:
+See neper-async-types.yaml for message schema definitions:
+- resource-change: Base message format for all notifications
+- session-delete-metadata: Metadata for session deletion
+- session-member-left-metadata: Metadata for member_left action
+- invitation-delete-metadata: Metadata for invitation deletion
+- session-turn-metadata: Metadata for session_turn ready
+- order-status-metadata: Metadata for order status updates
+
+Access control:
+- session: Public sessions visible to all, private sessions to members/invitees only
+- invitation: Only visible to the invited user
+- race: Only visible to the race owner
+- ruleset: Visible to session members
+- session_player_race: Visible to session members
+- session_turn: Visible to session members
+- order_status: Visible to session members
+- pending_registration: Global managers only
+
+Example message:
 ```json
 {
   "type": "session",
@@ -48,53 +66,6 @@ Message format:
   "metadata": {}
 }
 ```
-
-For session_turn notifications, metadata contains the year:
-```json
-{
-  "type": "session_turn",
-  "id": "session-id",
-  "action": "ready",
-  "timestamp": 1702400000,
-  "metadata": {"year": 2400}
-}
-```
-
-For order_status notifications, metadata contains the year:
-```json
-{
-  "type": "order_status",
-  "id": "session-id",
-  "action": "updated",
-  "timestamp": 1234567890,
-  "metadata": {"year": 2400}
-}
-```
-
-For session member_left notifications, metadata contains the user who left:
-```json
-{
-  "type": "session",
-  "id": "session-id",
-  "action": "member_left",
-  "timestamp": 1234567890,
-  "metadata": {"left_user_id": "user-id", "is_private": false}
-}
-```
-
-For session deleted notifications, metadata contains the member IDs:
-```json
-{
-  "type": "session",
-  "id": "session-id",
-  "action": "deleted",
-  "timestamp": 1234567890,
-  "metadata": {"member_ids": ["user1", "user2"], "is_private": true}
-}
-```
-
-Types: session, session_turn, invitation, race, ruleset, session_player_race, order_status
-Actions: created, updated, deleted, ready, member_left
 
 
 */

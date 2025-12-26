@@ -210,6 +210,9 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	// Downloads
 	api.DownloadStarsExeHandler = handlers.NewDownloadStarsExeHandler(&config.Log)
 
+	// Historic Backup
+	api.HistoricBackupHandler = handlers.NewHistoricBackupHandler(&config.Log, config.DB)
+
 	if server.Prometheus {
 		api.PrometheusInstrumentHandlers()
 	}

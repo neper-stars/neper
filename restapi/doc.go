@@ -15,6 +15,7 @@
 //    - application/json
 //
 //  Produces:
+//    - application/zip
 //    - application/octet-stream
 //    - application/json
 //

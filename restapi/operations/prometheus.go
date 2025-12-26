@@ -18,6 +18,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/sessions/{session_id}/game"] = GameCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/game"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/backup"] = HistoricBackupInstrumentHandler(
+		o.handlers["GET"]["/v1/sessions/{session_id}/backup"])
+
 	o.handlers["PUT"]["/v1/invitations/{invitation_id}"] = InvitationAcceptInstrumentHandler(
 		o.handlers["PUT"]["/v1/invitations/{invitation_id}"])
 

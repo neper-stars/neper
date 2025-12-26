@@ -1,0 +1,43 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session",
+        "id": "merryvsgollumID",
+        "name": "MerryVSGollum",
+        "started": true
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "merryID",
+        "nickname": "merry",
+        "email": "merry@shire.com",
+        "api_key": "apikeyMerry",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [
+          {"session_id":  "merryvsgollumID", "is_manager":  true}
+        ]
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "user_profile",
+        "id": "gollumID",
+        "nickname": "gollum",
+        "email": "gollum@shire.com",
+        "api_key": "apikeyGollum",
+        "is_active": true,
+        "is_manager": false,
+        "session_list": [
+          {"session_id":  "merryvsgollumID", "is_manager":  false}
+        ]
+      }
+    }
+  ]
+}

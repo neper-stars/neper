@@ -7,6 +7,7 @@ package operations
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -42,6 +43,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 
 		JSONConsumer: runtime.JSONConsumer(),
 
+		ApplicationZipProducer: runtime.ProducerFunc(func(w io.Writer, data interface{}) error {
+			return errors.NotImplemented("applicationZip producer has not yet been implemented")
+		}),
 		BinProducer:  runtime.ByteStreamProducer(),
 		JSONProducer: runtime.JSONProducer(),
 
@@ -53,6 +57,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		}),
 		GameCreateHandler: GameCreateHandlerFunc(func(params GameCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GameCreate has not yet been implemented")
+		}),
+		HistoricBackupHandler: HistoricBackupHandlerFunc(func(params HistoricBackupParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation HistoricBackup has not yet been implemented")
 		}),
 		InvitationAcceptHandler: InvitationAcceptHandlerFunc(func(params InvitationAcceptParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation InvitationAccept has not yet been implemented")
@@ -217,6 +224,9 @@ type NeperAPI struct {
 	//   - application/json
 	JSONConsumer runtime.Consumer
 
+	// ApplicationZipProducer registers a producer for the following mime types:
+	//   - application/zip
+	ApplicationZipProducer runtime.Producer
 	// BinProducer registers a producer for the following mime types:
 	//   - application/octet-stream
 	BinProducer runtime.Producer
@@ -237,6 +247,8 @@ type NeperAPI struct {
 	DownloadStarsExeHandler DownloadStarsExeHandler
 	// GameCreateHandler sets the operation handler for the game create operation
 	GameCreateHandler GameCreateHandler
+	// HistoricBackupHandler sets the operation handler for the historic backup operation
+	HistoricBackupHandler HistoricBackupHandler
 	// InvitationAcceptHandler sets the operation handler for the invitation accept operation
 	InvitationAcceptHandler InvitationAcceptHandler
 	// InvitationCreateHandler sets the operation handler for the invitation create operation
@@ -392,6 +404,9 @@ func (o *NeperAPI) Validate() error {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
 
+	if o.ApplicationZipProducer == nil {
+		unregistered = append(unregistered, "ApplicationZipProducer")
+	}
 	if o.BinProducer == nil {
 		unregistered = append(unregistered, "BinProducer")
 	}
@@ -411,6 +426,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.GameCreateHandler == nil {
 		unregistered = append(unregistered, "GameCreateHandler")
+	}
+	if o.HistoricBackupHandler == nil {
+		unregistered = append(unregistered, "HistoricBackupHandler")
 	}
 	if o.InvitationAcceptHandler == nil {
 		unregistered = append(unregistered, "InvitationAcceptHandler")
@@ -592,6 +610,8 @@ func (o *NeperAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
+		case "application/zip":
+			result["application/zip"] = o.ApplicationZipProducer
 		case "application/octet-stream":
 			result["application/octet-stream"] = o.BinProducer
 		case "application/json":
@@ -648,6 +668,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions/{session_id}/game"] = NewGameCreate(o.context, o.GameCreateHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/sessions/{session_id}/backup"] = NewHistoricBackup(o.context, o.HistoricBackupHandler)
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
