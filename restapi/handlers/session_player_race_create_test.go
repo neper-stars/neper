@@ -153,3 +153,96 @@ func TestSessionPlayerRaceCreateHandler_PlayerOrderAssignment(t *testing.T) {
 			"players should have different player_order values")
 	})
 }
+
+func TestSessionPlayerRaceCreateHandler_UpdateExisting(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+
+	// Load fixtures
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_members.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/races.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/boromir_second_race.json")
+
+	createHandler := NewSessionPlayerRaceCreateHandler(&log, testdb.DB, nil)
+
+	boromirPrincipal := models.Principal{
+		StandardClaims: jwt.StandardClaims{
+			Subject:   "boromirID",
+			ExpiresAt: time.Now().Add(time.Minute).Unix(),
+		},
+		IsGlobalManager: false,
+	}
+
+	t.Run("calling_create_twice_updates_existing_entry", func(t *testing.T) {
+		sessionID := "gondorID"
+
+		// First call creates a new entry
+		spr1, err := createHandler.handle(ctx, operations.SessionPlayerRaceCreateParams{
+			SessionID: sessionID,
+			SessionPlayerRace: &models.SessionPlayerRace{
+				RaceID: "humansID",
+			},
+		}, &boromirPrincipal)
+		require.NoError(t, err)
+		require.Equal(t, "humansID", spr1.RaceID)
+		originalID := spr1.ID
+		originalPlayerOrder := spr1.PlayerOrder
+
+		// Second call should update the existing entry (not create a duplicate)
+		spr2, err := createHandler.handle(ctx, operations.SessionPlayerRaceCreateParams{
+			SessionID: sessionID,
+			SessionPlayerRace: &models.SessionPlayerRace{
+				RaceID: "gondoriansID", // Different race
+			},
+		}, &boromirPrincipal)
+		require.NoError(t, err)
+		require.Equal(t, "gondoriansID", spr2.RaceID, "race should be updated")
+		require.Equal(t, originalID, spr2.ID, "ID should remain the same")
+		require.Equal(t, originalPlayerOrder, spr2.PlayerOrder, "player_order should remain the same")
+	})
+}
+
+func TestSessionPlayerRaceCreateHandler_CannotUpdateWhenReady(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+
+	// Load fixtures
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_members.json")
+	// Load Finduilas with a ready session_player_race
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/finduilas_ready.json")
+
+	createHandler := NewSessionPlayerRaceCreateHandler(&log, testdb.DB, nil)
+
+	finduilasPrincipal := models.Principal{
+		StandardClaims: jwt.StandardClaims{
+			Subject:   "finduilasID",
+			ExpiresAt: time.Now().Add(time.Minute).Unix(),
+		},
+		IsGlobalManager: false,
+	}
+
+	t.Run("cannot_update_race_when_ready", func(t *testing.T) {
+		// Finduilas is already ready in the session (from fixture)
+		// Trying to update should fail
+		_, err := createHandler.handle(ctx, operations.SessionPlayerRaceCreateParams{
+			SessionID: "gondorID",
+			SessionPlayerRace: &models.SessionPlayerRace{
+				RaceID: "finduilasRaceID", // Same or different race, doesn't matter
+			},
+		}, &finduilasPrincipal)
+		require.Error(t, err)
+		require.ErrorIs(t, err, errs.ErrInvalid, "should get an invalid error when trying to update a ready race")
+		require.Contains(t, err.Error(), "cannot update race while player is ready")
+	})
+}

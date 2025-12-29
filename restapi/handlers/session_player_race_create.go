@@ -52,26 +52,59 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 	}
 	// ** AUTHORIZATION END **
 
+	// Check if a session_player_race already exists for this user in this session
+	var existingSPR models.SessionPlayerRaceDB
+	existingQuery := sessionPlayerRaceQuery(principal.Subject, params.SessionID)
+	existingErr := sqlH.Get(&existingSPR, existingQuery)
+
+	isUpdate := existingErr == nil
+	if existingErr != nil && !errors.Is(existingErr, sql.ErrNoRows) {
+		return nil, existingErr
+	}
+
+	// If updating, check that the player is not ready
+	if isUpdate && existingSPR.Ready {
+		return nil, errs.NewErrInvalidSomething("cannot update race while player is ready")
+	}
+
 	var sessionPlayerRaceDB models.SessionPlayerRaceDB
-	uid, err := uuid.V4()
-	if err != nil {
-		return nil, err
-	}
-	sessionPlayerRaceDB.SessionPlayerRace = *params.SessionPlayerRace
-	sessionPlayerRaceDB.ID = uid.String()
-	sessionPlayerRaceDB.SessionID = params.SessionID
-	sessionPlayerRaceDB.UserProfileID = principal.Subject
 
-	// Automatically assign the next available player_order
-	nextOrder, err := getNextPlayerOrder(sqlH, params.SessionID)
-	if err != nil {
-		return nil, err
-	}
-	sessionPlayerRaceDB.PlayerOrder = nextOrder
+	if isUpdate {
+		// Update existing entry - keep the same ID and player_order
+		sessionPlayerRaceDB = existingSPR
+		sessionPlayerRaceDB.RaceID = params.SessionPlayerRace.RaceID
+		sessionPlayerRaceDB.BotLevel = params.SessionPlayerRace.BotLevel
 
-	_, err = sqlH.Insert(&sessionPlayerRaceDB)
-	if err != nil {
-		return nil, err
+		_, err = sqlH.Exec(database.SQ.
+			Update(models.SessionPlayerRaceDBTable).
+			Set(models.SessionPlayerRaceDBRaceIDColumn, sessionPlayerRaceDB.RaceID).
+			Set(models.SessionPlayerRaceDBBotLevelColumn, sessionPlayerRaceDB.BotLevel).
+			Where(sq.Eq{models.SessionPlayerRaceDBIDColumn: sessionPlayerRaceDB.ID}))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Create new entry
+		uid, err := uuid.V4()
+		if err != nil {
+			return nil, err
+		}
+		sessionPlayerRaceDB.SessionPlayerRace = *params.SessionPlayerRace
+		sessionPlayerRaceDB.ID = uid.String()
+		sessionPlayerRaceDB.SessionID = params.SessionID
+		sessionPlayerRaceDB.UserProfileID = principal.Subject
+
+		// Automatically assign the next available player_order
+		nextOrder, err := getNextPlayerOrder(sqlH, params.SessionID)
+		if err != nil {
+			return nil, err
+		}
+		sessionPlayerRaceDB.PlayerOrder = nextOrder
+
+		_, err = sqlH.Insert(&sessionPlayerRaceDB)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -80,7 +113,11 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 
 	// Publish notification after successful commit
 	if h.notifyService != nil {
-		_ = h.notifyService.PublishSessionPlayerRaceCreate(sessionPlayerRaceDB.ID)
+		if isUpdate {
+			_ = h.notifyService.PublishSessionPlayerRaceUpdate(sessionPlayerRaceDB.ID)
+		} else {
+			_ = h.notifyService.PublishSessionPlayerRaceCreate(sessionPlayerRaceDB.ID)
+		}
 	}
 
 	return &sessionPlayerRaceDB.SessionPlayerRace, nil

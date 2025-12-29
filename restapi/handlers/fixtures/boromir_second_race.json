@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "race",
+        "id": "gondoriansID",
+        "name_plural": "Gondorians",
+        "name_singular": "Gondorian",
+        "user_id": "boromirID",
+        "data": "ECBKM0ozAAAAAGAqAAAfPQUAfBjw8KZv+nazRWBjEvUIzQsB4z1M7/M+jxq8ye0FYhwiKGfF4CJHVTf5dO0urxDhtyrbhInWM73nDJamPEUEeoEfXzHp5+wytv+VTcC4brPjRBjwI50ePDrTt4qpwxbPlZQn0z4QQ/0KzkbgyTKgtm7yg/m4GLLzRILFDxhKAgD4Hw=="
+      }
+    }
+  ]
+}
