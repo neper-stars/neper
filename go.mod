@@ -37,10 +37,10 @@ require (
 	github.com/rs/zerolog v1.34.0
 	github.com/shopspring/decimal v1.2.0
 	github.com/steinfletcher/apitest v1.5.15
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/ulikunitz/xz v0.5.11
 	github.com/zenazn/goji v0.9.0
-	golang.org/x/sys v0.31.0
+	golang.org/x/sys v0.37.0
 	golang.org/x/time v0.3.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 	github.com/neper-stars/houston v0.0.0-00010101000000-000000000000
@@ -82,10 +82,10 @@ require (
 	github.com/rs/xid v1.6.0 // indirect
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/term v0.30.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/net v0.46.0 // indirect
+	golang.org/x/term v0.36.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

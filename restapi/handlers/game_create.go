@@ -4,12 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/m4rw3r/uuid"
 	"github.com/rs/zerolog"
+	"github.com/neper-stars/houston/store"
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
@@ -84,6 +87,27 @@ func (h *GameCreateHandler) handle(
 	if err != nil {
 		h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get player races for session")
 		return nil, err
+	}
+
+	// Validate all races before starting the game to ensure Stars! binary won't fail silently
+	var allValidationErrs []string
+	for _, race := range races {
+		rawData, err := race.RawData()
+		if err != nil {
+			h.log.Err(err).Str("raceID", race.ID).Msg("failed to decode race data for validation")
+			allValidationErrs = append(allValidationErrs, fmt.Sprintf("race %s: failed to decode data", race.NamePlural))
+			continue
+		}
+		_, validationErrs := store.ValidateRaceData(rawData)
+		if len(validationErrs) > 0 {
+			for _, ve := range validationErrs {
+				allValidationErrs = append(allValidationErrs, fmt.Sprintf("race %s: %s", race.NamePlural, ve.Error()))
+			}
+		}
+	}
+	if len(allValidationErrs) > 0 {
+		h.log.Warn().Strs("validation_errors", allValidationErrs).Str("sessionID", sessionID).Msg("race validation failed before game start")
+		return nil, errs.NewErrInvalidRace("race validation failed: " + strings.Join(allValidationErrs, "; "))
 	}
 
 	gameInput := stars.NewGameInput(h.log, sessionID, sessionDB.Name, *ruleset, sessionPlayerRaces)

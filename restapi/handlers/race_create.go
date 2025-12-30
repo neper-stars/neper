@@ -2,13 +2,16 @@ package handlers
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/m4rw3r/uuid"
 	"github.com/rs/zerolog"
+	"github.com/neper-stars/houston/store"
 	"orus.io/orus-io/go-orusapi/database"
 
 	neper "github.com/neper-stars/neper/lib"
@@ -66,6 +69,22 @@ func (h *RaceCreateHandler) handle(
 	if err != nil {
 		h.log.Err(err).Msg("failed to parse race data from input")
 		return nil, errs.NewErrInvalidRace("failed to parse race file:" + err.Error())
+	}
+
+	// Validate race data using houston store validation
+	rawData, err := base64.StdEncoding.DecodeString(race.Data)
+	if err != nil {
+		h.log.Err(err).Msg("failed to decode race data for validation")
+		return nil, errs.NewErrInvalidRace("failed to decode race data: " + err.Error())
+	}
+	_, validationErrs := store.ValidateRaceData(rawData)
+	if len(validationErrs) > 0 {
+		errMsgs := make([]string, len(validationErrs))
+		for i, ve := range validationErrs {
+			errMsgs[i] = ve.Error()
+		}
+		h.log.Warn().Strs("validation_errors", errMsgs).Msg("race validation failed")
+		return nil, errs.NewErrInvalidRace("race validation failed: " + strings.Join(errMsgs, "; "))
 	}
 
 	// Log analysis results
