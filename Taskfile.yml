@@ -109,18 +109,7 @@ tasks:
 
   generate-all:
     desc: meta task to generate all things that need code generation in one command
-    deps: [generate-migration, generate-swagger, generate-models, generate-sync, generate-async]
-
-  generate-migration:
-    run: once
-    desc: run go generate on the migration package
-    deps: []
-    cmds:
-      - go generate ./migration
-    sources:
-      - migration/scripts/*.sql
-    generates:
-      - migration/bindata.go
+    deps: [generate-swagger, generate-models, generate-sync, generate-async]
 
   generate-models:
     desc: run go generate on the models package to produce db helpers
