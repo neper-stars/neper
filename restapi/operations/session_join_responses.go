@@ -189,6 +189,50 @@ func (o *SessionJoinForbidden) WriteResponse(rw http.ResponseWriter, producer ru
 	}
 }
 
+// SessionJoinPreconditionFailedCode is the HTTP code returned for type SessionJoinPreconditionFailed
+const SessionJoinPreconditionFailedCode int = 412
+
+/*SessionJoinPreconditionFailed Precondition not met
+
+swagger:response sessionJoinPreconditionFailed
+*/
+type SessionJoinPreconditionFailed struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewSessionJoinPreconditionFailed creates SessionJoinPreconditionFailed with default headers values
+func NewSessionJoinPreconditionFailed() *SessionJoinPreconditionFailed {
+
+	return &SessionJoinPreconditionFailed{}
+}
+
+// WithPayload adds the payload to the session join precondition failed response
+func (o *SessionJoinPreconditionFailed) WithPayload(payload *models.Error) *SessionJoinPreconditionFailed {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the session join precondition failed response
+func (o *SessionJoinPreconditionFailed) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *SessionJoinPreconditionFailed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(412)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*SessionJoinDefault Generic error response
 
 swagger:response sessionJoinDefault

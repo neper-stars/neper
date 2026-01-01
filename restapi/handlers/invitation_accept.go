@@ -68,6 +68,11 @@ func (h *InvitationAcceptHandler) handle(
 		return nil, err
 	}
 
+	// Check if session has already started
+	if sessionDB.Started {
+		return nil, errs.NewErrSessionAlreadyStarted("cannot join a session that has already started")
+	}
+
 	// insert our new membership
 	relation := models.UserProfileSessionRelDB{
 		SessionID:     sessionID,
@@ -141,6 +146,8 @@ func (h *InvitationAcceptHandler) Handle(
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):
 			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrPreconditionFailed):
+			return PreconditionFailed(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}

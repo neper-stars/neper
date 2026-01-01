@@ -40,6 +40,7 @@ You can only accept an invitation that was addressed to you,
 otherwise you will receive a 403 response.
 In case of success you will receive the session details of the session
 you just accepted to join.
+Cannot join a session that has already started (returns 412).
 
 
 */

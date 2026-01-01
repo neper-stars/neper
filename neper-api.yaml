@@ -297,6 +297,7 @@ paths:
         otherwise you will receive a 403 response.
         In case of success you will receive the session details of the session
         you just accepted to join.
+        Cannot join a session that has already started (returns 412).
       responses:
         200:
           description: the session you just joined
@@ -310,6 +311,8 @@ paths:
           $ref: "#/responses/notfound"
         409:
           $ref: "#/responses/conflict"
+        412:
+          $ref: "#/responses/preconditionfailed"
         default:
           $ref: "#/responses/default"
     delete:
@@ -342,7 +345,8 @@ paths:
       description: |
         join the session. It must be a public session.
         If the session is private and you have an invitation
-        use the invitationAccept operation
+        use the invitationAccept operation.
+        Cannot join a session that has already started (returns 412).
       responses:
         200:
           description: the session that has been joined
@@ -354,6 +358,8 @@ paths:
           $ref: "#/responses/unauthorized"
         403:
           $ref: "#/responses/forbidden"
+        412:
+          $ref: "#/responses/preconditionfailed"
         default:
           $ref: "#/responses/default"
 

@@ -37,7 +37,8 @@ Join the public session
 
 join the session. It must be a public session.
 If the session is private and you have an invitation
-use the invitationAccept operation
+use the invitationAccept operation.
+Cannot join a session that has already started (returns 412).
 
 
 */

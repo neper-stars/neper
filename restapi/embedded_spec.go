@@ -236,7 +236,7 @@ func init() {
     },
     "/v1/invitations/{invitation_id}": {
       "put": {
-        "description": "Join a session by accepting the invitation.\nYou will become member of the session that is referenced in\nthe invitation.\nYou can only accept an invitation that was addressed to you,\notherwise you will receive a 403 response.\nIn case of success you will receive the session details of the session\nyou just accepted to join.\n",
+        "description": "Join a session by accepting the invitation.\nYou will become member of the session that is referenced in\nthe invitation.\nYou can only accept an invitation that was addressed to you,\notherwise you will receive a 403 response.\nIn case of success you will receive the session details of the session\nyou just accepted to join.\nCannot join a session that has already started (returns 412).\n",
         "operationId": "invitationAccept",
         "responses": {
           "200": {
@@ -256,6 +256,9 @@ func init() {
           },
           "409": {
             "$ref": "#/responses/conflict"
+          },
+          "412": {
+            "$ref": "#/responses/preconditionfailed"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -709,7 +712,7 @@ func init() {
     },
     "/v1/sessions/{session_id}/join": {
       "post": {
-        "description": "join the session. It must be a public session.\nIf the session is private and you have an invitation\nuse the invitationAccept operation\n",
+        "description": "join the session. It must be a public session.\nIf the session is private and you have an invitation\nuse the invitationAccept operation.\nCannot join a session that has already started (returns 412).\n",
         "summary": "Join the public session",
         "operationId": "sessionJoin",
         "responses": {
@@ -727,6 +730,9 @@ func init() {
           },
           "403": {
             "$ref": "#/responses/forbidden"
+          },
+          "412": {
+            "$ref": "#/responses/preconditionfailed"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -1908,7 +1914,7 @@ func init() {
     },
     "/v1/invitations/{invitation_id}": {
       "put": {
-        "description": "Join a session by accepting the invitation.\nYou will become member of the session that is referenced in\nthe invitation.\nYou can only accept an invitation that was addressed to you,\notherwise you will receive a 403 response.\nIn case of success you will receive the session details of the session\nyou just accepted to join.\n",
+        "description": "Join a session by accepting the invitation.\nYou will become member of the session that is referenced in\nthe invitation.\nYou can only accept an invitation that was addressed to you,\notherwise you will receive a 403 response.\nIn case of success you will receive the session details of the session\nyou just accepted to join.\nCannot join a session that has already started (returns 412).\n",
         "operationId": "invitationAccept",
         "responses": {
           "200": {
@@ -1937,6 +1943,12 @@ func init() {
           },
           "409": {
             "description": "Resource already exists",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Precondition not met",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -2549,7 +2561,7 @@ func init() {
     },
     "/v1/sessions/{session_id}/join": {
       "post": {
-        "description": "join the session. It must be a public session.\nIf the session is private and you have an invitation\nuse the invitationAccept operation\n",
+        "description": "join the session. It must be a public session.\nIf the session is private and you have an invitation\nuse the invitationAccept operation.\nCannot join a session that has already started (returns 412).\n",
         "summary": "Join the public session",
         "operationId": "sessionJoin",
         "responses": {
@@ -2573,6 +2585,12 @@ func init() {
           },
           "403": {
             "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Precondition not met",
             "schema": {
               "$ref": "#/definitions/error"
             }

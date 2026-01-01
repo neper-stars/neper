@@ -233,6 +233,50 @@ func (o *InvitationAcceptConflict) WriteResponse(rw http.ResponseWriter, produce
 	}
 }
 
+// InvitationAcceptPreconditionFailedCode is the HTTP code returned for type InvitationAcceptPreconditionFailed
+const InvitationAcceptPreconditionFailedCode int = 412
+
+/*InvitationAcceptPreconditionFailed Precondition not met
+
+swagger:response invitationAcceptPreconditionFailed
+*/
+type InvitationAcceptPreconditionFailed struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewInvitationAcceptPreconditionFailed creates InvitationAcceptPreconditionFailed with default headers values
+func NewInvitationAcceptPreconditionFailed() *InvitationAcceptPreconditionFailed {
+
+	return &InvitationAcceptPreconditionFailed{}
+}
+
+// WithPayload adds the payload to the invitation accept precondition failed response
+func (o *InvitationAcceptPreconditionFailed) WithPayload(payload *models.Error) *InvitationAcceptPreconditionFailed {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the invitation accept precondition failed response
+func (o *InvitationAcceptPreconditionFailed) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *InvitationAcceptPreconditionFailed) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(412)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*InvitationAcceptDefault Generic error response
 
 swagger:response invitationAcceptDefault
