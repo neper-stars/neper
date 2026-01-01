@@ -1,8 +1,10 @@
-syntax: glob
-
 stars.exe
+
+mise.local.toml
+
 # task cache files should not be versionned ever
 .task/
+
 lib/stars/resources/serialC.txt
 neper_data/
 
@@ -22,15 +24,6 @@ config.ini
 neper.conf
 
 tests-coverage.*
-
-# bindata.go is always generated during build, never versionned
-# they contain heavy assets (like the whole UI) and thus do not have
-# their rightful place in our DVCS content
-restapi/bindata.go
-restapi/docs/bindata.go
-
-docs/_build
-docs/test-cases/
 
 # special editor cruft
 .idea
