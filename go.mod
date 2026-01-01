@@ -2,8 +2,6 @@ module github.com/neper-stars/neper
 
 go 1.25.1
 
-replace github.com/neper-stars/houston => ./dependencies/houston
-
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/cockroachdb/apd/v3 v3.2.1
@@ -30,6 +28,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.10.4
 	github.com/nats-io/nats.go v1.36.0
 	github.com/nats-io/nkeys v0.4.7
+	github.com/neper-stars/houston v0.0.0-20260101193142-a324969db1b3
 	github.com/orus-io/go-flags v1.4.1-0.20200710100319-828e94849811
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/posener/wstest v1.2.0
@@ -43,7 +42,6 @@ require (
 	golang.org/x/sys v0.37.0
 	golang.org/x/time v0.3.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
-	github.com/neper-stars/houston v0.0.0-00010101000000-000000000000
 	orus.io/orus-io/go-orusapi v0.0.0-20251126135628-189926b48099
 )
 
