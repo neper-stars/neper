@@ -152,10 +152,13 @@ run = "{{vars.swagger_bin}} generate model --accept-definitions-only -f neper-as
 # Docker build
 [tasks.docker]
 description = "Build the docker image"
-run = "podman build -t registry.figaro.home.arpa:5001/gaming/starshosting/neper -f docker/Dockerfile ."
+run = "docker build -t neper-stars/neper -f docker/Dockerfile ."
 
 # Docker push
 [tasks.docker-push]
-description = "Push image to internal registry"
+description = "Push image to Docker Hub"
 depends = ["docker"]
-run = "podman push registry.figaro.home.arpa:5001/gaming/starshosting/neper"
+run = """
+docker tag neper-stars/neper docker.io/neperstars/neper:${TAG:-latest}
+docker push docker.io/neperstars/neper:${TAG:-latest}
+"""
