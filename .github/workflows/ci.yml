@@ -25,6 +25,20 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: neper
+          POSTGRES_PASSWORD: neper
+          POSTGRES_DB: neper
+        options: >-
+          --health-cmd "pg_isready -U neper"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +50,8 @@ jobs:
 
       - name: Run tests
         run: mise run test
+        env:
+          NEPER_DB_DSN: "postgres://neper:neper@localhost:5432/neper?sslmode=disable"
 
   vulncheck:
     name: Vulnerability Check
@@ -55,6 +71,20 @@ jobs:
   cover:
     name: Coverage
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: neper
+          POSTGRES_PASSWORD: neper
+          POSTGRES_DB: neper
+        options: >-
+          --health-cmd "pg_isready -U neper"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v4
 
@@ -66,6 +96,8 @@ jobs:
 
       - name: Run tests with coverage
         run: mise run cover
+        env:
+          NEPER_DB_DSN: "postgres://neper:neper@localhost:5432/neper?sslmode=disable"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
