@@ -2,6 +2,8 @@
 
 This is an API server to automate the hosting of Stars! games.
 
+See [CHANGELOG.md](CHANGELOG.md) for release history.
+
 It allows to create users. Each user can then upload stars races to its
 user profile.
 Each user can also start a new session or join an existing on
