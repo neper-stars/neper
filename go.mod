@@ -25,9 +25,9 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/m4rw3r/uuid v1.0.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/nats-io/nats-server/v2 v2.10.4
-	github.com/nats-io/nats.go v1.36.0
-	github.com/nats-io/nkeys v0.4.7
+	github.com/nats-io/nats-server/v2 v2.10.27
+	github.com/nats-io/nats.go v1.39.1
+	github.com/nats-io/nkeys v0.4.10
 	github.com/neper-stars/houston v0.0.0-20260101193142-a324969db1b3
 	github.com/orus-io/go-flags v1.4.1-0.20200710100319-828e94849811
 	github.com/patrickmn/go-cache v2.1.0+incompatible
@@ -37,10 +37,10 @@ require (
 	github.com/shopspring/decimal v1.2.0
 	github.com/steinfletcher/apitest v1.5.15
 	github.com/stretchr/testify v1.11.1
-	github.com/ulikunitz/xz v0.5.11
+	github.com/ulikunitz/xz v0.5.15
 	github.com/zenazn/goji v0.9.0
 	golang.org/x/sys v0.37.0
-	golang.org/x/time v0.3.0
+	golang.org/x/time v0.10.0
 	gopkg.in/dgrijalva/jwt-go.v3 v3.2.0
 	orus.io/orus-io/go-orusapi v0.0.0-20251126135628-189926b48099
 )
@@ -59,17 +59,17 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/minio/highwayhash v1.0.2 // indirect
+	github.com/minio/highwayhash v1.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/nats-io/jwt/v2 v2.5.2 // indirect
+	github.com/nats-io/jwt/v2 v2.7.3 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
