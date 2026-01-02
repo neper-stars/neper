@@ -25,6 +25,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    container:
+      image: neperstars/neper-test:latest
     services:
       postgres:
         image: postgres:16
@@ -37,21 +39,13 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.25"
-
-      - uses: jdx/mise-action@v2
 
       - name: Run tests
         run: mise run test
         env:
-          TEST_DB_DSN: "postgres://neper:neper@localhost:5432/neper?sslmode=disable"
+          TEST_DB_DSN: "postgres://neper:neper@postgres:5432/neper?sslmode=disable"
 
   vulncheck:
     name: Vulnerability Check
@@ -71,6 +65,8 @@ jobs:
   cover:
     name: Coverage
     runs-on: ubuntu-latest
+    container:
+      image: neperstars/neper-test:latest
     services:
       postgres:
         image: postgres:16
@@ -83,21 +79,13 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.25"
-
-      - uses: jdx/mise-action@v2
 
       - name: Run tests with coverage
         run: mise run cover
         env:
-          TEST_DB_DSN: "postgres://neper:neper@localhost:5432/neper?sslmode=disable"
+          TEST_DB_DSN: "postgres://neper:neper@postgres:5432/neper?sslmode=disable"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

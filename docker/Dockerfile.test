@@ -1,0 +1,25 @@
+FROM golang:1.25-bookworm
+
+# Install wine with 32-bit support, xvfb, and other dependencies
+# Stars! is a 16-bit Windows 3.1 application, which requires:
+# - A 32-bit wine prefix (WINEARCH=win32)
+# - The wine32 package for 32-bit/16-bit Windows support
+RUN dpkg --add-architecture i386 \
+	&& apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		wine \
+		wine32 \
+		xvfb \
+		postgresql-client \
+		curl \
+		git \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Install mise
+RUN curl https://mise.run | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+# Set environment for 32-bit wine prefix (required for 16-bit apps like Stars!)
+ENV WINEARCH=win32
+
+WORKDIR /app
