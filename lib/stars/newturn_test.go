@@ -22,7 +22,7 @@ func TestCleanupSessionDir(t *testing.T) {
 
 		// Create a dummy file in the directory
 		dummyFile := sessionDir + "/game.xy"
-		err = os.WriteFile(dummyFile, []byte("test data"), 0660)
+		err = os.WriteFile(dummyFile, []byte("test data"), 0660) //nolint:gosec // Stars! executable requires group write access
 		require.NoError(t, err)
 
 		// Verify directory exists

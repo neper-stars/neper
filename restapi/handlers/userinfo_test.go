@@ -17,7 +17,7 @@ import (
 )
 
 // insertTestSerialKey inserts a test serial key into the database using the model
-func insertTestSerialKey(t *testing.T, ctx context.Context, testDB *database.TestDB, key string) {
+func insertTestSerialKey(ctx context.Context, t *testing.T, testDB *database.TestDB, key string) {
 	t.Helper()
 	log := testutils.GetLogger(t)
 	tx, err := database.Begin(ctx, testDB.DB)
@@ -86,7 +86,7 @@ func TestUserinfo_WithSerialKey(t *testing.T) {
 
 	// Insert a test serial key first (required due to FK constraint)
 	testSerialKey := "TEST1234"
-	insertTestSerialKey(t, ctx, testDB, testSerialKey)
+	insertTestSerialKey(ctx, t, testDB, testSerialKey)
 
 	w, err := sync.NewWorker(testDB.DB, log)
 	require.NoError(t, err)
@@ -116,7 +116,7 @@ func TestUserinfo_AutoAssignsSerialKey(t *testing.T) {
 
 	// Insert some available serial keys for auto-assignment
 	availableKey := "AVAIL001"
-	insertTestSerialKey(t, ctx, testDB, availableKey)
+	insertTestSerialKey(ctx, t, testDB, availableKey)
 
 	w, err := sync.NewWorker(testDB.DB, log)
 	require.NoError(t, err)
@@ -140,7 +140,7 @@ func TestUserinfo_AutoAssignsSerialKey(t *testing.T) {
 
 	// Verify the serial key is persisted in the database
 	var serialKeyInDB string
-	err = testDB.DB.GetContext(ctx, &serialKeyInDB,
+	err = testDB.GetContext(ctx, &serialKeyInDB,
 		"SELECT serial_key FROM user_profile WHERE id = $1", "gandalfID")
 	require.NoError(t, err)
 	assert.Equal(t, availableKey, serialKeyInDB, "serial key should be persisted in database")

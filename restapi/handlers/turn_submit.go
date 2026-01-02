@@ -9,8 +9,8 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog"
 	hs "github.com/neper-stars/houston"
+	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"

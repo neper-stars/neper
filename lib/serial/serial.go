@@ -24,15 +24,15 @@ func LoadKeys() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gzip reader: %w", err)
 	}
-	defer reader.Close()
+	defer func() {
+		_ = reader.Close()
+	}()
 
 	var keys []string
 	scanner := bufio.NewScanner(reader)
 
-	// Skip header line
-	if scanner.Scan() {
-		// First line is "LicenseKey", skip it
-	}
+	// Skip header line ("LicenseKey")
+	_ = scanner.Scan()
 
 	for scanner.Scan() {
 		key := scanner.Text()

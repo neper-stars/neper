@@ -5,8 +5,8 @@ package racefiles
 import (
 	"sync"
 
-	"github.com/rs/zerolog"
 	hs "github.com/neper-stars/houston"
+	"github.com/rs/zerolog"
 )
 
 // ProcessorOptions configures race file processing behavior.
@@ -87,12 +87,13 @@ func ProcessData(log *zerolog.Logger, data []byte, opts ProcessorOptions) ([]byt
 		if info.NeedsRepair {
 			if opts.FixCorrupted {
 				repaired, repairResult, err := hs.RepairRaceFileBytes(data)
-				if err != nil {
+				switch {
+				case err != nil:
 					analysis.RepairError = err.Error()
-				} else if repairResult.Success {
+				case repairResult.Success:
 					analysis.WasRepaired = true
 					result = repaired
-				} else {
+				default:
 					analysis.RepairError = "repair was not successful"
 				}
 			}
@@ -124,11 +125,12 @@ func LogAnalysis(log *zerolog.Logger, analysis *Analysis, context string) {
 	logCtx := log.With().Str("context", context).Logger()
 
 	if analysis.NeedsRepair {
-		if analysis.WasRepaired {
+		switch {
+		case analysis.WasRepaired:
 			logCtx.Info().Msg("corrupted race file was automatically repaired")
-		} else if analysis.RepairError != "" {
+		case analysis.RepairError != "":
 			logCtx.Warn().Str("error", analysis.RepairError).Msg("race file is corrupted and repair failed")
-		} else {
+		default:
 			logCtx.Warn().Msg("race file is corrupted but automatic repair is disabled")
 		}
 	}

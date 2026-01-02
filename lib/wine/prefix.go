@@ -88,7 +88,7 @@ func (p *Prefix) EnsurePrefix() error {
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			dir := filepath.Dir(p.path)
-			if err := os.MkdirAll(dir, 0770); err != nil {
+			if err := os.MkdirAll(dir, 0770); err != nil { //nolint:gosec // Wine prefix requires group write access for Stars! executable
 				p.log.Err(err).Msg("failed to create containing dir for wineprefix")
 				return err
 			}
