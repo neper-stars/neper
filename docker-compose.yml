@@ -18,7 +18,7 @@ services:
     #build:
     #  context: .
     #  dockerfile: ./docker/Dockerfile
-    image: registry.figaro.home.arpa:5001/gaming/starshosting/neper:latest
+    image: neperstars/neper:latest
     container_name: neper-app
     hostname: neper-app
     depends_on:
