@@ -1,10 +1,11 @@
-FROM registry.orus.io/orus-io/docker_mirror/golang:1.25.4-trixie as builder
+FROM golang:1.25-bookworm AS builder
 
+WORKDIR /build
 COPY . .
 
-RUN unset GOPATH && CGO_ENABLED=0 GOARCH=amd64 go build -v -a -tags netgo -ldflags "-w -extldflags "-static"" -buildvcs=false -o /usr/local/bin/neper ./cmd/neper
+RUN CGO_ENABLED=0 GOARCH=amd64 go build -v -a -tags netgo -ldflags "-w -extldflags \"-static\"" -buildvcs=false -o /usr/local/bin/neper ./cmd/neper
 
-FROM registry.orus.io/orus-io/docker_mirror/debian:13.1-slim
+FROM debian:bookworm-slim
 
 # Install wine with 32-bit support, xvfb, and gosu for privilege dropping
 # Enable i386 architecture for 32-bit wine support

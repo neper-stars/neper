@@ -4,6 +4,7 @@ _.path = ["./node_modules/.bin", "./tools/bin"]
 [tools]
 golangci-lint = "2.7.2"
 node = "lts"
+"asdf:pdemagny/asdf-changie" = "latest"
 # vendir is expected to be installed globally (mise plugins having API issues)
 
 [vars]
@@ -162,3 +163,19 @@ run = """
 docker tag neper-stars/neper docker.io/neperstars/neper:${TAG:-latest}
 docker push docker.io/neperstars/neper:${TAG:-latest}
 """
+
+# Create a new changelog entry
+[tasks.changelog]
+description = "Create a new changelog entry"
+run = "changie new"
+
+# Build the release tool
+[tasks.build-release-tool]
+description = "Build the release tool"
+run = "go build -o tools/bin/release ./tools/release"
+
+# Create a new release
+[tasks.release]
+description = "Create a new release (batch changelog, commit, tag, push)"
+depends = ["build-release-tool"]
+run = "tools/bin/release"
