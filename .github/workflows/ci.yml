@@ -51,7 +51,7 @@ jobs:
       - name: Run tests
         run: mise run test
         env:
-          NEPER_DB_DSN: "postgres://neper:neper@localhost:5432/neper?sslmode=disable"
+          TEST_DB_DSN: "postgres://neper:neper@localhost:5432/neper?sslmode=disable"
 
   vulncheck:
     name: Vulnerability Check
@@ -97,7 +97,7 @@ jobs:
       - name: Run tests with coverage
         run: mise run cover
         env:
-          NEPER_DB_DSN: "postgres://neper:neper@localhost:5432/neper?sslmode=disable"
+          TEST_DB_DSN: "postgres://neper:neper@localhost:5432/neper?sslmode=disable"
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
