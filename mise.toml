@@ -1,0 +1,161 @@
+[env]
+_.path = ["./node_modules/.bin", "./tools/bin"]
+
+[tools]
+golangci-lint = "2.7.2"
+node = "lts"
+# vendir is expected to be installed globally (mise plugins having API issues)
+
+[vars]
+exe = "neper"
+output = "build/neper"
+go_orusapi = "dependencies/go-orusapi"
+swagger_version = "v0.27.0"
+swagger_bin = "tools/bin/swagger"
+
+# Default task
+[tasks.default]
+depends = ["build-dev"]
+
+# Build and run the app
+[tasks.run]
+description = "Build and run the app"
+depends = ["build-all"]
+run = "./{{vars.output}} -c config.ini serve -vvv"
+
+# Build the final app
+[tasks.build]
+description = "Build the final app"
+run = """
+CGO_ENABLED=0 GOOS=$(uname | tr '[:upper:]' '[:lower:]') GOARCH=amd64 go build \
+  -a -tags netgo \
+  -ldflags "-X 'github.com/neper-stars/neper/lib.version=${CI_COMMIT_TAG}' -X 'github.com/neper-stars/neper/lib.commitSha=$(git rev-parse HEAD)' -X 'github.com/neper-stars/neper/lib.buildDate=$(date)' -w -extldflags \"-static\"" \
+  -o {{vars.output}} \
+  ./cmd/neper
+"""
+
+# Build the app (dev)
+[tasks.build-dev]
+description = "Build the app"
+run = "go build -v -o {{vars.output}} ./cmd/neper"
+
+# Build the app and all its dependencies
+[tasks.build-all]
+description = "Build the app and all its dependencies"
+depends = ["generate-all"]
+run = "mise run build"
+
+# Run tests
+[tasks.test]
+description = "Run the tests"
+run = "go test ./..."
+
+# Run tests with coverage
+[tasks.cover]
+description = "Run the tests with coverage"
+depends = ["fetch-cover-cobertura"]
+run = """
+go test ./tests -cover -coverprofile tests-coverage.out -coverpkg $(go list ./restapi ./restapi/handlers/... ./models/... ./lib/... ./auth/... | xargs | sed 's/ /,/g')
+gocover-cobertura < tests-coverage.out > tests-coverage.xml
+go tool cover -html=tests-coverage.out -o tests-coverage.html
+"""
+
+# Fetch govulncheck
+[tasks.fetch-govulncheck]
+description = "Fetch govulncheck"
+run = "go install golang.org/x/vuln/cmd/govulncheck@latest"
+
+# Fetch cover cobertura
+[tasks.fetch-cover-cobertura]
+description = "Install cover tools"
+run = """
+if ! command -v gocover-cobertura &> /dev/null; then
+  go install github.com/t-yuki/gocover-cobertura@latest
+fi
+"""
+
+# Vulnerability check
+[tasks.vulncheck]
+description = "Search for known vulnerabilities in our code and our libraries"
+depends = ["fetch-govulncheck"]
+run = "govulncheck ./..."
+
+# Lint
+[tasks.lint]
+description = "Lint our golang code to make sure we catch as much errors as possible"
+run = "golangci-lint run"
+
+# Fetch go-swagger
+[tasks.fetch-go-swagger]
+description = "Download go-swagger binary"
+run = """
+if [ ! -x {{vars.swagger_bin}} ]; then
+  mkdir -p tools/bin
+  tools/download_swagger.sh {{vars.swagger_version}} {{vars.swagger_bin}}
+fi
+"""
+
+# Sync dependencies with vendir
+[tasks.deps]
+description = "Sync dependencies using vendir"
+run = "vendir sync"
+
+# Generate all
+[tasks.generate-all]
+description = "Meta task to generate all things that need code generation"
+depends = ["generate-swagger", "generate-models", "generate-sync", "generate-async"]
+
+# Generate models
+[tasks.generate-models]
+description = "Run go generate on the models package to produce db helpers"
+depends = ["generate-swagger"]
+sources = ["models/*.go"]
+outputs = ["models/db_helpers.go"]
+run = "go generate ./models"
+
+# Generate swagger
+[tasks.generate-swagger]
+description = "Run the swagger tool to generate our models based on the API definition"
+depends = ["deps", "fetch-go-swagger"]
+run = """
+rm -rf restapi/operations
+{{vars.swagger_bin}} generate server -A Neper -P models.Principal --config-file {{vars.go_orusapi}}/server.yaml --spec neper-api.yaml --template-dir {{vars.go_orusapi}}/templates
+sed 's/restapi.SwaggerJSON/restapi.GetFlatSwaggerJSON()/' -i cmd/neper/cmd/serve.go
+sed 's/restapi.FlatSwaggerJSON/restapi.GetFlatSwaggerJSON()/' -i cmd/neper/cmd/serve.go
+python3 tools/fix-models.py
+"""
+
+# Generate sync
+[tasks.generate-sync]
+description = "Generate messages from json schema definitions"
+depends = ["deps"]
+run = """
+(cd ./dependencies/json-schema-generate && go build -buildvcs=false -o ../../tools/bin/schema-generate ./cmd/schema-generate)
+go generate ./sync
+"""
+
+# Generate async
+[tasks.generate-async]
+description = "Generate async notification models from neper-async-types.yaml"
+depends = ["fetch-go-swagger"]
+sources = ["neper-async-types.yaml"]
+outputs = [
+  "lib/notify/resource_change.go",
+  "lib/notify/session_delete_meta.go",
+  "lib/notify/session_member_left_meta.go",
+  "lib/notify/invitation_delete_meta.go",
+  "lib/notify/session_turn_meta.go",
+  "lib/notify/order_status_meta.go"
+]
+run = "{{vars.swagger_bin}} generate model --accept-definitions-only -f neper-async-types.yaml -t . -m lib/notify"
+
+# Docker build
+[tasks.docker]
+description = "Build the docker image"
+run = "podman build -t registry.figaro.home.arpa:5001/gaming/starshosting/neper -f docker/Dockerfile ."
+
+# Docker push
+[tasks.docker-push]
+description = "Push image to internal registry"
+depends = ["docker"]
+run = "podman push registry.figaro.home.arpa:5001/gaming/starshosting/neper"
