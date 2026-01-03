@@ -28,7 +28,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.10.27
 	github.com/nats-io/nats.go v1.39.1
 	github.com/nats-io/nkeys v0.4.10
-	github.com/neper-stars/houston v0.0.0-20260101193142-a324969db1b3
+	github.com/neper-stars/houston v0.2.0
 	github.com/orus-io/go-flags v1.4.1-0.20200710100319-828e94849811
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/posener/wstest v1.2.0
