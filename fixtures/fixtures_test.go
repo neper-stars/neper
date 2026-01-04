@@ -27,7 +27,8 @@ func TestLoadFixture(t *testing.T) {
 			"data": {
 				"__type__": "session",
 				"id": "1",
-				"name": "session 1"
+				"name": "session 1",
+				"state": "pending"
 			}
 		}]
 	}`))
