@@ -253,6 +253,8 @@ func (r *Runner) newGame(ctx context.Context, sessionID string, content io.Reade
 	gameDefWindowsPath := r.wPathJoin(r.wSessionSaveDir(sessionID), gameDefName)
 	// use content to create a new game
 	stdOut, stdErr, err := r.prefix.RunWine(r.wStarsExecutablePath(), "-a", gameDefWindowsPath)
+	// Clean up any lingering wine processes after the command completes
+	r.prefix.KillWineserver()
 	if err != nil {
 		r.log.Err(err).
 			Str("sessionID", sessionID).

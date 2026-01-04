@@ -394,6 +394,8 @@ func (r *Runner) newTurn(ctx context.Context, sessionID string) error {
 	// Load the host file, generate 1 turn and quit.
 	// wine stars.exe -g game.hst
 	stdOut, stdErr, err := r.prefix.RunWine(r.wStarsExecutablePath(), "-g", hostWFilePath)
+	// Clean up any lingering wine processes after the command completes
+	r.prefix.KillWineserver()
 	if err != nil {
 		r.log.Err(err).
 			Str("sessionID", sessionID).

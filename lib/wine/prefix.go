@@ -16,10 +16,13 @@ import (
 )
 
 const (
-	wineBin       = "wine"
-	winebootBin   = "wineboot"
-	winebootInit  = "init"
-	dosDevicesDir = "dosdevices"
+	wineBin        = "wine"
+	winebootBin    = "wineboot"
+	wineserverBin  = "wineserver"
+	winebootInit   = "init"
+	wineserverKill = "-k"
+	wineserverWait = "-w"
+	dosDevicesDir  = "dosdevices"
 )
 
 // PrefixOptions contains configuration for a wine prefix
@@ -109,6 +112,8 @@ func (p *Prefix) createPrefix() error {
 	c := cmd.NewCmd(winebootBin, winebootInit)
 	c.Env = append(c.Env, p.Env()...)
 	stdOut, stdErr, err := p.RunCmdWithTimeout(c)
+	// Clean up any lingering wine processes after wineboot completes
+	p.KillWineserver()
 	if err != nil {
 		msg := strings.Join(stdOut, "") + strings.Join(stdErr, "")
 		p.log.Err(err).Msg(msg)
@@ -182,6 +187,49 @@ func (p *Prefix) RunCommand(name string, args ...string) (stdout, stderr []strin
 func (p *Prefix) RunWine(program string, args ...string) (stdout, stderr []string, err error) {
 	allArgs := append([]string{program}, args...)
 	return p.RunCommand(wineBin, allArgs...)
+}
+
+// KillWineserver terminates all wine processes for this prefix using wineserver -k,
+// then waits for them to fully exit using wineserver -w.
+// This should be called after wine operations to clean up any lingering processes.
+// It's safe to call even if no wine processes are running.
+func (p *Prefix) KillWineserver() {
+	// First, send kill signal to all wine processes
+	killCmd := cmd.NewCmd(wineserverBin, wineserverKill)
+	killCmd.Env = append(killCmd.Env, p.Env()...)
+	statusChan := killCmd.Start()
+	timeout := time.After(5 * time.Second)
+
+	select {
+	case status := <-statusChan:
+		if status.Error != nil {
+			p.log.Debug().Err(status.Error).Int("exit", status.Exit).Msg("wineserver -k completed with error (may be normal if no server running)")
+		} else {
+			p.log.Debug().Int("exit", status.Exit).Msg("wineserver -k completed")
+		}
+	case <-timeout:
+		p.log.Warn().Msg("wineserver -k timed out")
+		_ = killCmd.Stop()
+		return
+	}
+
+	// Then wait for all wine processes to actually exit
+	waitCmd := cmd.NewCmd(wineserverBin, wineserverWait)
+	waitCmd.Env = append(waitCmd.Env, p.Env()...)
+	statusChan = waitCmd.Start()
+	timeout = time.After(10 * time.Second)
+
+	select {
+	case status := <-statusChan:
+		if status.Error != nil {
+			p.log.Debug().Err(status.Error).Int("exit", status.Exit).Msg("wineserver -w completed with error")
+		} else {
+			p.log.Debug().Int("exit", status.Exit).Msg("wineserver -w completed - all wine processes exited")
+		}
+	case <-timeout:
+		p.log.Warn().Msg("wineserver -w timed out waiting for processes to exit")
+		_ = waitCmd.Stop()
+	}
 }
 
 // RunCmdWithTimeout runs a command with timeout
