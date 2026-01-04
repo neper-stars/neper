@@ -13,6 +13,7 @@ import (
 	"github.com/justinas/alice"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/hlog"
 	"orus.io/orus-io/go-orusapi"
 
 	"github.com/neper-stars/neper/auth"
@@ -62,6 +63,10 @@ type Config struct {
 
 	// Session options
 	SessionOptions *session.Options
+
+	// InitDone is closed when background initialization is complete
+	// (serial keys loaded, wine prefix initialized)
+	InitDone chan struct{}
 }
 
 // OnShutdown add a shutdown callback
@@ -141,6 +146,13 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	if config.NatsServer != nil {
 		config.OnShutdown(config.NatsServer.Shutdown)
 	}
+
+	// Health check (no auth, pings database and reports initialization status)
+	api.HealthCheckHandler = handlers.NewHealthCheckHandler(handlers.HealthCheckDeps{
+		DB:          config.DB,
+		StarsRunner: config.StarsRunner,
+		InitDone:    config.InitDone,
+	})
 
 	// Authenticate
 	api.AuthenticateHandler = handlers.NewAuthenticateHandler(config.DB, config.Authenticator)
@@ -252,12 +264,54 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
 
+// pathAwareAccessHandler creates an access handler that logs health check requests at DEBUG level
+// and all other requests at INFO level (for 2xx), or WARN/ERROR for 4xx/5xx.
+func pathAwareAccessHandler(status4XXLogLevel zerolog.Level) func(r *http.Request, status, size int, duration time.Duration) {
+	return func(r *http.Request, status, size int, duration time.Duration) {
+		log := hlog.FromRequest(r)
+
+		var event *zerolog.Event
+		//nolint:zerologlint
+		switch {
+		case status >= http.StatusInternalServerError:
+			event = log.Error()
+		case status >= http.StatusBadRequest:
+			event = log.WithLevel(status4XXLogLevel)
+		default:
+			// Log health check at DEBUG level, everything else at INFO
+			if r.URL.Path == "/api/healthz" {
+				event = log.Debug()
+			} else {
+				event = log.Info()
+			}
+		}
+
+		event.
+			Dict("request", zerolog.Dict().
+				Str("method", r.Method).
+				Str("url", r.URL.String())).
+			Int("status", status).
+			Int("size", size).
+			Dur("duration", duration).
+			Msg(http.StatusText(status))
+	}
+}
+
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(config Config) func(handler http.Handler) http.Handler {
-	stack := alice.New(
-		orusapi.LogStack(config.Log, zerolog.WarnLevel)...,
-	)
+	// Custom log stack that logs health checks at DEBUG level
+	logStack := []alice.Constructor{
+		hlog.NewHandler(config.Log),
+		hlog.AccessHandler(pathAwareAccessHandler(zerolog.WarnLevel)),
+		hlog.RemoteAddrHandler("ip"),
+		hlog.UserAgentHandler("user_agent"),
+		hlog.RefererHandler("referer"),
+		hlog.RequestIDHandler("req_id", "Request-Id"),
+		orusapi.CatchPanics,
+	}
+
+	stack := alice.New(logStack...)
 	stack = stack.Append(
 		AuthMiddleware(AuthMiddlewareConfig{
 			Auth: config.Authenticator,

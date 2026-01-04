@@ -17,7 +17,7 @@ primary_region = "cdg"  # Paris - change to your preferred region
   NEPER_LOG_LEVEL = "info"
 
   # Server
-  NEPER_SERVE_SCHEME = "https"
+  NEPER_SERVE_SCHEME = "http"
   NEPER_SERVE_HOST = "0.0.0.0"
   NEPER_SERVE_PORT = "8080"
 
@@ -25,7 +25,7 @@ primary_region = "cdg"  # Paris - change to your preferred region
   NEPER_SERVE_STARS_EXECUTABLE_DIR = "/home/neper/stars"
   NEPER_SERVE_STARS_SAVE_DIR = "/home/neper/saves"
   NEPER_SERVE_WINE_PREFIX = "/home/neper/wine"
-  NEPER_SERVE_WINE_COMMANDS_TIMEOUT = "30"
+  NEPER_SERVE_WINE_COMMANDS_TIMEOUT = "120"  # 2 minutes - small machines need more time
 
   # Registration
   NEPER_SERVE_REGISTRATION_ENABLED = "true"
@@ -54,7 +54,13 @@ primary_region = "cdg"  # Paris - change to your preferred region
   min_machines_running = 1
   processes = ["app"]
 
-# No health check endpoint yet - Fly will use TCP checks by default
+  # Health check endpoint - responds immediately before heavy initialization
+  [[http_service.checks]]
+    interval = "10s"
+    timeout = "5s"
+    grace_period = "30s"
+    method = "GET"
+    path = "/api/healthz"
 
 [[vm]]
   memory = "512mb"

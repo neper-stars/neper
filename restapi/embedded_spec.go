@@ -36,6 +36,31 @@ func init() {
   },
   "basePath": "/api",
   "paths": {
+    "/healthz": {
+      "get": {
+        "security": [],
+        "description": "Returns 200 OK if the server is running.\nUsed by load balancers and orchestrators for health checks.\nThis endpoint is available immediately on startup, before heavy initialization completes.\n",
+        "produces": [
+          "text/plain"
+        ],
+        "summary": "Health check endpoint",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "503": {
+            "description": "Server is not ready",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/v1/auth/authenticate": {
       "post": {
         "security": [],
@@ -1749,6 +1774,31 @@ func init() {
   },
   "basePath": "/api",
   "paths": {
+    "/healthz": {
+      "get": {
+        "security": [],
+        "description": "Returns 200 OK if the server is running.\nUsed by load balancers and orchestrators for health checks.\nThis endpoint is available immediately on startup, before heavy initialization completes.\n",
+        "produces": [
+          "text/plain"
+        ],
+        "summary": "Health check endpoint",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "503": {
+            "description": "Server is not ready",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "/v1/auth/authenticate": {
       "post": {
         "security": [],

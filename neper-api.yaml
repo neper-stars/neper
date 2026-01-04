@@ -25,6 +25,27 @@ security:
   - key: []
 
 paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      summary: "Health check endpoint"
+      description: |
+        Returns 200 OK if the server is running.
+        Used by load balancers and orchestrators for health checks.
+        This endpoint is available immediately on startup, before heavy initialization completes.
+      security: []
+      produces:
+        - text/plain
+      responses:
+        200:
+          description: Server is healthy
+          schema:
+            type: string
+        503:
+          description: Server is not ready
+          schema:
+            type: string
+
   /v1/auth/authenticate:
     post:
       operationId: authenticate

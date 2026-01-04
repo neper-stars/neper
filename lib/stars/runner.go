@@ -53,6 +53,7 @@ type Runner struct {
 	prefix             *wine.Prefix // wine prefix manager
 	xvfbProcess        *cmd.Cmd     // the xvfbProcess we launch at startup
 	xvfbStatusChan     <-chan cmd.Status
+	initialized        bool // true after Init() completes successfully
 }
 
 func expand(input string) (string, error) {
@@ -109,7 +110,23 @@ func (r *Runner) Init() error {
 	if err := r.checks(); err != nil {
 		return err
 	}
+	r.initialized = true
 	return nil
+}
+
+// IsReady returns true if the runner has been successfully initialized
+func (r *Runner) IsReady() bool {
+	return r.initialized
+}
+
+// IsXvfbRunning returns true if the Xvfb process is still running
+func (r *Runner) IsXvfbRunning() bool {
+	if r == nil || r.xvfbProcess == nil {
+		return false
+	}
+	status := r.xvfbProcess.Status()
+	// PID > 0 and no exit time means still running
+	return status.PID > 0 && status.StopTs == 0
 }
 
 func (r *Runner) initialize() error {

@@ -20,6 +20,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		gameCreateHandlerInFlight,
 	)
 	reg.MustRegister(
+		healthCheckHandlerDuration,
+		healthCheckHandlerInFlight,
+	)
+	reg.MustRegister(
 		historicBackupHandlerDuration,
 		historicBackupHandlerInFlight,
 	)

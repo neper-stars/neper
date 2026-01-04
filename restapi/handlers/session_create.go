@@ -106,6 +106,7 @@ func (h *SessionCreateHandler) handle(
 	}
 
 	sessionDB.Session = *session
+	sessionDB.State = models.SessionStatePending // Ensure new sessions start in pending state
 	_, err = sqlH.Insert(&sessionDB)
 	if err != nil {
 		return session, err

@@ -48,6 +48,7 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		}),
 		BinProducer:  runtime.ByteStreamProducer(),
 		JSONProducer: runtime.JSONProducer(),
+		TxtProducer:  runtime.TextProducer(),
 
 		AuthenticateHandler: AuthenticateHandlerFunc(func(params AuthenticateParams) middleware.Responder {
 			return middleware.NotImplemented("operation Authenticate has not yet been implemented")
@@ -57,6 +58,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		}),
 		GameCreateHandler: GameCreateHandlerFunc(func(params GameCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation GameCreate has not yet been implemented")
+		}),
+		HealthCheckHandler: HealthCheckHandlerFunc(func(params HealthCheckParams) middleware.Responder {
+			return middleware.NotImplemented("operation HealthCheck has not yet been implemented")
 		}),
 		HistoricBackupHandler: HistoricBackupHandlerFunc(func(params HistoricBackupParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation HistoricBackup has not yet been implemented")
@@ -236,6 +240,9 @@ type NeperAPI struct {
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
 	JSONProducer runtime.Producer
+	// TxtProducer registers a producer for the following mime types:
+	//   - text/plain
+	TxtProducer runtime.Producer
 
 	// KeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key Authorization provided in the header
@@ -250,6 +257,8 @@ type NeperAPI struct {
 	DownloadStarsExeHandler DownloadStarsExeHandler
 	// GameCreateHandler sets the operation handler for the game create operation
 	GameCreateHandler GameCreateHandler
+	// HealthCheckHandler sets the operation handler for the health check operation
+	HealthCheckHandler HealthCheckHandler
 	// HistoricBackupHandler sets the operation handler for the historic backup operation
 	HistoricBackupHandler HistoricBackupHandler
 	// InvitationAcceptHandler sets the operation handler for the invitation accept operation
@@ -418,6 +427,9 @@ func (o *NeperAPI) Validate() error {
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
 	}
+	if o.TxtProducer == nil {
+		unregistered = append(unregistered, "TxtProducer")
+	}
 
 	if o.KeyAuth == nil {
 		unregistered = append(unregistered, "AuthorizationAuth")
@@ -431,6 +443,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.GameCreateHandler == nil {
 		unregistered = append(unregistered, "GameCreateHandler")
+	}
+	if o.HealthCheckHandler == nil {
+		unregistered = append(unregistered, "HealthCheckHandler")
 	}
 	if o.HistoricBackupHandler == nil {
 		unregistered = append(unregistered, "HistoricBackupHandler")
@@ -624,6 +639,8 @@ func (o *NeperAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer
 			result["application/octet-stream"] = o.BinProducer
 		case "application/json":
 			result["application/json"] = o.JSONProducer
+		case "text/plain":
+			result["text/plain"] = o.TxtProducer
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -676,6 +693,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions/{session_id}/game"] = NewGameCreate(o.context, o.GameCreateHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/healthz"] = NewHealthCheck(o.context, o.HealthCheckHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

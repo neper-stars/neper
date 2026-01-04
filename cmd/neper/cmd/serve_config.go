@@ -86,26 +86,49 @@ func setupServeConfig(config *restapi.Config) error {
 	Logger = *LoggingOptions.Logger()
 	config.Log = Logger
 
-	// Load serial keys into database if not already loaded
-	// This is idempotent and safe to call on every startup
-	if err := serial.LoadKeysIntoDB(context.Background(), config.DB, &config.Log); err != nil {
-		return err
-	}
+	// Channel to signal when heavy initialization is complete
+	// Game endpoints should wait for this before processing requests
+	config.InitDone = make(chan struct{})
 
-	// Auto-create admin user if configured
-	// This is idempotent - safe to call on every startup
-	if AdminOptions.Enabled() {
-		apiKey, err := admin.EnsureAdminUser(context.Background(), config.DB, &config.Log, AdminOptions)
-		if err != nil {
-			return fmt.Errorf("failed to ensure admin user: %w", err)
+	// Run heavy initialization tasks in background so server can start immediately
+	// This allows health checks to pass while initialization is in progress
+	// Tasks run sequentially to avoid overloading the machine
+	go func() {
+		defer close(config.InitDone)
+		log := config.Log.With().Str("component", "background-init").Logger()
+
+		// Load serial keys into database if not already loaded
+		// This is idempotent and safe to call on every startup
+		if err := serial.LoadKeysIntoDB(context.Background(), config.DB, &log); err != nil {
+			log.Err(err).Msg("failed to load serial keys")
 		}
-		if apiKey != "" {
-			config.Log.Info().
-				Str("username", AdminOptions.AdminUsername).
-				Str("apikey", apiKey).
-				Msg("new admin user created - save the API key!")
+
+		// Auto-create admin user if configured
+		// This is idempotent - safe to call on every startup
+		if AdminOptions.Enabled() {
+			apiKey, err := admin.EnsureAdminUser(context.Background(), config.DB, &log, AdminOptions)
+			if err != nil {
+				log.Err(err).Msg("failed to ensure admin user")
+			} else if apiKey != "" {
+				log.Info().
+					Str("username", AdminOptions.AdminUsername).
+					Str("apikey", apiKey).
+					Msg("new admin user created - save the API key!")
+			}
 		}
-	}
+
+		// Initialize wine prefix AFTER serial keys (sequential to avoid overloading)
+		log.Info().Msg("initializing wine prefix...")
+		if config.StarsRunner != nil {
+			if err := config.StarsRunner.Init(); err != nil {
+				log.Err(err).Msg("failed to initialize stars runner")
+			} else {
+				log.Info().Bool("xvfb_running", config.StarsRunner.IsXvfbRunning()).Msg("stars runner initialized")
+			}
+		}
+
+		log.Info().Msg("background initialization complete")
+	}()
 
 	config.BaseURL = InfoOptions.BaseURL
 	// This is where the api config can be customized at will
@@ -134,9 +157,7 @@ func setupServeConfig(config *restapi.Config) error {
 		return err
 	}
 	config.StarsRunner = runner
-	if err := config.StarsRunner.Init(); err != nil {
-		return err
-	}
+	// Note: StarsRunner.Init() is called in background goroutine to avoid blocking startup
 
 	// Initialize the race file processor with options from runner settings
 	config.RaceProcessor = racefiles.NewProcessor(racefiles.ProcessorOptions{

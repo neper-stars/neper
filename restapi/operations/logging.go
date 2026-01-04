@@ -37,6 +37,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "gameCreate",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/game"])
 
+	o.handlers["GET"]["/healthz"] = LogOperation(
+		"", "healthCheck",
+	)(o.handlers["GET"]["/healthz"])
+
 	o.handlers["GET"]["/v1/sessions/{session_id}/backup"] = LogOperation(
 		"", "historicBackup",
 	)(o.handlers["GET"]["/v1/sessions/{session_id}/backup"])

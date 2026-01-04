@@ -32,6 +32,8 @@ var (
 		// statics
 		regexp.MustCompile("^/assets"),
 		regexp.MustCompile("^/favicon.ico"),
+		// health check
+		regexp.MustCompile("^/api/healthz$"),
 		// auth
 		regexp.MustCompile("^/api/v1/auth/authenticate$"),
 		regexp.MustCompile("^/api/v1/auth/register$"),
