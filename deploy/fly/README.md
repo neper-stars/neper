@@ -14,7 +14,15 @@ Infrastructure-as-code setup for deploying Neper to Fly.io.
    flyctl auth login
    ```
 
-3. Go installed (for NATS nkey generation), or pre-generate the key:
+3. jq installed (for JSON parsing):
+   ```bash
+   # Ubuntu/Debian
+   apt install jq
+   # macOS
+   brew install jq
+   ```
+
+4. Go installed (for NATS nkey generation), or pre-generate the key:
    ```bash
    # Option A: Have Go installed (setup.sh will use `go run`)
    # Option B: Pre-generate and export:

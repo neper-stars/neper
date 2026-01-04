@@ -8,8 +8,8 @@ primary_region = "cdg"  # Paris - change to your preferred region
   image = "docker.io/neperstars/neper:latest"
 
 [processes]
-  # Map DATABASE_URL (set by fly postgres attach) to NEPER_DB_DSN
-  app = "sh -c 'export NEPER_DB_DSN=\"$DATABASE_URL\" && exec neper serve --auto-migrate'"
+  # DATABASE_URL is mapped to NEPER_DB_DSN in entrypoint.sh
+  app = "serve --auto-migrate"
 
 [env]
   # Logging

@@ -27,9 +27,11 @@ if [[ "$confirm" != "yes" ]]; then
 fi
 
 log "Destroying app '$APP_NAME'..."
-fly apps destroy "$APP_NAME" --yes 2>/dev/null || log "App not found or already destroyed"
+flyctl apps destroy "$APP_NAME" --yes || log "App not found or already destroyed"
 
 log "Destroying database '$DB_NAME'..."
-fly postgres destroy "$DB_NAME" --yes 2>/dev/null || log "Database not found or already destroyed"
+# Postgres databases are Fly apps, use apps destroy
+flyctl apps destroy "$DB_NAME" --yes || log "Database not found or already destroyed"
 
 log "Teardown complete."
+log "Verify with: flyctl apps list"

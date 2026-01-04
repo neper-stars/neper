@@ -49,7 +49,7 @@ func LoadKeys() ([]string, error) {
 }
 
 // LoadKeysIntoDB bulk inserts all serial keys into the serial_key table.
-// Uses PostgreSQL COPY for optimal performance.
+// Uses PostgreSQL COPY for optimal performance, batched to avoid timeouts.
 // This should be called once on first deployment via the load-serials command.
 func LoadKeysIntoDB(ctx context.Context, db *sqlx.DB, log *zerolog.Logger) error {
 	keys, err := LoadKeys()
@@ -70,7 +70,38 @@ func LoadKeysIntoDB(ctx context.Context, db *sqlx.DB, log *zerolog.Logger) error
 		return nil
 	}
 
-	// Use PostgreSQL COPY for bulk insert
+	// Batch size to avoid connection timeouts on slow/cheap databases
+	const batchSize = 50000
+	start := time.Now()
+	total := len(keys)
+
+	for batchStart := 0; batchStart < total; batchStart += batchSize {
+		batchEnd := batchStart + batchSize
+		if batchEnd > total {
+			batchEnd = total
+		}
+		batch := keys[batchStart:batchEnd]
+
+		if err := insertKeyBatch(ctx, db, batch, log); err != nil {
+			return fmt.Errorf("failed to insert batch %d-%d: %w", batchStart, batchEnd, err)
+		}
+
+		log.Info().
+			Int("progress", batchEnd).
+			Int("total", total).
+			Msg("inserted key batch")
+	}
+
+	log.Info().
+		Int("count", len(keys)).
+		Dur("duration", time.Since(start)).
+		Msg("successfully loaded serial keys into database")
+
+	return nil
+}
+
+// insertKeyBatch inserts a batch of keys using PostgreSQL COPY.
+func insertKeyBatch(ctx context.Context, db *sqlx.DB, keys []string, log *zerolog.Logger) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -86,15 +117,9 @@ func LoadKeysIntoDB(ctx context.Context, db *sqlx.DB, log *zerolog.Logger) error
 		return fmt.Errorf("failed to prepare COPY statement: %w", err)
 	}
 
-	start := time.Now()
-	for i, key := range keys {
+	for _, key := range keys {
 		if _, err := stmt.Exec(key); err != nil {
-			return fmt.Errorf("failed to exec COPY for key %d: %w", i, err)
-		}
-
-		// Log progress every 100k keys
-		if (i+1)%100000 == 0 {
-			log.Info().Int("progress", i+1).Msg("inserting keys...")
+			return fmt.Errorf("failed to exec COPY: %w", err)
 		}
 	}
 
@@ -109,11 +134,6 @@ func LoadKeysIntoDB(ctx context.Context, db *sqlx.DB, log *zerolog.Logger) error
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
-
-	log.Info().
-		Int("count", len(keys)).
-		Dur("duration", time.Since(start)).
-		Msg("successfully loaded serial keys into database")
 
 	return nil
 }

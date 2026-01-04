@@ -36,6 +36,12 @@ check_flyctl() {
     fi
 }
 
+check_jq() {
+    if ! command -v jq &> /dev/null; then
+        error "jq not found. Install with: apt install jq (or brew install jq on macOS)"
+    fi
+}
+
 generate_nats_nkey() {
     # If provided via env, use it
     if [[ -n "${NEPER_NATS_NKEY:-}" ]]; then
@@ -62,15 +68,15 @@ generate_nats_nkey() {
 }
 
 app_exists() {
-    flyctl apps list --json 2>/dev/null | grep -q "\"$1\"" 2>/dev/null
+    flyctl apps list --json 2>/dev/null | jq -e ".[] | select(.Name == \"$1\")" >/dev/null 2>&1
 }
 
 db_exists() {
-    flyctl postgres list --json 2>/dev/null | grep -q "\"$1\"" 2>/dev/null
+    flyctl postgres list --json 2>/dev/null | jq -e ".[] | select(.Name == \"$1\")" >/dev/null 2>&1
 }
 
 volume_exists() {
-    flyctl volumes list --app "$APP_NAME" --json 2>/dev/null | grep -q "neper_data" 2>/dev/null
+    flyctl volumes list --app "$APP_NAME" --json 2>/dev/null | jq -e ".[] | select(.Name == \"neper_data\")" >/dev/null 2>&1
 }
 
 # =============================================================================
@@ -86,6 +92,7 @@ main() {
     echo ""
 
     check_flyctl
+    check_jq
 
     # Step 1: Create the app
     if app_exists "$APP_NAME"; then

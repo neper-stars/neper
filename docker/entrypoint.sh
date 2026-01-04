@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Map DATABASE_URL to NEPER_DB_DSN if set (for Fly.io compatibility)
+if [ -n "$DATABASE_URL" ] && [ -z "$NEPER_DB_DSN" ]; then
+    export NEPER_DB_DSN="$DATABASE_URL"
+fi
+
 # Allow configurable UID/GID via environment variables
 # Defaults to 1000:1000 if not set
 NEPER_UID=${NEPER_UID:-1000}
