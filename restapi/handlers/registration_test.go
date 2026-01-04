@@ -39,15 +39,25 @@ func TestRegisterHandler(t *testing.T) {
 			},
 		}
 
-		userProfile, err := registerHandler.handle(ctx, params)
+		result, err := registerHandler.handle(ctx, params)
 		require.NoError(t, err)
-		require.NotNil(t, userProfile)
-		require.Equal(t, "newuser", userProfile.Nickname)
-		require.Equal(t, "newuser@example.com", userProfile.Email)
-		require.True(t, userProfile.Pending, "new user should be pending")
-		require.False(t, userProfile.IsActive, "new user should not be active")
-		require.NotNil(t, userProfile.RegistrationMessage)
-		require.Equal(t, "I want to join to play Stars!", *userProfile.RegistrationMessage)
+		require.NotNil(t, result)
+		require.Equal(t, "newuser", result.Nickname)
+		require.NotEmpty(t, result.UserID)
+		require.NotEmpty(t, result.Apikey, "should have generated an API key")
+
+		// Verify user state in the database
+		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
+		var userDB models.UserProfileDB
+		err = sqlH.GetByPKey(&userDB, result.UserID)
+		require.NoError(t, err)
+		require.Equal(t, "newuser@example.com", userDB.Email)
+		require.True(t, userDB.Pending, "new user should be pending")
+		require.True(t, userDB.IsActive, "new user should be active for authentication")
+		require.NotNil(t, userDB.RegistrationMessage)
+		require.Equal(t, "I want to join to play Stars!", *userDB.RegistrationMessage)
+		require.Equal(t, result.Apikey, userDB.APIKey, "API key should match")
+		require.True(t, result.Pending, "result should indicate pending status")
 	})
 
 	t.Run("duplicate_nickname_fails", func(t *testing.T) {
@@ -100,6 +110,43 @@ func TestRegisterHandler(t *testing.T) {
 		_, err := registerHandler.handle(ctx, params)
 		require.Error(t, err)
 		require.True(t, errors.Is(err, errs.ErrInvalid), "should get invalid error for empty email")
+	})
+}
+
+func TestRegisterHandler_NoApprovalNeeded(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	// Enable registration with NeedApproval=false
+	opts := registration.NewOptions()
+	opts.Enabled = true
+	opts.NeedApproval = false
+	registerHandler := NewRegisterHandler(&log, testdb.DB, opts, nil, nil)
+
+	t.Run("registration_without_approval", func(t *testing.T) {
+		params := operations.RegisterParams{
+			Registration: &models.RegistrationRequest{
+				Nickname: "directuser",
+				Email:    "directuser@example.com",
+			},
+		}
+
+		result, err := registerHandler.handle(ctx, params)
+		require.NoError(t, err)
+		require.NotNil(t, result)
+		require.Equal(t, "directuser", result.Nickname)
+		require.NotEmpty(t, result.Apikey)
+		require.False(t, result.Pending, "result should indicate not pending")
+
+		// Verify user state in the database
+		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
+		var userDB models.UserProfileDB
+		err = sqlH.GetByPKey(&userDB, result.UserID)
+		require.NoError(t, err)
+		require.False(t, userDB.Pending, "user should not be pending")
+		require.True(t, userDB.IsActive, "user should be active")
 	})
 }
 
@@ -192,21 +239,21 @@ func TestPendingRegistrationApproveHandler(t *testing.T) {
 		}
 
 		params := operations.PendingRegistrationApproveParams{
-			UserProfileID: pendingUser.ID,
+			UserProfileID: pendingUser.UserID,
 		}
 		result, err := approveHandler.handle(ctx, params, adminPrincipal)
 		require.NoError(t, err)
 		require.NotNil(t, result)
-		require.Equal(t, pendingUser.ID, result.UserID)
-		require.NotEmpty(t, result.Apikey, "should have generated an API key")
+		require.Equal(t, pendingUser.UserID, result.UserID)
+		require.NotEmpty(t, result.Apikey, "should return the API key")
 
 		// Verify the user is now approved in the database
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var userDB models.UserProfileDB
-		err = sqlH.GetByPKey(&userDB, pendingUser.ID)
+		err = sqlH.GetByPKey(&userDB, pendingUser.UserID)
 		require.NoError(t, err)
 		require.False(t, userDB.Pending, "user should no longer be pending")
-		require.True(t, userDB.IsActive, "user should now be active")
+		require.True(t, userDB.IsActive, "user should be active")
 		require.NotEmpty(t, userDB.APIKey, "user should have an API key")
 	})
 
@@ -221,7 +268,7 @@ func TestPendingRegistrationApproveHandler(t *testing.T) {
 
 		// Try to approve the same user again
 		params := operations.PendingRegistrationApproveParams{
-			UserProfileID: pendingUser.ID,
+			UserProfileID: pendingUser.UserID,
 		}
 		_, err := approveHandler.handle(ctx, params, adminPrincipal)
 		require.Error(t, err)
@@ -248,7 +295,7 @@ func TestPendingRegistrationApproveHandler(t *testing.T) {
 		}
 
 		params := operations.PendingRegistrationApproveParams{
-			UserProfileID: anotherPending.ID,
+			UserProfileID: anotherPending.UserID,
 		}
 		_, err = approveHandler.handle(ctx, params, regularPrincipal)
 		require.Error(t, err)
@@ -287,7 +334,7 @@ func TestPendingRegistrationRejectHandler(t *testing.T) {
 		}
 
 		params := operations.PendingRegistrationRejectParams{
-			UserProfileID: pendingUser.ID,
+			UserProfileID: pendingUser.UserID,
 		}
 		err = rejectHandler.handle(ctx, params, adminPrincipal)
 		require.NoError(t, err)
@@ -295,7 +342,7 @@ func TestPendingRegistrationRejectHandler(t *testing.T) {
 		// Verify the user is deleted
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var userDB models.UserProfileDB
-		err = sqlH.GetByPKey(&userDB, pendingUser.ID)
+		err = sqlH.GetByPKey(&userDB, pendingUser.UserID)
 		require.Error(t, err, "user should be deleted after rejection")
 	})
 
@@ -319,7 +366,7 @@ func TestPendingRegistrationRejectHandler(t *testing.T) {
 		}
 
 		params := operations.PendingRegistrationRejectParams{
-			UserProfileID: pendingUser.ID,
+			UserProfileID: pendingUser.UserID,
 		}
 		err = rejectHandler.handle(ctx, params, regularPrincipal)
 		require.Error(t, err)

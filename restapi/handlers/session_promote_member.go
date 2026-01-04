@@ -108,6 +108,10 @@ func (h *SessionPromoteMemberHandler) handle(
 func (h *SessionPromoteMemberHandler) Authorize(
 	sqlH database.SQLHelper, params operations.SessionPromoteMemberParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot promote members
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

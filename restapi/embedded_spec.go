@@ -93,7 +93,7 @@ func init() {
     "/v1/auth/register": {
       "post": {
         "security": [],
-        "description": "Submit a registration request for a new user account.\nThe request will be reviewed by a global manager who can approve or reject it.\nThis endpoint does not require authentication.\nThe created user profile will have pending=true and is_active=false until approved.\n",
+        "description": "Submit a registration request for a new user account.\nThe user gets an API key immediately and can authenticate,\nbut has limited access until approved by a global manager.\nPending users can list and view sessions, but cannot create or join them.\nThis endpoint does not require authentication.\n",
         "summary": "request a new user account",
         "operationId": "register",
         "parameters": [
@@ -108,9 +108,9 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Registration request submitted successfully. User is pending approval.",
+            "description": "Registration successful. User can authenticate but has limited access until approved.",
             "schema": {
-              "$ref": "neper-types.yaml#/definitions/user_profile"
+              "$ref": "neper-types.yaml#/definitions/registration_result"
             }
           },
           "400": {
@@ -1744,7 +1744,7 @@ func init() {
     "/v1/auth/register": {
       "post": {
         "security": [],
-        "description": "Submit a registration request for a new user account.\nThe request will be reviewed by a global manager who can approve or reject it.\nThis endpoint does not require authentication.\nThe created user profile will have pending=true and is_active=false until approved.\n",
+        "description": "Submit a registration request for a new user account.\nThe user gets an API key immediately and can authenticate,\nbut has limited access until approved by a global manager.\nPending users can list and view sessions, but cannot create or join them.\nThis endpoint does not require authentication.\n",
         "summary": "request a new user account",
         "operationId": "register",
         "parameters": [
@@ -1759,9 +1759,9 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Registration request submitted successfully. User is pending approval.",
+            "description": "Registration successful. User can authenticate but has limited access until approved.",
             "schema": {
-              "$ref": "#/definitions/userProfile"
+              "$ref": "#/definitions/registrationResult"
             }
           },
           "400": {
@@ -3870,6 +3870,28 @@ func init() {
           "description": "requested user nickname (must be unique)",
           "type": "string",
           "x-nullable": false
+        }
+      }
+    },
+    "registrationResult": {
+      "description": "Response containing the user profile and API key after registration",
+      "type": "object",
+      "properties": {
+        "apikey": {
+          "description": "The API key for authentication",
+          "type": "string"
+        },
+        "nickname": {
+          "description": "The user's nickname",
+          "type": "string"
+        },
+        "pending": {
+          "description": "True if the user needs admin approval for full access",
+          "type": "boolean"
+        },
+        "user_id": {
+          "description": "The user profile ID",
+          "type": "string"
         }
       }
     },

@@ -30,9 +30,28 @@ type SessionQuitHandler struct {
 	notifyService *notify.Service
 }
 
+// Authorize checks if the principal is allowed to quit this session
+func (h *SessionQuitHandler) Authorize(
+	params operations.SessionQuitParams, principal *models.Principal,
+) (bool, error) {
+	// Pending users cannot quit sessions
+	if principal.IsPending {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (h *SessionQuitHandler) handle(
 	ctx context.Context, params operations.SessionQuitParams, principal *models.Principal,
 ) error {
+	authorized, err := h.Authorize(params, principal)
+	if err != nil {
+		return err
+	}
+	if !authorized {
+		return errs.ErrForbidden
+	}
+
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {

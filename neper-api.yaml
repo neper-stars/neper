@@ -54,9 +54,10 @@ paths:
       summary: "request a new user account"
       description: |
         Submit a registration request for a new user account.
-        The request will be reviewed by a global manager who can approve or reject it.
+        The user gets an API key immediately and can authenticate,
+        but has limited access until approved by a global manager.
+        Pending users can list and view sessions, but cannot create or join them.
         This endpoint does not require authentication.
-        The created user profile will have pending=true and is_active=false until approved.
       security: []
       parameters:
         - name: registration
@@ -66,9 +67,9 @@ paths:
             $ref: "neper-types.yaml#/definitions/registration_request"
       responses:
         201:
-          description: Registration request submitted successfully. User is pending approval.
+          description: Registration successful. User can authenticate but has limited access until approved.
           schema:
-            $ref: "neper-types.yaml#/definitions/user_profile"
+            $ref: "neper-types.yaml#/definitions/registration_result"
         400:
           $ref: "#/responses/invalid"
         409:

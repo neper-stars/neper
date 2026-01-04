@@ -154,6 +154,10 @@ func (h *SessionDeleteHandler) Handle(
 func (h *SessionDeleteHandler) Authorize(
 	sqlH database.SQLHelper, params operations.SessionDeleteParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot delete sessions
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

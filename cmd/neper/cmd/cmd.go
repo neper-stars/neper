@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/orus-io/go-flags"
 	"github.com/neper-stars/neper/restapi"
+	"github.com/orus-io/go-flags"
 	"orus.io/orus-io/go-orusapi"
 	"orus.io/orus-io/go-orusapi/database"
 )

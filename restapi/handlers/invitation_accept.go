@@ -158,6 +158,10 @@ func (h *InvitationAcceptHandler) Handle(
 func (h *InvitationAcceptHandler) Authorize(
 	ctx context.Context, params operations.InvitationAcceptParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot accept invitations
+	if principal.IsPending {
+		return false, nil
+	}
 	// Should we really allow a general manager to accept
 	// invites on behalf of someone else ?
 	if principal.IsGlobalManager {

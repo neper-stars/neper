@@ -109,6 +109,10 @@ func (h *SessionPlayerRaceSetReadyHandler) Handle(
 func (h *SessionPlayerRaceSetReadyHandler) Authorize(
 	params operations.SessionPlayerRaceSetReadyParams, principal *models.Principal, sprDB *models.SessionPlayerRaceDB,
 ) (bool, error) {
+	// Pending users cannot set ready status
+	if principal.IsPending {
+		return false, nil
+	}
 	// Global managers can modify any ready status
 	if principal.IsGlobalManager {
 		return true, nil

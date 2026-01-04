@@ -101,6 +101,10 @@ func (h *InvitationDeclineHandler) Handle(
 func (h *InvitationDeclineHandler) Authorize(
 	ctx context.Context, params operations.InvitationDeclineParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot decline invitations
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

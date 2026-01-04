@@ -108,6 +108,10 @@ func (h *ReorderPlayersHandler) Handle(
 func (h *ReorderPlayersHandler) Authorize(
 	ctx context.Context, params operations.ReorderPlayersParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot reorder players
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

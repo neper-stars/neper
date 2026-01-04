@@ -255,6 +255,23 @@ definitions:
       - nickname
       - email
 
+  registration_result:
+    type: object
+    description: Response containing the user profile and API key after registration
+    properties:
+      user_id:
+        type: string
+        description: The user profile ID
+      nickname:
+        type: string
+        description: The user's nickname
+      apikey:
+        type: string
+        description: The API key for authentication
+      pending:
+        type: boolean
+        description: True if the user needs admin approval for full access
+
   user_profile_create_request:
     type: object
     description: Request body for creating a user profile (global managers only)

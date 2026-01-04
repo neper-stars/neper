@@ -5,10 +5,10 @@ package cmd
 import (
 	"github.com/dlmiddlecote/sqlstats"
 	"github.com/go-openapi/loads"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/restapi"
 	"github.com/neper-stars/neper/restapi/operations"
+	"github.com/prometheus/client_golang/prometheus"
 	orusapi "orus.io/orus-io/go-orusapi"
 	"orus.io/orus-io/go-orusapi/database"
 )

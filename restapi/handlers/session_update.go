@@ -96,6 +96,10 @@ func (h *SessionUpdateHandler) Handle(
 func (h *SessionUpdateHandler) Authorize(
 	sqlH database.SQLHelper, params operations.SessionUpdateParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot update sessions
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

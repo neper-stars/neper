@@ -10,6 +10,7 @@ import (
 // Options holds registration-related configuration
 type Options struct {
 	Enabled            bool    `long:"registration-enabled" env:"REGISTRATION_ENABLED" ini-name:"registration-enabled" description:"Enable user registration endpoint (disabled by default)"`
+	NeedApproval       bool    `long:"registration-need-approval" env:"REGISTRATION_NEED_APPROVAL" ini-name:"registration-need-approval" description:"Require admin approval for new registrations (enabled by default)"`
 	RateLimitPerMinute float64 `long:"registration-rate-limit" env:"REGISTRATION_RATE_LIMIT" ini-name:"registration-rate-limit" description:"Maximum registration attempts per IP per minute" default:"5"`
 	RateLimitBurst     int     `long:"registration-rate-burst" env:"REGISTRATION_RATE_BURST" ini-name:"registration-rate-burst" description:"Maximum burst of registration attempts per IP" default:"10"`
 }
@@ -18,6 +19,7 @@ type Options struct {
 func NewOptions() *Options {
 	return &Options{
 		Enabled:            false, // Disabled by default
+		NeedApproval:       true,  // Require approval by default
 		RateLimitPerMinute: 5,
 		RateLimitBurst:     10,
 	}

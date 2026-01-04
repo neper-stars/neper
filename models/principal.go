@@ -10,6 +10,7 @@ import (
 type Principal struct {
 	jwt.StandardClaims
 	IsGlobalManager bool
+	IsPending       bool
 	NickName        string
 }
 

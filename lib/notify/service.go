@@ -191,8 +191,12 @@ func (s *Service) PublishPendingRegistrationCreate(userProfileID string) error {
 }
 
 // PublishPendingRegistrationApprove is a convenience method for approved registration
-func (s *Service) PublishPendingRegistrationApprove(userProfileID string) error {
-	return s.Publish(ResourceChangeTypePendingRegistration, userProfileID, ResourceChangeActionApproved)
+// Sends notification to both admins (to update pending list) and the user (to know they've been approved)
+func (s *Service) PublishPendingRegistrationApprove(userProfileID, nickname string) error {
+	return s.PublishWithMetadata(ResourceChangeTypePendingRegistration, userProfileID, ResourceChangeActionApproved, RegistrationApprovalMeta{
+		UserProfileID: userProfileID,
+		Nickname:      nickname,
+	})
 }
 
 // PublishPendingRegistrationReject is a convenience method for rejected registration

@@ -111,3 +111,18 @@ definitions:
         type: integer
         format: int64
         description: The game year for which orders were submitted
+
+  registration-approval-meta:
+    type: object
+    x-go-name: RegistrationApprovalMeta
+    description: |
+      Metadata for pending_registration approval notifications.
+      Allows the approved user and admins to receive relevant info.
+    properties:
+      user_profile_id:
+        type: string
+        x-go-name: UserProfileID
+        description: The user profile ID that was approved
+      nickname:
+        type: string
+        description: The nickname of the approved user

@@ -12,7 +12,6 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
-	"github.com/neper-stars/neper/auth"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/serial"
@@ -65,18 +64,11 @@ func (h *PendingRegistrationApproveHandler) handle(
 		return nil, errs.NewErrInvalidSomething("user profile is not pending approval")
 	}
 
-	// Generate a random API key
-	apiKeyHex, err := auth.GenerateAPIKey()
-	if err != nil {
-		return nil, err
-	}
-
-	// Update the user profile: set pending=false, is_active=true, and set the API key
+	// Update the user profile: set pending=false to grant full access
+	// (is_active and API key were already set at registration)
 	_, err = sqlH.Exec(database.SQ.
 		Update(models.UserProfileDBTable).
 		Set(models.UserProfileDBPendingColumn, false).
-		Set(models.UserProfileDBIsActiveColumn, true).
-		Set(models.UserProfileDBAPIKeyColumn, apiKeyHex).
 		Where(sq.Eq{models.UserProfileDBIDColumn: params.UserProfileID}))
 	if err != nil {
 		return nil, err
@@ -100,16 +92,16 @@ func (h *PendingRegistrationApproveHandler) handle(
 		Str("approved_by", principal.Subject).
 		Msg("pending registration approved")
 
-	// Notify global managers about the approval
+	// Notify global managers (to update pending list) and the user (to know they've been approved)
 	if h.notifyService != nil {
-		if err := h.notifyService.PublishPendingRegistrationApprove(params.UserProfileID); err != nil {
+		if err := h.notifyService.PublishPendingRegistrationApprove(params.UserProfileID, userDB.Nickname); err != nil {
 			log.Err(err).Msg("failed to publish pending registration approval notification")
 		}
 	}
 
 	return &models.ApikeyReset{
 		UserID: params.UserProfileID,
-		Apikey: apiKeyHex,
+		Apikey: userDB.APIKey,
 	}, nil
 }
 

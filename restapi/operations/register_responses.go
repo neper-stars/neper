@@ -16,7 +16,7 @@ import (
 // RegisterCreatedCode is the HTTP code returned for type RegisterCreated
 const RegisterCreatedCode int = 201
 
-/*RegisterCreated Registration request submitted successfully. User is pending approval.
+/*RegisterCreated Registration successful. User can authenticate but has limited access until approved.
 
 swagger:response registerCreated
 */
@@ -25,7 +25,7 @@ type RegisterCreated struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.UserProfile `json:"body,omitempty"`
+	Payload *models.RegistrationResult `json:"body,omitempty"`
 }
 
 // NewRegisterCreated creates RegisterCreated with default headers values
@@ -35,13 +35,13 @@ func NewRegisterCreated() *RegisterCreated {
 }
 
 // WithPayload adds the payload to the register created response
-func (o *RegisterCreated) WithPayload(payload *models.UserProfile) *RegisterCreated {
+func (o *RegisterCreated) WithPayload(payload *models.RegistrationResult) *RegisterCreated {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the register created response
-func (o *RegisterCreated) SetPayload(payload *models.UserProfile) {
+func (o *RegisterCreated) SetPayload(payload *models.RegistrationResult) {
 	o.Payload = payload
 }
 

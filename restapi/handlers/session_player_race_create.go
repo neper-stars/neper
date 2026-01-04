@@ -149,6 +149,10 @@ func (h *SessionPlayerRaceCreateHandler) Handle(
 func (h *SessionPlayerRaceCreateHandler) Authorize(
 	sqlH database.SQLHelper, params operations.SessionPlayerRaceCreateParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot assign races to sessions
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

@@ -130,6 +130,10 @@ func (h *SessionCreateHandler) Handle(
 func (h *SessionCreateHandler) Authorize(
 	ctx context.Context, params operations.SessionCreateParams, principal *models.Principal,
 ) (bool, error) {
-	// everyone is allowed to create a new session
+	// Pending users cannot create sessions
+	if principal.IsPending {
+		return false, nil
+	}
+	// Approved users are allowed to create sessions
 	return true, nil
 }

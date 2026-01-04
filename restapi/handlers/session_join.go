@@ -154,6 +154,10 @@ func (h *SessionJoinHandler) Handle(
 func (h *SessionJoinHandler) Authorize(
 	sqlH database.SQLHelper, params operations.SessionJoinParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot join sessions
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

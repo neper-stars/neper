@@ -235,6 +235,7 @@ func (auth *Auth) Authenticate(
 			models.UserProfileDBIDColumn,
 			models.UserProfileDBNicknameColumn,
 			models.UserProfileDBIsManagerColumn,
+			models.UserProfileDBPendingColumn,
 		).
 		From(models.UserProfileDBTable).
 		Where(
@@ -259,6 +260,7 @@ func (auth *Auth) Authenticate(
 			ExpiresAt: 0,
 		},
 		IsGlobalManager: authRes.IsManager,
+		IsPending:       authRes.Pending,
 		NickName:        authRes.Nickname,
 	}, nil
 }

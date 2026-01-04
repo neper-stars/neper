@@ -148,6 +148,10 @@ func (h *InvitationCreateHandler) Handle(
 func (h *InvitationCreateHandler) Authorize(
 	ctx context.Context, params operations.InvitationCreateParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot create invitations
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

@@ -34,9 +34,10 @@ func NewRegister(ctx *middleware.Context, handler RegisterHandler) *Register {
 request a new user account
 
 Submit a registration request for a new user account.
-The request will be reviewed by a global manager who can approve or reject it.
+The user gets an API key immediately and can authenticate,
+but has limited access until approved by a global manager.
+Pending users can list and view sessions, but cannot create or join them.
 This endpoint does not require authentication.
-The created user profile will have pending=true and is_active=false until approved.
 
 
 */

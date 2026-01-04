@@ -199,6 +199,10 @@ func (h *GameCreateHandler) Handle(
 func (h *GameCreateHandler) Authorize(
 	ctx context.Context, params operations.GameCreateParams, principal *models.Principal,
 ) (bool, error) {
+	// Pending users cannot create games
+	if principal.IsPending {
+		return false, nil
+	}
 	if principal.IsGlobalManager {
 		return true, nil
 	}

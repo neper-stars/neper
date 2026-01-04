@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	"github.com/neper-stars/neper/auth"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/registration"
@@ -37,7 +38,7 @@ type RegisterHandler struct {
 
 func (h *RegisterHandler) handle(
 	ctx context.Context, params operations.RegisterParams,
-) (*models.UserProfile, error) {
+) (*models.RegistrationResult, error) {
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
 	if err != nil {
@@ -57,20 +58,30 @@ func (h *RegisterHandler) handle(
 		return nil, errs.NewErrInvalidSomething("email is required")
 	}
 
-	// Create the pending user profile
-	// - pending=true: needs approval
-	// - is_active=false: cannot authenticate
-	// - no API key: will be generated on approval
+	// Generate API key for immediate authentication
+	apiKey, err := auth.GenerateAPIKey()
+	if err != nil {
+		return nil, err
+	}
+
+	// Determine if user needs approval based on server configuration
+	needApproval := h.opts != nil && h.opts.NeedApproval
+
+	// Create the user profile
+	// - pending: depends on server configuration (NeedApproval option)
+	// - is_active=true: can authenticate immediately
+	// - API key: generated now for immediate use
 	userProfileDB := models.UserProfileDB{
 		UserProfile: models.UserProfile{
 			ID:                  uuid.New().String(),
 			Nickname:            strings.TrimSpace(params.Registration.Nickname),
 			Email:               strings.TrimSpace(params.Registration.Email),
-			IsActive:            false,
+			IsActive:            true,
 			IsManager:           false,
-			Pending:             true,
+			Pending:             needApproval,
 			RegistrationMessage: params.Registration.Message,
 		},
+		APIKey: apiKey,
 	}
 
 	if _, err := sqlH.Insert(&userProfileDB); err != nil {
@@ -86,20 +97,33 @@ func (h *RegisterHandler) handle(
 		return nil, err
 	}
 
-	log.Info().
-		Str("user_id", userProfileDB.ID).
-		Str("nickname", userProfileDB.Nickname).
-		Str("email", userProfileDB.Email).
-		Msg("new pending registration created")
+	if needApproval {
+		log.Info().
+			Str("user_id", userProfileDB.ID).
+			Str("nickname", userProfileDB.Nickname).
+			Str("email", userProfileDB.Email).
+			Msg("new user registered with limited access (pending approval)")
+	} else {
+		log.Info().
+			Str("user_id", userProfileDB.ID).
+			Str("nickname", userProfileDB.Nickname).
+			Str("email", userProfileDB.Email).
+			Msg("new user registered with full access")
+	}
 
-	// Notify global managers about the new pending registration
-	if h.notifyService != nil {
+	// Notify global managers about the new pending registration (only if approval is needed)
+	if needApproval && h.notifyService != nil {
 		if err := h.notifyService.PublishPendingRegistrationCreate(userProfileDB.ID); err != nil {
 			log.Err(err).Msg("failed to publish pending registration notification")
 		}
 	}
 
-	return &userProfileDB.UserProfile, nil
+	return &models.RegistrationResult{
+		UserID:   userProfileDB.ID,
+		Nickname: userProfileDB.Nickname,
+		Apikey:   apiKey,
+		Pending:  needApproval,
+	}, nil
 }
 
 // getClientIP extracts the client IP from the request
@@ -157,7 +181,7 @@ func (h *RegisterHandler) Handle(
 		}
 	}
 
-	userProfile, err := h.handle(params.HTTPRequest.Context(), params)
+	result, err := h.handle(params.HTTPRequest.Context(), params)
 	if err != nil {
 		switch {
 		case errors.Is(err, errs.ErrConflict):
@@ -172,5 +196,5 @@ func (h *RegisterHandler) Handle(
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
 	}
-	return operations.NewRegisterCreated().WithPayload(userProfile)
+	return operations.NewRegisterCreated().WithPayload(result)
 }
