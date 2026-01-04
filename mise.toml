@@ -5,7 +5,11 @@ _.path = ["./node_modules/.bin", "./tools/bin"]
 golangci-lint = "2.7.2"
 node = "lts"
 "asdf:pdemagny/asdf-changie" = "latest"
-# vendir is expected to be installed globally (mise plugins having API issues)
+"flyctl" = "latest"
+"vendir" = "latest"
+
+[shell_alias]
+fly = "flyctl"
 
 [vars]
 exe = "neper"

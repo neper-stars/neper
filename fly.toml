@@ -1,0 +1,46 @@
+# fly.toml - Fly.io deployment configuration for Neper
+# See https://fly.io/docs/reference/configuration/
+
+app = "neper"
+primary_region = "cdg"  # Paris - change to your preferred region
+
+[build]
+  dockerfile = "docker/Dockerfile"
+
+[env]
+  NEPER_LOG_FORMAT = "json"
+  NEPER_LOG_LEVEL = "info"
+  NEPER_SERVE_SCHEME = "https"
+  NEPER_SERVE_HOST = "0.0.0.0"
+  NEPER_SERVE_PORT = "8080"
+  NEPER_SERVE_STARS_EXECUTABLE_DIR = "/home/neper/stars"
+  NEPER_SERVE_STARS_SAVE_DIR = "/home/neper/saves"
+  NEPER_SERVE_WINE_PREFIX = "/home/neper/wine"
+  NEPER_SERVE_WINE_COMMANDS_TIMEOUT = "30"
+  NEPER_SERVE_REGISTRATION_ENABLED = "true"
+  NEPER_SERVE_REGISTRATION_NEED_APPROVAL = "true"
+  NEPER_SERVE_PRESERVE_SAVE_FILES = "false"
+  NEPER_SERVE_RACE_LIMIT_PENDING = "3"
+  NEPER_SERVE_RACE_LIMIT_APPROVED = "50"
+  NEPER_SERVE_SESSION_MEMBERSHIP_LIMIT = "10"
+  # Set NEPER_SERVE_AUTOCREATE_ADMIN = "true" in secrets if you want auto admin creation
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false  # Keep running for WebSocket connections
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+# No health check endpoint yet - Fly will use TCP checks by default
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[mounts]
+  source = "neper_data"
+  destination = "/home/neper"
+  initial_size = "1gb"
