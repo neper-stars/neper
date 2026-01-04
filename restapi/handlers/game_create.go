@@ -136,7 +136,7 @@ func (h *GameCreateHandler) handle(
 	}
 
 	// Mark the session as started
-	sessionDB.Started = true
+	sessionDB.State = models.SessionStateStarted
 	if err := sqlH.Update(&sessionDB); err != nil {
 		h.log.Err(err).Msg("failed to update session started flag")
 		return nil, err

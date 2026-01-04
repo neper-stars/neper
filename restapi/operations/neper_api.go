@@ -118,6 +118,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		RulesReadHandler: RulesReadHandlerFunc(func(params RulesReadParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation RulesRead has not yet been implemented")
 		}),
+		SessionArchiveHandler: SessionArchiveHandlerFunc(func(params SessionArchiveParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation SessionArchive has not yet been implemented")
+		}),
 		SessionCreateHandler: SessionCreateHandlerFunc(func(params SessionCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionCreate has not yet been implemented")
 		}),
@@ -287,6 +290,8 @@ type NeperAPI struct {
 	RulesCreateHandler RulesCreateHandler
 	// RulesReadHandler sets the operation handler for the rules read operation
 	RulesReadHandler RulesReadHandler
+	// SessionArchiveHandler sets the operation handler for the session archive operation
+	SessionArchiveHandler SessionArchiveHandler
 	// SessionCreateHandler sets the operation handler for the session create operation
 	SessionCreateHandler SessionCreateHandler
 	// SessionDeleteHandler sets the operation handler for the session delete operation
@@ -486,6 +491,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.RulesReadHandler == nil {
 		unregistered = append(unregistered, "RulesReadHandler")
+	}
+	if o.SessionArchiveHandler == nil {
+		unregistered = append(unregistered, "SessionArchiveHandler")
 	}
 	if o.SessionCreateHandler == nil {
 		unregistered = append(unregistered, "SessionCreateHandler")
@@ -748,6 +756,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/sessions/{session_id}/rules"] = NewRulesRead(o.context, o.RulesReadHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/v1/sessions/{session_id}/archive"] = NewSessionArchive(o.context, o.SessionArchiveHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

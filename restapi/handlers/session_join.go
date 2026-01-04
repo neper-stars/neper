@@ -54,12 +54,19 @@ func (h *SessionJoinHandler) handle(
 	}
 
 	// Check session membership limit (not for global managers)
+	// Archived sessions don't count towards the limit
 	if h.opts != nil && !principal.IsGlobalManager {
 		var count int
 		err := sqlH.Get(&count, database.SQ.
 			Select("COUNT(*)").
 			From(models.UserProfileSessionRelDBTable).
-			Where(sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject}))
+			Join(models.SessionDBTable+" ON "+
+				models.SessionDBTable+"."+models.SessionDBIDColumn+" = "+
+				models.UserProfileSessionRelDBTable+"."+models.UserProfileSessionRelDBSessionIDColumn).
+			Where(sq.And{
+				sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject},
+				sq.NotEq{models.SessionDBTable + "." + models.SessionDBStateColumn: models.SessionStateArchived},
+			}))
 		if err != nil {
 			return nil, err
 		}
@@ -79,9 +86,9 @@ func (h *SessionJoinHandler) handle(
 		return nil, err
 	}
 
-	// Check if session has already started
-	if sessionDB.Started {
-		return nil, errs.NewErrSessionAlreadyStarted("cannot join a session that has already started")
+	// Check if session is still pending (not started or archived)
+	if sessionDB.State != models.SessionStatePending {
+		return nil, errs.NewErrSessionAlreadyStarted("cannot join a session that is not pending")
 	}
 
 	// Insert the membership

@@ -59,8 +59,8 @@ func (h *RulesCreateHandler) handle(
 		}
 		return nil, err
 	}
-	if sessionDB.Started {
-		return nil, errs.NewErrSessionAlreadyStarted("cannot modify rules for a session that has already started")
+	if sessionDB.State != models.SessionStatePending {
+		return nil, errs.NewErrSessionAlreadyStarted("cannot modify rules for a session that is not pending")
 	}
 
 	// Check if rules already exist for this session

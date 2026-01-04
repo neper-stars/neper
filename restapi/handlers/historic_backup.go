@@ -81,7 +81,8 @@ func (h *HistoricBackupHandler) handle(
 		return nil, err
 	}
 
-	if !sessionDB.Started {
+	// Allow backup for started and archived sessions, but not pending
+	if sessionDB.State == models.SessionStatePending {
 		return nil, errs.NewErrSessionNotStarted("session has not started yet")
 	}
 

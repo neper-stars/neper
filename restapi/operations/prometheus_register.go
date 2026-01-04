@@ -100,6 +100,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		rulesReadHandlerInFlight,
 	)
 	reg.MustRegister(
+		sessionArchiveHandlerDuration,
+		sessionArchiveHandlerInFlight,
+	)
+	reg.MustRegister(
 		sessionCreateHandlerDuration,
 		sessionCreateHandlerInFlight,
 	)

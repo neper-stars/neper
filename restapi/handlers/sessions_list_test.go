@@ -41,7 +41,7 @@ func TestSessionsListHandler(t *testing.T) {
 	// We can only test if the returned content is coherent with
 	// our current user
 	t.Run("gandalf_is_general_manager_and_sees_all", func(t *testing.T) {
-		sessions, err := handler.handle(ctx, &models.Principal{
+		sessions, err := handler.handle(ctx, operations.SessionsListParams{}, &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "gandalfID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
@@ -53,7 +53,7 @@ func TestSessionsListHandler(t *testing.T) {
 	})
 
 	t.Run("boromir_sees_public_sessions_and_his_memberships", func(t *testing.T) {
-		sessions, err := handler.handle(ctx, &models.Principal{
+		sessions, err := handler.handle(ctx, operations.SessionsListParams{}, &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "boromirID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
@@ -73,7 +73,7 @@ func TestSessionsListHandler(t *testing.T) {
 	})
 
 	t.Run("merry_sees_only_public_sessions_and_his_memberships", func(t *testing.T) {
-		sessions, err := handler.handle(ctx, &models.Principal{
+		sessions, err := handler.handle(ctx, operations.SessionsListParams{}, &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "merryID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
@@ -93,7 +93,7 @@ func TestSessionsListHandler(t *testing.T) {
 	})
 
 	t.Run("sarouman_sees_public_sessions_and_his_memberships", func(t *testing.T) {
-		sessions, err := handler.handle(ctx, &models.Principal{
+		sessions, err := handler.handle(ctx, operations.SessionsListParams{}, &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "saroumanID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
@@ -119,8 +119,8 @@ func TestSessionsListHandler(t *testing.T) {
 		require.Equal(t, "shireID", sessions[3].ID)
 	})
 
-	t.Run("started_field_is_returned_correctly", func(t *testing.T) {
-		sessions, err := handler.handle(ctx, &models.Principal{
+	t.Run("state_field_is_returned_correctly", func(t *testing.T) {
+		sessions, err := handler.handle(ctx, operations.SessionsListParams{}, &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "gandalfID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
@@ -129,7 +129,7 @@ func TestSessionsListHandler(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		// Find mordor session and verify the started field is true
+		// Find mordor session and verify the state field is "started"
 		var mordorSession *models.Session
 		for _, s := range sessions {
 			if s.ID == "mordorID" {
@@ -138,10 +138,10 @@ func TestSessionsListHandler(t *testing.T) {
 			}
 		}
 		require.NotNil(t, mordorSession, "mordorID should be in the list")
-		require.True(t, mordorSession.Started, "Started field should be true for mordorID")
+		require.Equal(t, models.SessionStateStarted, mordorSession.State, "State field should be 'started' for mordorID")
 		require.True(t, mordorSession.RulesIsSet, "RulesIsSet field should be true for mordorID")
 
-		// Also verify that non-started sessions have started=false
+		// Also verify that non-started sessions have state="pending" (or empty, which defaults to pending)
 		var gondorSession *models.Session
 		for _, s := range sessions {
 			if s.ID == "gondorID" {
@@ -150,7 +150,7 @@ func TestSessionsListHandler(t *testing.T) {
 			}
 		}
 		require.NotNil(t, gondorSession, "gondorID should be in the list")
-		require.False(t, gondorSession.Started, "Started field should be false for gondorID")
+		require.Equal(t, models.SessionStatePending, gondorSession.State, "State field should be 'pending' for gondorID")
 	})
 
 	t.Run("rules_is_set_is_true_after_creating_rules", func(t *testing.T) {
@@ -178,7 +178,7 @@ func TestSessionsListHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		// Now list sessions and verify RulesIsSet is true for gondorID
-		sessions, err := handler.handle(ctx, &models.Principal{
+		sessions, err := handler.handle(ctx, operations.SessionsListParams{}, &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "gandalfID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
@@ -204,7 +204,7 @@ func TestSessionsListHandler(t *testing.T) {
 		_, err := testdb.Exec(`INSERT INTO invitation (id, session_id, user_profile_id, inviter_id) VALUES ('invitationForMerryID', 'isengardID', 'merryID', 'saroumanID') ON CONFLICT (id) DO NOTHING`)
 		require.NoError(t, err)
 
-		sessions, err := handler.handle(ctx, &models.Principal{
+		sessions, err := handler.handle(ctx, operations.SessionsListParams{}, &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "merryID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),
@@ -234,7 +234,7 @@ func TestSessionsListHandler(t *testing.T) {
 
 	t.Run("member_does_not_have_pending_invitation_flag_in_list", func(t *testing.T) {
 		// Sarouman is a member of isengard, so pending_invitation should be false
-		sessions, err := handler.handle(ctx, &models.Principal{
+		sessions, err := handler.handle(ctx, operations.SessionsListParams{}, &models.Principal{
 			StandardClaims: jwt.StandardClaims{
 				Subject:   "saroumanID",
 				ExpiresAt: time.Now().Add(time.Minute).Unix(),

@@ -78,6 +78,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["GET"]["/v1/sessions/{session_id}/rules"] = RulesReadInstrumentHandler(
 		o.handlers["GET"]["/v1/sessions/{session_id}/rules"])
 
+	o.handlers["POST"]["/v1/sessions/{session_id}/archive"] = SessionArchiveInstrumentHandler(
+		o.handlers["POST"]["/v1/sessions/{session_id}/archive"])
+
 	o.handlers["POST"]["/v1/sessions"] = SessionCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions"])
 

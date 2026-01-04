@@ -981,8 +981,8 @@ type Session struct {
 	// RulesIsSet true if the ruleset has been configured for this session
 	RulesIsSet bool `json:"rules_is_set,omitempty"`
 
-	// Started whether the game has been started for this session
-	Started bool `json:"started,omitempty"`
+	// State session state: pending (not started), started (game in progress), archived (finished)
+	State string `json:"state,omitempty"`
 
 	// Type data type
 	Type string `json:"__type__"`
@@ -2375,14 +2375,11 @@ func (s Session) MarshalJSONStream(stream *jsoniter.Stream) {
 		}
 	}
 
-	// Marshal the Started field
-	if !IsEmpty(s.Started) {
+	// Marshal the State field
+	if !IsEmpty(s.State) {
 		ct.More()
-		stream.WriteObjectField("started")
-		stream.WriteVal(s.Started)
-		if stream.Error != nil {
-			return
-		}
+		stream.WriteObjectField("state")
+		stream.WriteString(s.State)
 	}
 
 	// Marshal the Type field
@@ -2455,8 +2452,15 @@ func (s *Session) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			if iter.Error != nil {
 				return
 			}
-		case "started":
-			s.Started = iter.ReadBool()
+		case "state":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field state", "state is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.State = iter.ReadString()
 			if iter.Error != nil {
 				return
 			}

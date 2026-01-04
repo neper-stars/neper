@@ -9,15 +9,25 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // NewSessionsListParams creates a new SessionsListParams object
-//
-// There are no default values defined in the spec.
+// with the default values initialized.
 func NewSessionsListParams() SessionsListParams {
 
-	return SessionsListParams{}
+	var (
+		// initialize parameters with default values
+
+		includeArchivedDefault = bool(false)
+	)
+
+	return SessionsListParams{
+		IncludeArchived: &includeArchivedDefault,
+	}
 }
 
 // SessionsListParams contains all the bound params for the sessions list operation
@@ -28,6 +38,12 @@ type SessionsListParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
+
+	/*Include archived sessions in the list. By default, archived sessions are excluded.
+	  In: query
+	  Default: false
+	*/
+	IncludeArchived *bool
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -39,8 +55,38 @@ func (o *SessionsListParams) BindRequest(r *http.Request, route *middleware.Matc
 
 	o.HTTPRequest = r
 
+	qs := runtime.Values(r.URL.Query())
+
+	qIncludeArchived, qhkIncludeArchived, _ := qs.GetOK("include_archived")
+	if err := o.bindIncludeArchived(qIncludeArchived, qhkIncludeArchived, route.Formats); err != nil {
+		res = append(res, err)
+	}
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindIncludeArchived binds and validates parameter IncludeArchived from query.
+func (o *SessionsListParams) bindIncludeArchived(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewSessionsListParams()
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("include_archived", "query", "bool", raw)
+	}
+	o.IncludeArchived = &value
+
 	return nil
 }

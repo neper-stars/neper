@@ -5,7 +5,8 @@
       "data": {
         "__type__": "session",
         "id": "gondorID",
-        "name": "Gondor"
+        "name": "Gondor",
+        "state": "pending"
       }
     },
     {
@@ -13,7 +14,8 @@
       "data": {
         "__type__": "session",
         "id": "shireID",
-        "name": "The Shire"
+        "name": "The Shire",
+        "state": "pending"
       }
     },
     {
@@ -22,7 +24,8 @@
         "__type__": "session",
         "id": "isengardID",
         "name": "Isengard",
-        "private": true
+        "private": true,
+        "state": "pending"
       }
     }
   ]

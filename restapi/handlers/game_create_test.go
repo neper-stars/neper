@@ -70,7 +70,7 @@ func TestGameCreateHandler(t *testing.T) {
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var sessionDB models.SessionDB
 		require.NoError(t, sqlH.GetByPKey(&sessionDB, sessionID))
-		require.True(t, sessionDB.Started, "session should be marked as started after game creation")
+		require.Equal(t, models.SessionStateStarted, sessionDB.State, "session should be marked as started after game creation")
 
 		// Verify host file is stored in database (but NOT returned to client)
 		var sessionFilesDB models.SessionFilesDB

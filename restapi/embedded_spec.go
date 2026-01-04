@@ -412,6 +412,15 @@ func init() {
     "/v1/sessions": {
       "get": {
         "operationId": "sessionsList",
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Include archived sessions in the list. By default, archived sessions are excluded.",
+            "name": "include_archived",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "the complete list of viewable sessions",
@@ -534,6 +543,44 @@ func init() {
           },
           "404": {
             "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/v1/sessions/{session_id}/archive": {
+      "post": {
+        "description": "Mark a session as archived. Only session managers or global managers can archive.\nArchived sessions are no longer joinable and do not count towards session membership limits.\nOnly sessions in the \"started\" state can be archived.\n",
+        "summary": "Archive a started session",
+        "operationId": "sessionArchive",
+        "responses": {
+          "200": {
+            "description": "the archived session",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/session"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "412": {
+            "$ref": "#/responses/preconditionfailed"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -2174,6 +2221,15 @@ func init() {
     "/v1/sessions": {
       "get": {
         "operationId": "sessionsList",
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "description": "Include archived sessions in the list. By default, archived sessions are excluded.",
+            "name": "include_archived",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "the complete list of viewable sessions",
@@ -2341,6 +2397,59 @@ func init() {
           },
           "404": {
             "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/v1/sessions/{session_id}/archive": {
+      "post": {
+        "description": "Mark a session as archived. Only session managers or global managers can archive.\nArchived sessions are no longer joinable and do not count towards session membership limits.\nOnly sessions in the \"started\" state can be archived.\n",
+        "summary": "Archive a started session",
+        "operationId": "sessionArchive",
+        "responses": {
+          "200": {
+            "description": "the archived session",
+            "schema": {
+              "$ref": "#/definitions/session"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Precondition not met",
             "schema": {
               "$ref": "#/definitions/error"
             }
@@ -4171,10 +4280,15 @@ func init() {
           "x-go-custom-tag": "db:\"rules_is_set\"",
           "x-nullable": false
         },
-        "started": {
-          "description": "if the game is started, this flag is true, this will disallow users to modify their race file",
-          "type": "boolean",
-          "x-go-custom-tag": "db:\"started\"",
+        "state": {
+          "description": "Session state:\n- pending: session is not started yet, players can modify their races\n- started: game is in progress, players cannot modify their races\n- archived: game is finished, not joinable, does not count towards session limits\n",
+          "type": "string",
+          "enum": [
+            "pending",
+            "started",
+            "archived"
+          ],
+          "x-go-custom-tag": "db:\"state\"",
           "x-nullable": false
         }
       }

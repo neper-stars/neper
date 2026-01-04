@@ -163,6 +163,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.SessionJoinHandler = handlers.NewSessionJoinHandler(&config.Log, config.DB, config.NotifyService, config.SessionOptions)
 	api.SessionQuitHandler = handlers.NewSessionQuitHandler(&config.Log, config.DB, config.NotifyService)
 	api.SessionPromoteMemberHandler = handlers.NewSessionPromoteMemberHandler(&config.Log, config.DB, config.NotifyService)
+	api.SessionArchiveHandler = handlers.NewSessionArchiveHandler(&config.Log, config.DB, config.NotifyService)
 
 	// UserProfiles
 	api.UserProfileCreateHandler = handlers.NewUserProfileCreateHandler(config.DB)

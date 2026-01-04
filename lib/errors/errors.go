@@ -23,6 +23,26 @@ var ErrConflict = errors.New("conflict")
 // ErrPreconditionFailed (412)
 var ErrPreconditionFailed = errors.New("precondition failed")
 
+// ErrGenericPreconditionFailed is a generic precondition failed error
+type ErrGenericPreconditionFailed struct {
+	GivenMessage string
+}
+
+// NewErrPreconditionFailed is the constructor for a generic precondition failed error
+func NewErrPreconditionFailed(msg string) *ErrGenericPreconditionFailed {
+	return &ErrGenericPreconditionFailed{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrGenericPreconditionFailed) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrGenericPreconditionFailed) Is(target error) bool {
+	return errors.Is(target, ErrPreconditionFailed)
+}
+
 // *********************
 // error implementations
 // *********************

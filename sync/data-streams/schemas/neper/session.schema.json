@@ -26,9 +26,10 @@
       "description": "if the session is private only managers can add new members. The session will not be publicly listed.",
       "type": "boolean"
     },
-    "started": {
-      "description": "whether the game has been started for this session",
-      "type": "boolean"
+    "state": {
+      "description": "session state: pending (not started), started (game in progress), archived (finished)",
+      "type": "string",
+      "enum": ["pending", "started", "archived"]
     },
     "rules_is_set": {
       "description": "true if the ruleset has been configured for this session",

@@ -6,7 +6,7 @@
         "__type__": "session",
         "id": "merryvsgollumID",
         "name": "MerryVSGollum",
-        "started": true
+        "state": "started"
       }
     },
     {

@@ -5,7 +5,8 @@
       "data": {
         "__type__": "session",
         "id": "merryvsgollumID",
-        "name": "MerryVSGollum"
+        "name": "MerryVSGollum",
+        "state": "pending"
       }
     },
     {

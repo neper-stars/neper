@@ -8,7 +8,7 @@
         "name": "Mordor",
         "private": false,
         "rules_is_set": true,
-        "started": true
+        "state": "started"
       }
     },
     {

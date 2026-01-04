@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -56,8 +57,13 @@ type Session struct {
 	// true if the ruleset has been configured for this session
 	RulesIsSet bool `json:"rules_is_set,omitempty" db:"rules_is_set"`
 
-	// if the game is started, this flag is true, this will disallow users to modify their race file
-	Started bool `json:"started,omitempty" db:"started"`
+	// Session state:
+	// - pending: session is not started yet, players can modify their races
+	// - started: game is in progress, players cannot modify their races
+	// - archived: game is finished, not joinable, does not count towards session limits
+	//
+	// Enum: [pending started archived]
+	State string `json:"state,omitempty" db:"state"`
 }
 
 // Validate validates this session
@@ -69,6 +75,10 @@ func (m *Session) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePlayers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -106,6 +116,51 @@ func (m *Session) validatePlayers(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+var sessionTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["pending","started","archived"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		sessionTypeStatePropEnum = append(sessionTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// SessionStatePending captures enum value "pending"
+	SessionStatePending string = "pending"
+
+	// SessionStateStarted captures enum value "started"
+	SessionStateStarted string = "started"
+
+	// SessionStateArchived captures enum value "archived"
+	SessionStateArchived string = "archived"
+)
+
+// prop value enum
+func (m *Session) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, sessionTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Session) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
 	}
 
 	return nil

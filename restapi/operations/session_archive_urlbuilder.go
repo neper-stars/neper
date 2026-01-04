@@ -9,13 +9,12 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
-
-	"github.com/go-openapi/swag"
+	"strings"
 )
 
-// SessionsListURL generates an URL for the sessions list operation
-type SessionsListURL struct {
-	IncludeArchived *bool
+// SessionArchiveURL generates an URL for the session archive operation
+type SessionArchiveURL struct {
+	SessionID string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -25,7 +24,7 @@ type SessionsListURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *SessionsListURL) WithBasePath(bp string) *SessionsListURL {
+func (o *SessionArchiveURL) WithBasePath(bp string) *SessionArchiveURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -33,15 +32,22 @@ func (o *SessionsListURL) WithBasePath(bp string) *SessionsListURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *SessionsListURL) SetBasePath(bp string) {
+func (o *SessionArchiveURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *SessionsListURL) Build() (*url.URL, error) {
+func (o *SessionArchiveURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/v1/sessions"
+	var _path = "/v1/sessions/{session_id}/archive"
+
+	sessionID := o.SessionID
+	if sessionID != "" {
+		_path = strings.Replace(_path, "{session_id}", sessionID, -1)
+	} else {
+		return nil, errors.New("sessionId is required on SessionArchiveURL")
+	}
 
 	_basePath := o._basePath
 	if _basePath == "" {
@@ -49,23 +55,11 @@ func (o *SessionsListURL) Build() (*url.URL, error) {
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
-	qs := make(url.Values)
-
-	var includeArchivedQ string
-	if o.IncludeArchived != nil {
-		includeArchivedQ = swag.FormatBool(*o.IncludeArchived)
-	}
-	if includeArchivedQ != "" {
-		qs.Set("include_archived", includeArchivedQ)
-	}
-
-	_result.RawQuery = qs.Encode()
-
 	return &_result, nil
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *SessionsListURL) Must(u *url.URL, err error) *url.URL {
+func (o *SessionArchiveURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -76,17 +70,17 @@ func (o *SessionsListURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *SessionsListURL) String() string {
+func (o *SessionArchiveURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *SessionsListURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *SessionArchiveURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on SessionsListURL")
+		return nil, errors.New("scheme is required for a full url on SessionArchiveURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on SessionsListURL")
+		return nil, errors.New("host is required for a full url on SessionArchiveURL")
 	}
 
 	base, err := o.Build()
@@ -100,6 +94,6 @@ func (o *SessionsListURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *SessionsListURL) StringFull(scheme, host string) string {
+func (o *SessionArchiveURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

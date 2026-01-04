@@ -24,7 +24,7 @@ type SessionsList struct {
 }
 
 func (h *SessionsList) handle(
-	ctx context.Context, principal *models.Principal,
+	ctx context.Context, params operations.SessionsListParams, principal *models.Principal,
 ) ([]*models.Session, error) {
 	log := *zerolog.Ctx(ctx)
 	tx, err := database.Begin(ctx, h.db)
@@ -41,6 +41,12 @@ func (h *SessionsList) handle(
 		Columns(s.FQColumns(true)...).
 		From(s.Sql()).
 		OrderBy(s.ID.Sql())
+
+	// Filter out archived sessions by default
+	includeArchived := params.IncludeArchived != nil && *params.IncludeArchived
+	if !includeArchived {
+		query = query.Where(sq.NotEq{s.State.Sql(): models.SessionStateArchived})
+	}
 
 	// Track which sessions have pending invitations
 	var invitedSessionIDs map[string]bool
@@ -122,7 +128,7 @@ func (h *SessionsList) handle(
 func (h *SessionsList) Handle(
 	params operations.SessionsListParams, principal *models.Principal,
 ) middleware.Responder {
-	sessions, err := h.handle(params.HTTPRequest.Context(), principal)
+	sessions, err := h.handle(params.HTTPRequest.Context(), params, principal)
 	if err != nil {
 		return operations.NewSessionsListDefault(500).WithPayload(models.FromError(err))
 	}

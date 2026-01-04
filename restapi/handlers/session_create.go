@@ -55,12 +55,19 @@ func (h *SessionCreateHandler) handle(
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
 	// Check session membership limit (not for global managers)
+	// Archived sessions don't count towards the limit
 	if h.opts != nil && !principal.IsGlobalManager {
 		var count int
 		err := sqlH.Get(&count, database.SQ.
 			Select("COUNT(*)").
 			From(models.UserProfileSessionRelDBTable).
-			Where(sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject}))
+			Join(models.SessionDBTable+" ON "+
+				models.SessionDBTable+"."+models.SessionDBIDColumn+" = "+
+				models.UserProfileSessionRelDBTable+"."+models.UserProfileSessionRelDBSessionIDColumn).
+			Where(sq.And{
+				sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject},
+				sq.NotEq{models.SessionDBTable + "." + models.SessionDBStateColumn: models.SessionStateArchived},
+			}))
 		if err != nil {
 			return nil, err
 		}

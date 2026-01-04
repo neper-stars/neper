@@ -42,6 +42,9 @@ services:
       # use your own token secret here, see command: generate-token-secret in docker-compose.yml
       NEPER_SERVE_TOKEN_SECRET:
       NEPER_SERVE_REGISTRATION_ENABLED: false
+      NEPER_SERVE_REGISTRATION_NEED_APPROVAL: true
+      NEPER_SERVE_REGISTRATION_RATE_LIMIT: 5
+      NEPER_SERVE_REGISTRATION_RATE_BURST: 10
       # set this to true in order to be able to access the stars files and debug some issues
       # in production you should not need this and can safely keep this option to false
       # WARNING: setting this to true will rapidely clutter your disk with a lot of session directories
@@ -56,6 +59,9 @@ services:
       # the checksum gets corrupted because only part or the file is rewritten
       # the server can recompute a proper checksum for the file
       NEPER_SERVE_FIX_RACE_FILES: false
+      NEPER_SERVE_RACE_LIMIT_PENDING: 3
+      NEPER_SERVE_RACE_LIMIT_APPROVED: 50
+      NEPER_SERVE_SESSION_MEMBERSHIP_LIMIT: 10
     volumes:
       - "./neper_data/etc:/etc/neper"
       - "./neper_data:/home/neper"

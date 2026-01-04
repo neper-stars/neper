@@ -71,8 +71,8 @@ func (h *SessionQuitHandler) handle(
 		return err
 	}
 
-	// Check if session has already started
-	if sessionDB.Started {
+	// Check if session is still pending (cannot quit started or archived sessions)
+	if sessionDB.State != models.SessionStatePending {
 		return errs.NewErrSessionAlreadyStarted("cannot leave session: session has already started")
 	}
 

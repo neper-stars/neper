@@ -406,8 +406,8 @@ const (
 	// SessionRulesIsSetColumn is the name of the column containing field "RulesIsSet" data
 	SessionRulesIsSetColumn = "rules_is_set"
 
-	// SessionStartedColumn is the name of the column containing field "Started" data
-	SessionStartedColumn = "started"
+	// SessionStateColumn is the name of the column containing field "State" data
+	SessionStateColumn = "state"
 
 	// SessionDBTable is the name of the table where SessionDB are stored
 	SessionDBTable = "session"
@@ -427,8 +427,8 @@ const (
 	// SessionDBRulesIsSetColumn is the name of the column containing field "RulesIsSet" data
 	SessionDBRulesIsSetColumn = "rules_is_set"
 
-	// SessionDBStartedColumn is the name of the column containing field "Started" data
-	SessionDBStartedColumn = "started"
+	// SessionDBStateColumn is the name of the column containing field "State" data
+	SessionDBStateColumn = "state"
 
 	// SessionDBRulesetIDColumn is the name of the column containing field "RulesetID" data
 	SessionDBRulesetIDColumn = "ruleset_id"
@@ -770,14 +770,14 @@ var (
 		SessionNameColumn,
 		SessionPrivateColumn,
 		SessionRulesIsSetColumn,
-		SessionStartedColumn,
+		SessionStateColumn,
 	}
 	// SessionDBDataColumns is the list of the columns for the SessionDB structure, expect its primary key
 	SessionDBDataColumns = []string{
 		SessionDBNameColumn,
 		SessionDBPrivateColumn,
 		SessionDBRulesIsSetColumn,
-		SessionDBStartedColumn,
+		SessionDBStateColumn,
 		SessionDBRulesetIDColumn,
 	}
 
@@ -1882,8 +1882,8 @@ func (s Session) Values(columns ...string) []interface{} {
 			values[i] = s.Private
 		case "rules_is_set":
 			values[i] = s.RulesIsSet
-		case "started":
-			values[i] = s.Started
+		case "state":
+			values[i] = s.State
 		}
 	}
 	return values
@@ -1903,8 +1903,8 @@ func (s Session) ValuesMap(columns ...string) map[string]interface{} {
 			values["private"] = s.Private
 		case "rules_is_set":
 			values["rules_is_set"] = s.RulesIsSet
-		case "started":
-			values["started"] = s.Started
+		case "state":
+			values["state"] = s.State
 		}
 	}
 	return values
@@ -1942,8 +1942,8 @@ func (s SessionDB) Values(columns ...string) []interface{} {
 			values[i] = s.Private
 		case "rules_is_set":
 			values[i] = s.RulesIsSet
-		case "started":
-			values[i] = s.Started
+		case "state":
+			values[i] = s.State
 		case "ruleset_id":
 			values[i] = s.RulesetID
 		}
@@ -1965,8 +1965,8 @@ func (s SessionDB) ValuesMap(columns ...string) map[string]interface{} {
 			values["private"] = s.Private
 		case "rules_is_set":
 			values["rules_is_set"] = s.RulesIsSet
-		case "started":
-			values["started"] = s.Started
+		case "state":
+			values["state"] = s.State
 		case "ruleset_id":
 			values["ruleset_id"] = s.RulesetID
 		}
@@ -1980,7 +1980,7 @@ func NewSessionDBTableSchema() *SessionDBTableSchema {
 	t.Name = NewColumn(&t, "name")
 	t.Private = NewColumn(&t, "private")
 	t.RulesIsSet = NewColumn(&t, "rules_is_set")
-	t.Started = NewColumn(&t, "started")
+	t.State = NewColumn(&t, "state")
 	t.RulesetID = NewColumn(&t, "ruleset_id")
 	return &t
 }
@@ -1991,7 +1991,7 @@ type SessionDBTableSchema struct {
 	Name Column
 	Private Column
 	RulesIsSet Column
-	Started Column
+	State Column
 	RulesetID Column
 }
 
@@ -2025,7 +2025,7 @@ func (t SessionDBTableSchema) As(name string) *SessionDBTableSchema {
 	t.Name = NewColumn(&t, "name")
 	t.Private = NewColumn(&t, "private")
 	t.RulesIsSet = NewColumn(&t, "rules_is_set")
-	t.Started = NewColumn(&t, "started")
+	t.State = NewColumn(&t, "state")
 	t.RulesetID = NewColumn(&t, "ruleset_id")
 	return &t
 }

@@ -179,6 +179,12 @@ paths:
   /v1/sessions:
     get:
       operationId: sessionsList
+      parameters:
+        - name: include_archived
+          in: query
+          type: boolean
+          default: false
+          description: Include archived sessions in the list. By default, archived sessions are excluded.
       responses:
         200:
           description: the complete list of viewable sessions
@@ -383,6 +389,35 @@ paths:
       responses:
         204:
           description: successfully left the session
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        412:
+          $ref: "#/responses/preconditionfailed"
+        default:
+          $ref: "#/responses/default"
+
+  /v1/sessions/{session_id}/archive:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+    post:
+      operationId: sessionArchive
+      summary: "Archive a started session"
+      description: |
+        Mark a session as archived. Only session managers or global managers can archive.
+        Archived sessions are no longer joinable and do not count towards session membership limits.
+        Only sessions in the "started" state can be archived.
+      responses:
+        200:
+          description: the archived session
+          schema:
+            $ref: "neper-types.yaml#/definitions/session"
         401:
           $ref: "#/responses/unauthorized"
         403:

@@ -111,16 +111,22 @@ func TestUserProfileDeleteHandler(t *testing.T) {
 
 		// Create a session and add the user to it
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
-		_, err = sqlH.Exec(database.SQ.
-			Insert("session").
-			Columns("id", "name", "private", "rules_is_set", "started").
-			Values("test-session-id", "Test Session", false, false, false))
+		sessionDB := models.SessionDB{
+			Session: models.Session{
+				ID:    "test-session-id",
+				Name:  "Test Session",
+				State: models.SessionStatePending,
+			},
+		}
+		_, err = sqlH.Insert(&sessionDB)
 		require.NoError(t, err)
 
-		_, err = sqlH.Exec(database.SQ.
-			Insert("user_profile_session_rel").
-			Columns("user_profile_id", "session_id", "is_manager").
-			Values(user.ID, "test-session-id", false))
+		rel := models.UserProfileSessionRelDB{
+			UserProfileID: user.ID,
+			SessionID:     "test-session-id",
+			IsManager:     false,
+		}
+		_, err = sqlH.Insert(&rel)
 		require.NoError(t, err)
 
 		// Try to delete the user

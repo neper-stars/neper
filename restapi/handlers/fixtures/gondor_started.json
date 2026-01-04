@@ -6,7 +6,7 @@
         "__type__": "session",
         "id": "gondorID",
         "name": "Gondor",
-        "started": true
+        "state": "started"
       }
     }
   ]

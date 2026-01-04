@@ -92,10 +92,15 @@ definitions:
         description: array of manager ids
         items:
           type: string
-      started:
-        type: boolean
-        description: if the game is started, this flag is true, this will disallow users to modify their race file
-        x-go-custom-tag: db:"started"
+      state:
+        type: string
+        enum: [pending, started, archived]
+        description: |
+          Session state:
+          - pending: session is not started yet, players can modify their races
+          - started: game is in progress, players cannot modify their races
+          - archived: game is finished, not joinable, does not count towards session limits
+        x-go-custom-tag: db:"state"
         x-nullable: false
       rules_is_set:
         type: boolean

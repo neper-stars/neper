@@ -68,9 +68,9 @@ func (h *InvitationAcceptHandler) handle(
 		return nil, err
 	}
 
-	// Check if session has already started
-	if sessionDB.Started {
-		return nil, errs.NewErrSessionAlreadyStarted("cannot join a session that has already started")
+	// Check if session is still pending (not started or archived)
+	if sessionDB.State != models.SessionStatePending {
+		return nil, errs.NewErrSessionAlreadyStarted("cannot accept invitation to a session that is not pending")
 	}
 
 	// insert our new membership
