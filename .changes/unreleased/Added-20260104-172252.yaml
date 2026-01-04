@@ -1,3 +1,0 @@
-kind: Added
-body: Fly.io deployment support with setup/teardown scripts and GitHub Actions workflow for tag-based deployments.
-time: 2026-01-04T17:22:52.441285324+01:00
