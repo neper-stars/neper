@@ -21,6 +21,7 @@ import (
 	"github.com/neper-stars/neper/lib/race"
 	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/lib/registration"
+	"github.com/neper-stars/neper/lib/session"
 	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi/handlers"
@@ -58,6 +59,9 @@ type Config struct {
 
 	// Race options
 	RaceOptions *race.Options
+
+	// Session options
+	SessionOptions *session.Options
 }
 
 // OnShutdown add a shutdown callback
@@ -153,10 +157,10 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	// Sessions
 	api.SessionsListHandler = handlers.NewSessionsListHandler(config.DB)
 	api.SessionReadHandler = handlers.NewSessionReadHandler(&config.Log, config.DB)
-	api.SessionCreateHandler = handlers.NewSessionCreateHandler(config.DB, config.NotifyService)
+	api.SessionCreateHandler = handlers.NewSessionCreateHandler(config.DB, config.NotifyService, config.SessionOptions)
 	api.SessionUpdateHandler = handlers.NewSessionUpdateHandler(&config.Log, config.DB)
 	api.SessionDeleteHandler = handlers.NewSessionDeleteHandler(&config.Log, config.DB, config.NotifyService)
-	api.SessionJoinHandler = handlers.NewSessionJoinHandler(&config.Log, config.DB, config.NotifyService)
+	api.SessionJoinHandler = handlers.NewSessionJoinHandler(&config.Log, config.DB, config.NotifyService, config.SessionOptions)
 	api.SessionQuitHandler = handlers.NewSessionQuitHandler(&config.Log, config.DB, config.NotifyService)
 	api.SessionPromoteMemberHandler = handlers.NewSessionPromoteMemberHandler(&config.Log, config.DB, config.NotifyService)
 

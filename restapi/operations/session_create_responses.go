@@ -145,6 +145,50 @@ func (o *SessionCreateForbidden) WriteResponse(rw http.ResponseWriter, producer 
 	}
 }
 
+// SessionCreateTooManyRequestsCode is the HTTP code returned for type SessionCreateTooManyRequests
+const SessionCreateTooManyRequestsCode int = 429
+
+/*SessionCreateTooManyRequests Limit exceeded
+
+swagger:response sessionCreateTooManyRequests
+*/
+type SessionCreateTooManyRequests struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewSessionCreateTooManyRequests creates SessionCreateTooManyRequests with default headers values
+func NewSessionCreateTooManyRequests() *SessionCreateTooManyRequests {
+
+	return &SessionCreateTooManyRequests{}
+}
+
+// WithPayload adds the payload to the session create too many requests response
+func (o *SessionCreateTooManyRequests) WithPayload(payload *models.Error) *SessionCreateTooManyRequests {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the session create too many requests response
+func (o *SessionCreateTooManyRequests) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *SessionCreateTooManyRequests) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(429)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*SessionCreateDefault Generic error response
 
 swagger:response sessionCreateDefault

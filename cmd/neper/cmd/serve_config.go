@@ -17,6 +17,7 @@ import (
 	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/lib/registration"
 	"github.com/neper-stars/neper/lib/serial"
+	"github.com/neper-stars/neper/lib/session"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/restapi"
 )
@@ -29,6 +30,7 @@ var (
 	NatsClientOptions   = embeddednats.NewNatsClientOptions()
 	RegistrationOptions = registration.NewOptions()
 	RaceOptions         = race.NewOptions()
+	SessionOptions      = session.NewOptions()
 )
 
 func setupServerCmd(cmd *ServeCmd) {
@@ -64,6 +66,11 @@ func setupServerCmd(cmd *ServeCmd) {
 			LongDescription:  "race upload settings",
 			Options:          RaceOptions,
 		},
+		swag.CommandLineOptionsGroup{
+			ShortDescription: "session",
+			LongDescription:  "session settings",
+			Options:          SessionOptions,
+		},
 	)
 }
 
@@ -96,6 +103,9 @@ func setupServeConfig(config *restapi.Config) error {
 
 	// Initialize race options
 	config.RaceOptions = RaceOptions
+
+	// Initialize session options
+	config.SessionOptions = SessionOptions
 
 	runner, err := stars.NewRunner(&config.Log, StarsRunnerOptions)
 	if err != nil {

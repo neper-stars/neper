@@ -32,7 +32,7 @@ func TestSessionQuitHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
 	quitHandler := NewSessionQuitHandler(&log, testdb.DB, nil)
-	joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil)
+	joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil, nil)
 
 	t.Run("regular_member_can_leave_session", func(t *testing.T) {
 		sessionID := "gondorID"
@@ -306,7 +306,7 @@ func TestSessionQuitHandler_ManagerWithOtherManager(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
 	quitHandler := NewSessionQuitHandler(&log, testdb.DB, nil)
-	joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil)
+	joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil, nil)
 
 	t.Run("manager_can_leave_when_other_manager_exists", func(t *testing.T) {
 		sessionID := "gondorID"

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/neper-stars/neper/fixtures"
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/session"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
@@ -33,7 +35,7 @@ func TestSessionJoinHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sarouman.json")
 
-	joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil)
+	joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil, nil)
 
 	merryPrincipal := &models.Principal{
 		StandardClaims: jwt.StandardClaims{
@@ -155,7 +157,7 @@ func TestSessionJoinHandler_DeletesInvitation(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/gondor_members.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
-	joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil)
+	joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil, nil)
 	invitationCreateHandler := NewInvitationCreateHandler(&log, testdb.DB, nil)
 
 	boromirPrincipal := &models.Principal{
@@ -207,5 +209,155 @@ func TestSessionJoinHandler_DeletesInvitation(t *testing.T) {
 		err = sqlH.Get(&count, database.SQ.Select("COUNT(*)").From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: invitationID}))
 		require.NoError(t, err)
 		require.Equal(t, 0, count, "invitation should be deleted after join")
+	})
+}
+
+func TestSessionJoinHandler_Limits(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+
+	// Load fixtures
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/sessions.json")
+
+	sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
+
+	t.Run("user_cannot_join_when_at_session_limit", func(t *testing.T) {
+		// Create handler with limit of 2
+		opts := &session.Options{
+			MembershipLimit: 2,
+		}
+		joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil, opts)
+		createHandler := NewSessionCreateHandler(testdb.DB, nil, nil)
+
+		userID := "session-limit-test-user"
+
+		// Create the user profile first
+		_, err := sqlH.Insert(&models.UserProfileDB{
+			UserProfile: models.UserProfile{
+				ID:       userID,
+				Nickname: "LimitTestUser",
+				Email:    "limit@test.com",
+				IsActive: true,
+				Pending:  false,
+			},
+		})
+		require.NoError(t, err)
+
+		principal := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   userID,
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+
+		// Create 2 sessions (user will be manager of each = 2 memberships)
+		for i := 0; i < 2; i++ {
+			createParams := operations.SessionCreateParams{
+				Session: &models.Session{
+					Name: "Limit Test Session",
+				},
+			}
+			_, err := createHandler.handle(ctx, createParams, principal)
+			require.NoError(t, err, "creating session %d should succeed", i+1)
+		}
+
+		// Now try to join another session - should fail
+		joinParams := operations.SessionJoinParams{
+			SessionID: "gondorID", // gondor is public
+		}
+		_, err = joinHandler.handle(ctx, joinParams, principal)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, errs.ErrSessionLimitExceeded), "should get session limit exceeded error")
+	})
+
+	t.Run("global_manager_bypasses_session_limit", func(t *testing.T) {
+		// Create handler with limit of 1
+		opts := &session.Options{
+			MembershipLimit: 1,
+		}
+		joinHandler := NewSessionJoinHandler(&log, testdb.DB, nil, opts)
+		createHandler := NewSessionCreateHandler(testdb.DB, nil, nil)
+
+		userID := "global-manager-limit-test"
+
+		// Create the user profile first
+		_, err := sqlH.Insert(&models.UserProfileDB{
+			UserProfile: models.UserProfile{
+				ID:       userID,
+				Nickname: "GlobalManager",
+				Email:    "gm@test.com",
+				IsActive: true,
+				Pending:  false,
+			},
+		})
+		require.NoError(t, err)
+
+		principal := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   userID,
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: true,
+		}
+
+		// Create 1 session (at limit)
+		createParams := operations.SessionCreateParams{
+			Session: &models.Session{
+				Name: "GM Test Session",
+			},
+		}
+		_, err = createHandler.handle(ctx, createParams, principal)
+		require.NoError(t, err)
+
+		// Join another session - should succeed because global manager
+		joinParams := operations.SessionJoinParams{
+			SessionID: "shireID", // shire is public
+		}
+		_, err = joinHandler.handle(ctx, joinParams, principal)
+		require.NoError(t, err, "global manager should bypass session limit")
+	})
+
+	t.Run("no_limit_when_opts_nil", func(t *testing.T) {
+		// Create handler without options
+		createHandler := NewSessionCreateHandler(testdb.DB, nil, nil)
+
+		userID := "no-limit-session-test"
+
+		// Create the user profile first
+		_, err := sqlH.Insert(&models.UserProfileDB{
+			UserProfile: models.UserProfile{
+				ID:       userID,
+				Nickname: "NoLimitUser",
+				Email:    "nolimit-session@test.com",
+				IsActive: true,
+				Pending:  false,
+			},
+		})
+		require.NoError(t, err)
+
+		principal := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   userID,
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+
+		// Create 5 sessions without hitting any limit
+		for i := 0; i < 5; i++ {
+			createParams := operations.SessionCreateParams{
+				Session: &models.Session{
+					Name: "No Limit Session",
+				},
+			}
+			_, err := createHandler.handle(ctx, createParams, principal)
+			require.NoError(t, err, "session %d should succeed", i+1)
+		}
 	})
 }

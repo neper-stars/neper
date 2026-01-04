@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"slices"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/m4rw3r/uuid"
@@ -15,19 +16,21 @@ import (
 	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/session"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewSessionCreateHandler ...
-func NewSessionCreateHandler(db *sqlx.DB, notifyService *notify.Service) *SessionCreateHandler {
-	return &SessionCreateHandler{db: db, notifyService: notifyService}
+func NewSessionCreateHandler(db *sqlx.DB, notifyService *notify.Service, opts *session.Options) *SessionCreateHandler {
+	return &SessionCreateHandler{db: db, notifyService: notifyService, opts: opts}
 }
 
 // SessionCreateHandler handles /sessions
 type SessionCreateHandler struct {
 	db            *sqlx.DB
 	notifyService *notify.Service
+	opts          *session.Options
 }
 
 func (h *SessionCreateHandler) handle(
@@ -50,6 +53,22 @@ func (h *SessionCreateHandler) handle(
 	}
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
+
+	// Check session membership limit (not for global managers)
+	if h.opts != nil && !principal.IsGlobalManager {
+		var count int
+		err := sqlH.Get(&count, database.SQ.
+			Select("COUNT(*)").
+			From(models.UserProfileSessionRelDBTable).
+			Where(sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject}))
+		if err != nil {
+			return nil, err
+		}
+
+		if count >= h.opts.MembershipLimit {
+			return nil, errs.NewErrSessionLimitExceeded("session membership limit exceeded")
+		}
+	}
 
 	var sessionDB models.SessionDB
 	sessionUID, err := uuid.V4()
@@ -121,6 +140,12 @@ func (h *SessionCreateHandler) Handle(
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):
 			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrSessionLimitExceeded):
+			msg := err.Error()
+			return operations.NewSessionCreateTooManyRequests().WithPayload(&models.Error{
+				Code:    http.StatusTooManyRequests,
+				Message: &msg,
+			})
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}

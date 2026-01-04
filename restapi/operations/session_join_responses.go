@@ -233,6 +233,50 @@ func (o *SessionJoinPreconditionFailed) WriteResponse(rw http.ResponseWriter, pr
 	}
 }
 
+// SessionJoinTooManyRequestsCode is the HTTP code returned for type SessionJoinTooManyRequests
+const SessionJoinTooManyRequestsCode int = 429
+
+/*SessionJoinTooManyRequests Limit exceeded
+
+swagger:response sessionJoinTooManyRequests
+*/
+type SessionJoinTooManyRequests struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewSessionJoinTooManyRequests creates SessionJoinTooManyRequests with default headers values
+func NewSessionJoinTooManyRequests() *SessionJoinTooManyRequests {
+
+	return &SessionJoinTooManyRequests{}
+}
+
+// WithPayload adds the payload to the session join too many requests response
+func (o *SessionJoinTooManyRequests) WithPayload(payload *models.Error) *SessionJoinTooManyRequests {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the session join too many requests response
+func (o *SessionJoinTooManyRequests) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *SessionJoinTooManyRequests) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(429)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*SessionJoinDefault Generic error response
 
 swagger:response sessionJoinDefault

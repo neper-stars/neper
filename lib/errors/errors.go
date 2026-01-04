@@ -421,3 +421,26 @@ func (e ErrRaceLimitExceededError) Error() string {
 func (e ErrRaceLimitExceededError) Is(target error) bool {
 	return errors.Is(target, ErrRaceLimitExceeded)
 }
+
+// ErrSessionLimitExceeded (429)
+var ErrSessionLimitExceeded = errors.New("session limit exceeded")
+
+// ErrSessionLimitExceededError is returned when a user has reached their session membership limit
+type ErrSessionLimitExceededError struct {
+	GivenMessage string
+}
+
+// NewErrSessionLimitExceeded ...
+func NewErrSessionLimitExceeded(msg string) *ErrSessionLimitExceededError {
+	return &ErrSessionLimitExceededError{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrSessionLimitExceededError) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrSessionLimitExceededError) Is(target error) bool {
+	return errors.Is(target, ErrSessionLimitExceeded)
+}

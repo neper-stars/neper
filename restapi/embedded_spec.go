@@ -458,6 +458,9 @@ func init() {
           "403": {
             "$ref": "#/responses/forbidden"
           },
+          "429": {
+            "$ref": "#/responses/toomanyrequests"
+          },
           "default": {
             "$ref": "#/responses/default"
           }
@@ -733,6 +736,9 @@ func init() {
           },
           "412": {
             "$ref": "#/responses/preconditionfailed"
+          },
+          "429": {
+            "$ref": "#/responses/toomanyrequests"
           },
           "default": {
             "$ref": "#/responses/default"
@@ -2229,6 +2235,12 @@ func init() {
               "$ref": "#/definitions/error"
             }
           },
+          "429": {
+            "description": "Limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
           "default": {
             "description": "Generic error response",
             "schema": {
@@ -2600,6 +2612,12 @@ func init() {
           },
           "412": {
             "description": "Precondition not met",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "429": {
+            "description": "Limit exceeded",
             "schema": {
               "$ref": "#/definitions/error"
             }

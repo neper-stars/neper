@@ -210,6 +210,8 @@ paths:
           $ref: "#/responses/unauthorized"
         403:
           $ref: "#/responses/forbidden"
+        429:
+          $ref: "#/responses/toomanyrequests"
         default:
           $ref: "#/responses/default"
 
@@ -361,6 +363,8 @@ paths:
           $ref: "#/responses/forbidden"
         412:
           $ref: "#/responses/preconditionfailed"
+        429:
+          $ref: "#/responses/toomanyrequests"
         default:
           $ref: "#/responses/default"
 

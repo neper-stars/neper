@@ -15,13 +15,14 @@ import (
 
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/session"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewSessionJoinHandler creates a new handler for joining a public session
-func NewSessionJoinHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service) *SessionJoinHandler {
-	return &SessionJoinHandler{db: db, log: log, notifyService: notifyService}
+func NewSessionJoinHandler(log *zerolog.Logger, db *sqlx.DB, notifyService *notify.Service, opts *session.Options) *SessionJoinHandler {
+	return &SessionJoinHandler{db: db, log: log, notifyService: notifyService, opts: opts}
 }
 
 // SessionJoinHandler handles POST /sessions/{session_id}/join
@@ -29,6 +30,7 @@ type SessionJoinHandler struct {
 	db            *sqlx.DB
 	log           *zerolog.Logger
 	notifyService *notify.Service
+	opts          *session.Options
 }
 
 func (h *SessionJoinHandler) handle(
@@ -49,6 +51,22 @@ func (h *SessionJoinHandler) handle(
 	}
 	if !authorized {
 		return nil, errs.ErrForbidden
+	}
+
+	// Check session membership limit (not for global managers)
+	if h.opts != nil && !principal.IsGlobalManager {
+		var count int
+		err := sqlH.Get(&count, database.SQ.
+			Select("COUNT(*)").
+			From(models.UserProfileSessionRelDBTable).
+			Where(sq.Eq{models.UserProfileSessionRelDBUserProfileIDColumn: principal.Subject}))
+		if err != nil {
+			return nil, err
+		}
+
+		if count >= h.opts.MembershipLimit {
+			return nil, errs.NewErrSessionLimitExceeded("session membership limit exceeded")
+		}
 	}
 
 	// Get the session
@@ -143,6 +161,12 @@ func (h *SessionJoinHandler) Handle(
 			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrPreconditionFailed):
 			return PreconditionFailed(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrSessionLimitExceeded):
+			msg := err.Error()
+			return operations.NewSessionJoinTooManyRequests().WithPayload(&models.Error{
+				Code:    http.StatusTooManyRequests,
+				Message: &msg,
+			})
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}
