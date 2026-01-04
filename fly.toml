@@ -5,25 +5,46 @@ app = "neper"
 primary_region = "cdg"  # Paris - change to your preferred region
 
 [build]
-  dockerfile = "docker/Dockerfile"
+  image = "docker.io/neperstars/neper:latest"
+
+[processes]
+  # Map DATABASE_URL (set by fly postgres attach) to NEPER_DB_DSN
+  app = "sh -c 'export NEPER_DB_DSN=\"$DATABASE_URL\" && exec neper serve --auto-migrate'"
 
 [env]
+  # Logging
   NEPER_LOG_FORMAT = "json"
   NEPER_LOG_LEVEL = "info"
+
+  # Server
   NEPER_SERVE_SCHEME = "https"
   NEPER_SERVE_HOST = "0.0.0.0"
   NEPER_SERVE_PORT = "8080"
+
+  # Stars! / Wine
   NEPER_SERVE_STARS_EXECUTABLE_DIR = "/home/neper/stars"
   NEPER_SERVE_STARS_SAVE_DIR = "/home/neper/saves"
   NEPER_SERVE_WINE_PREFIX = "/home/neper/wine"
   NEPER_SERVE_WINE_COMMANDS_TIMEOUT = "30"
+
+  # Registration
   NEPER_SERVE_REGISTRATION_ENABLED = "true"
   NEPER_SERVE_REGISTRATION_NEED_APPROVAL = "true"
-  NEPER_SERVE_PRESERVE_SAVE_FILES = "false"
+  NEPER_SERVE_REGISTRATION_RATE_LIMIT = "5"
+  NEPER_SERVE_REGISTRATION_RATE_BURST = "10"
+
+  # Race files
+  NEPER_SERVE_STRIP_RACE_PASSWORDS = "false"
+  NEPER_SERVE_FIX_RACE_FILES = "true"
   NEPER_SERVE_RACE_LIMIT_PENDING = "3"
   NEPER_SERVE_RACE_LIMIT_APPROVED = "50"
+
+  # Sessions
   NEPER_SERVE_SESSION_MEMBERSHIP_LIMIT = "10"
-  # Set NEPER_SERVE_AUTOCREATE_ADMIN = "true" in secrets if you want auto admin creation
+  NEPER_SERVE_PRESERVE_SAVE_FILES = "false"
+
+  # Admin auto-creation is set via secrets in setup.sh:
+  # NEPER_SERVE_AUTOCREATE_ADMIN, NEPER_SERVE_ADMIN_USERNAME, NEPER_SERVE_ADMIN_EMAIL
 
 [http_service]
   internal_port = 8080

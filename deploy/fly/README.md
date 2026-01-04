@@ -51,29 +51,35 @@ git push origin v1.0.0
 
 ### Environment Variables for setup.sh
 
-| Variable                | Default             | Description                 |
-|-------------------------|---------------------|-----------------------------|
-| `NEPER_FLY_APP_NAME`    | `neper`             | Fly.io app name             |
-| `NEPER_FLY_DB_NAME`     | `neper-db`          | Postgres database name      |
-| `NEPER_FLY_REGION`      | `cdg`               | Deployment region           |
-| `NEPER_FLY_VOLUME_SIZE` | `1`                 | Volume size in GB           |
-| `NEPER_ADMIN_USERNAME`  | `admin`             | Auto-created admin username |
-| `NEPER_ADMIN_EMAIL`     | `admin@neper.local` | Admin email                 |
+| Variable                | Default             | Description                                      |
+|-------------------------|---------------------|--------------------------------------------------|
+| `NEPER_FLY_APP_NAME`    | `neper`             | Fly.io app name                                  |
+| `NEPER_FLY_DB_NAME`     | `neper-db`          | Postgres database name                           |
+| `NEPER_FLY_REGION`      | `cdg`               | Deployment region                                |
+| `NEPER_FLY_VOLUME_SIZE` | `1`                 | Volume size in GB                                |
+| `NEPER_ADMIN_USERNAME`  | `admin`             | Auto-created admin username                      |
+| `NEPER_ADMIN_EMAIL`     | `admin@neper.local` | Admin email                                      |
+| `NEPER_ADMIN_APIKEY`    | (auto-generated)    | Admin API key (leave empty to auto-generate)     |
+| `NEPER_TOKEN_SECRET`    | (auto-generated)    | JWT signing key (leave empty to auto-generate)   |
+| `NEPER_NATS_NKEY`       | (auto-generated)    | NATS nkey seed (leave empty to auto-generate)    |
 
 ### Secrets (set automatically by setup.sh)
 
-| Secret                         | Description                     |
-|--------------------------------|---------------------------------|
-| `DATABASE_URL`                 | Set by `flyctl postgres attach` |
-| `NEPER_SERVE_TOKEN_SECRET`     | JWT signing key                 |
-| `NEPER_SERVE_NATS_CLIENT_NKEY` | NATS nkey seed (starts with SU) |
-| `NEPER_SERVE_AUTOCREATE_ADMIN` | Enable admin auto-creation      |
+| Secret                          | Description                                    |
+|---------------------------------|------------------------------------------------|
+| `DATABASE_URL`                  | Set by `flyctl postgres attach`                |
+| `NEPER_SERVE_TOKEN_SECRET`      | JWT signing key                                |
+| `NEPER_SERVE_NATS_CLIENT_NKEY`  | NATS nkey seed (starts with SU)                |
+| `NEPER_SERVE_AUTOCREATE_ADMIN`  | Enable admin auto-creation                     |
+| `NEPER_SERVE_ADMIN_USERNAME`    | Admin username                                 |
+| `NEPER_SERVE_ADMIN_EMAIL`       | Admin email                                    |
+| `NEPER_SERVE_ADMIN_APIKEY`      | Admin API key (only if provided via env var)   |
 
 ## GitHub Actions CI/CD
 
 The workflow in `.github/workflows/fly-deploy.yml` deploys on:
-- Git tags matching `v*`
-- Manual trigger from GitHub UI
+- **After Release workflow succeeds** - automatically triggered when the Release workflow (lint, test, vulncheck, docker push) completes successfully on a tag
+- **Manual trigger** from GitHub UI
 
 ### Setup GitHub Environment
 

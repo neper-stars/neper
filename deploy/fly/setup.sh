@@ -22,6 +22,7 @@ VOLUME_SIZE="${NEPER_FLY_VOLUME_SIZE:-1}"  # GB
 # Admin user settings (for auto-creation on first start)
 ADMIN_USERNAME="${NEPER_ADMIN_USERNAME:-admin}"
 ADMIN_EMAIL="${NEPER_ADMIN_EMAIL:-admin@neper.local}"
+ADMIN_APIKEY="${NEPER_ADMIN_APIKEY:-}"  # Leave empty to auto-generate
 
 # =============================================================================
 # Helper functions
@@ -107,9 +108,9 @@ main() {
             --volume-size "$VOLUME_SIZE"
     fi
 
-    # Step 3: Attach database to app
+    # Step 3: Attach database to app (sets DATABASE_URL secret)
     log "Attaching database to app..."
-    fly postgres attach "$DB_NAME" --app "$APP_NAME" 2>/dev/null || log "Database already attached or connection exists"
+    flyctl postgres attach "$DB_NAME" --app "$APP_NAME" 2>/dev/null || log "Database already attached or connection exists"
 
     # Step 4: Create persistent volume
     if volume_exists; then
@@ -132,12 +133,20 @@ main() {
     log "Generating NATS nkey..."
     NATS_NKEY="$(generate_nats_nkey)"
 
-    flyctl secrets set --app "$APP_NAME" \
-        NEPER_SERVE_TOKEN_SECRET="$TOKEN_SECRET" \
-        NEPER_SERVE_NATS_CLIENT_NKEY="$NATS_NKEY" \
-        NEPER_SERVE_AUTOCREATE_ADMIN="true" \
-        NEPER_SERVE_ADMIN_USERNAME="$ADMIN_USERNAME" \
-        NEPER_SERVE_ADMIN_EMAIL="$ADMIN_EMAIL"
+    # Build secrets command
+    SECRETS_CMD="flyctl secrets set --app $APP_NAME"
+    SECRETS_CMD="$SECRETS_CMD NEPER_SERVE_TOKEN_SECRET=$TOKEN_SECRET"
+    SECRETS_CMD="$SECRETS_CMD NEPER_SERVE_NATS_CLIENT_NKEY=$NATS_NKEY"
+    SECRETS_CMD="$SECRETS_CMD NEPER_SERVE_AUTOCREATE_ADMIN=true"
+    SECRETS_CMD="$SECRETS_CMD NEPER_SERVE_ADMIN_USERNAME=$ADMIN_USERNAME"
+    SECRETS_CMD="$SECRETS_CMD NEPER_SERVE_ADMIN_EMAIL=$ADMIN_EMAIL"
+
+    # Add API key only if provided (otherwise auto-generated on first start)
+    if [[ -n "$ADMIN_APIKEY" ]]; then
+        SECRETS_CMD="$SECRETS_CMD NEPER_SERVE_ADMIN_APIKEY=$ADMIN_APIKEY"
+    fi
+
+    eval "$SECRETS_CMD"
 
     # Step 6: Show status
     log "Setup complete!"
