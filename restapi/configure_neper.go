@@ -18,6 +18,7 @@ import (
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/race"
 	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/lib/registration"
 	"github.com/neper-stars/neper/lib/sessionSubmitter"
@@ -54,6 +55,9 @@ type Config struct {
 	// Registration options
 	RegistrationOptions *registration.Options
 	RegistrationLimiter *registration.RateLimiter
+
+	// Race options
+	RaceOptions *race.Options
 }
 
 // OnShutdown add a shutdown callback
@@ -165,7 +169,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.UserProfileResetApikeyHandler = handlers.NewUserProfileResetApikeyHandler(config.DB)
 
 	// Races
-	api.RaceCreateHandler = handlers.NewRaceCreateHandler(&config.Log, config.DB, config.RaceProcessor, config.NotifyService)
+	api.RaceCreateHandler = handlers.NewRaceCreateHandler(&config.Log, config.DB, config.RaceProcessor, config.NotifyService, config.RaceOptions)
 	api.RacesListHandler = handlers.NewRacesListHandler(config.DB)
 	api.RaceReadHandler = handlers.NewRaceReadHandler(config.DB)
 	api.RaceDeleteHandler = handlers.NewRaceDeleteHandler(config.DB, config.NotifyService)

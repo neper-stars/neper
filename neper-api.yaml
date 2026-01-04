@@ -1128,6 +1128,8 @@ paths:
           $ref: "#/responses/unauthorized"
         403:
           $ref: "#/responses/forbidden"
+        429:
+          $ref: "#/responses/toomanyrequests"
         default:
           $ref: "#/responses/default"
 
@@ -1211,6 +1213,11 @@ responses:
 
   preconditionfailed:
     description: Precondition not met
+    schema:
+      $ref: "neper-types.yaml#/definitions/error"
+
+  toomanyrequests:
+    description: Limit exceeded
     schema:
       $ref: "neper-types.yaml#/definitions/error"
 

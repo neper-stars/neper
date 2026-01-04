@@ -398,3 +398,26 @@ func (e ErrPlayerShouldNotBeReady) Error() string {
 func (e ErrPlayerShouldNotBeReady) Is(target error) bool {
 	return errors.Is(target, ErrPreconditionFailed)
 }
+
+// ErrRaceLimitExceeded (429)
+var ErrRaceLimitExceeded = errors.New("race limit exceeded")
+
+// ErrRaceLimitExceededError is returned when a user has reached their race upload limit
+type ErrRaceLimitExceededError struct {
+	GivenMessage string
+}
+
+// NewErrRaceLimitExceeded ...
+func NewErrRaceLimitExceeded(msg string) *ErrRaceLimitExceededError {
+	return &ErrRaceLimitExceededError{GivenMessage: msg}
+}
+
+// Error ...
+func (e ErrRaceLimitExceededError) Error() string {
+	return e.GivenMessage
+}
+
+// Is ...
+func (e ErrRaceLimitExceededError) Is(target error) bool {
+	return errors.Is(target, ErrRaceLimitExceeded)
+}

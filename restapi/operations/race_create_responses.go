@@ -189,6 +189,50 @@ func (o *RaceCreateForbidden) WriteResponse(rw http.ResponseWriter, producer run
 	}
 }
 
+// RaceCreateTooManyRequestsCode is the HTTP code returned for type RaceCreateTooManyRequests
+const RaceCreateTooManyRequestsCode int = 429
+
+/*RaceCreateTooManyRequests Limit exceeded
+
+swagger:response raceCreateTooManyRequests
+*/
+type RaceCreateTooManyRequests struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewRaceCreateTooManyRequests creates RaceCreateTooManyRequests with default headers values
+func NewRaceCreateTooManyRequests() *RaceCreateTooManyRequests {
+
+	return &RaceCreateTooManyRequests{}
+}
+
+// WithPayload adds the payload to the race create too many requests response
+func (o *RaceCreateTooManyRequests) WithPayload(payload *models.Error) *RaceCreateTooManyRequests {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the race create too many requests response
+func (o *RaceCreateTooManyRequests) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *RaceCreateTooManyRequests) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(429)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 /*RaceCreateDefault Generic error response
 
 swagger:response raceCreateDefault

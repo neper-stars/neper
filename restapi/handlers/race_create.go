@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/jmoiron/sqlx"
 	"github.com/m4rw3r/uuid"
@@ -17,14 +18,15 @@ import (
 	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/race"
 	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewRaceCreateHandler ...
-func NewRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB, raceProcessor *racefiles.Processor, notifyService *notify.Service) *RaceCreateHandler {
-	return &RaceCreateHandler{db: db, log: log, raceProcessor: raceProcessor, notifyService: notifyService}
+func NewRaceCreateHandler(log *zerolog.Logger, db *sqlx.DB, raceProcessor *racefiles.Processor, notifyService *notify.Service, opts *race.Options) *RaceCreateHandler {
+	return &RaceCreateHandler{db: db, log: log, raceProcessor: raceProcessor, notifyService: notifyService, opts: opts}
 }
 
 // RaceCreateHandler handles /Races
@@ -33,6 +35,7 @@ type RaceCreateHandler struct {
 	log           *zerolog.Logger
 	raceProcessor *racefiles.Processor
 	notifyService *notify.Service
+	opts          *race.Options
 }
 
 func (h *RaceCreateHandler) handle(
@@ -54,6 +57,27 @@ func (h *RaceCreateHandler) handle(
 	}
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
+
+	// Check race upload limit
+	if h.opts != nil {
+		var count int
+		err := sqlH.Get(&count, database.SQ.
+			Select("COUNT(*)").
+			From(models.RaceDBTable).
+			Where(sq.Eq{models.RaceDBUserIDColumn: principal.Subject}))
+		if err != nil {
+			return nil, err
+		}
+
+		limit := h.opts.ApprovedUserLimit
+		if principal.IsPending {
+			limit = h.opts.PendingUserLimit
+		}
+
+		if count >= limit {
+			return nil, errs.NewErrRaceLimitExceeded("race upload limit exceeded")
+		}
+	}
 
 	var raceDB models.RaceDB
 	raceUID, err := uuid.V4()
@@ -129,6 +153,12 @@ func (h *RaceCreateHandler) Handle(
 			return NotFound(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
 		case errors.Is(err, errs.ErrInvalid):
 			return BadRequest(err.Error(), zerolog.Ctx(params.HTTPRequest.Context()))
+		case errors.Is(err, errs.ErrRaceLimitExceeded):
+			msg := err.Error()
+			return operations.NewRaceCreateTooManyRequests().WithPayload(&models.Error{
+				Code:    http.StatusTooManyRequests,
+				Message: &msg,
+			})
 		default:
 			return InternalError(err, zerolog.Ctx(params.HTTPRequest.Context()), false)
 		}

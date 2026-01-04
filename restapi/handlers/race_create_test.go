@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"io"
 	"os"
 	"testing"
@@ -15,6 +16,8 @@ import (
 	"orus.io/orus-io/go-orusapi/testutils"
 
 	"github.com/neper-stars/neper/fixtures"
+	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/race"
 	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
@@ -38,7 +41,7 @@ func TestRaceCreateHandler(t *testing.T) {
 	// hobbits are owned by Merry
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_nosession.json")
 
-	handler := NewRaceCreateHandler(&log, testdb.DB, nil, nil)
+	handler := NewRaceCreateHandler(&log, testdb.DB, nil, nil, nil)
 
 	t.Run("boromir_creates_humans", func(t *testing.T) {
 		rf, err := os.Open("fixtures/humans.r1")
@@ -93,7 +96,7 @@ func TestRaceCreateHandler(t *testing.T) {
 			StripPassword: false,
 			FixCorrupted:  false,
 		})
-		handlerNoFix := NewRaceCreateHandler(&testLog, testdb.DB, processor, nil)
+		handlerNoFix := NewRaceCreateHandler(&testLog, testdb.DB, processor, nil, nil)
 
 		rf, err := os.Open("fixtures/needsrepair.r1")
 		require.NoError(t, err)
@@ -147,7 +150,7 @@ func TestRaceCreateHandler(t *testing.T) {
 			StripPassword: false,
 			FixCorrupted:  true,
 		})
-		handlerWithFix := NewRaceCreateHandler(&testLog, testdb.DB, processor, nil)
+		handlerWithFix := NewRaceCreateHandler(&testLog, testdb.DB, processor, nil, nil)
 
 		rf, err := os.Open("fixtures/needsrepair.r1")
 		require.NoError(t, err)
@@ -188,5 +191,162 @@ func TestRaceCreateHandler(t *testing.T) {
 		// Assert that an info message was logged about successful repair
 		require.True(t, hook.HasMessage(zerolog.InfoLevel, "corrupted race file was automatically repaired"),
 			"expected info message about race file repair")
+	})
+}
+
+func TestRaceCreateHandler_Limits(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
+
+	// Load a race file for testing
+	rf, err := os.Open("fixtures/humans.r1")
+	require.NoError(t, err)
+	defer func() { _ = rf.Close() }()
+	data, err := io.ReadAll(rf)
+	require.NoError(t, err)
+	raceData := base64.StdEncoding.EncodeToString(data)
+
+	t.Run("pending_user_limit", func(t *testing.T) {
+		// Create handler with limit of 2 for pending users
+		opts := &race.Options{
+			PendingUserLimit:  2,
+			ApprovedUserLimit: 50,
+		}
+		handler := NewRaceCreateHandler(&log, testdb.DB, nil, nil, opts)
+
+		pendingUserID := "pending-user-limit-test"
+
+		// Create the user profile first
+		_, err := sqlH.Insert(&models.UserProfileDB{
+			UserProfile: models.UserProfile{
+				ID:       pendingUserID,
+				Nickname: "PendingUser",
+				Email:    "pending@test.com",
+				IsActive: true,
+				Pending:  true,
+			},
+		})
+		require.NoError(t, err)
+
+		pendingPrincipal := models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   pendingUserID,
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+			IsPending:       true,
+		}
+
+		// First 2 races should succeed
+		for i := 0; i < 2; i++ {
+			params := operations.RaceCreateParams{
+				UserProfileID: pendingUserID,
+				Race:          &models.Race{Data: raceData},
+			}
+			_, err := handler.handle(ctx, params, &pendingPrincipal)
+			require.NoError(t, err, "race %d should succeed", i+1)
+		}
+
+		// Third race should fail
+		params := operations.RaceCreateParams{
+			UserProfileID: pendingUserID,
+			Race:          &models.Race{Data: raceData},
+		}
+		_, err = handler.handle(ctx, params, &pendingPrincipal)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, errs.ErrRaceLimitExceeded), "should get race limit exceeded error")
+	})
+
+	t.Run("approved_user_has_higher_limit", func(t *testing.T) {
+		// Create handler with limit of 1 for pending, 3 for approved
+		opts := &race.Options{
+			PendingUserLimit:  1,
+			ApprovedUserLimit: 3,
+		}
+		handler := NewRaceCreateHandler(&log, testdb.DB, nil, nil, opts)
+
+		approvedUserID := "approved-user-limit-test"
+
+		// Create the user profile first
+		_, err := sqlH.Insert(&models.UserProfileDB{
+			UserProfile: models.UserProfile{
+				ID:       approvedUserID,
+				Nickname: "ApprovedUser",
+				Email:    "approved@test.com",
+				IsActive: true,
+				Pending:  false,
+			},
+		})
+		require.NoError(t, err)
+
+		approvedPrincipal := models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   approvedUserID,
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+			IsPending:       false,
+		}
+
+		// First 3 races should succeed for approved user
+		for i := 0; i < 3; i++ {
+			params := operations.RaceCreateParams{
+				UserProfileID: approvedUserID,
+				Race:          &models.Race{Data: raceData},
+			}
+			_, err := handler.handle(ctx, params, &approvedPrincipal)
+			require.NoError(t, err, "race %d should succeed", i+1)
+		}
+
+		// Fourth race should fail
+		params := operations.RaceCreateParams{
+			UserProfileID: approvedUserID,
+			Race:          &models.Race{Data: raceData},
+		}
+		_, err = handler.handle(ctx, params, &approvedPrincipal)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, errs.ErrRaceLimitExceeded), "should get race limit exceeded error")
+	})
+
+	t.Run("no_limit_when_opts_nil", func(t *testing.T) {
+		// Create handler without options
+		handler := NewRaceCreateHandler(&log, testdb.DB, nil, nil, nil)
+
+		userID := "no-limit-test"
+
+		// Create the user profile first
+		_, err := sqlH.Insert(&models.UserProfileDB{
+			UserProfile: models.UserProfile{
+				ID:       userID,
+				Nickname: "NoLimitUser",
+				Email:    "nolimit@test.com",
+				IsActive: true,
+				Pending:  true,
+			},
+		})
+		require.NoError(t, err)
+
+		principal := models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   userID,
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+			IsPending:       true,
+		}
+
+		// Should be able to create many races without limit
+		for i := 0; i < 5; i++ {
+			params := operations.RaceCreateParams{
+				UserProfileID: userID,
+				Race:          &models.Race{Data: raceData},
+			}
+			_, err := handler.handle(ctx, params, &principal)
+			require.NoError(t, err, "race %d should succeed", i+1)
+		}
 	})
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/neper-stars/neper/auth"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/race"
 	"github.com/neper-stars/neper/lib/racefiles"
 	"github.com/neper-stars/neper/lib/registration"
 	"github.com/neper-stars/neper/lib/serial"
@@ -27,6 +28,7 @@ var (
 	EmbeddedNatsOptions = embeddednats.NewEmbeddedNatsOptions()
 	NatsClientOptions   = embeddednats.NewNatsClientOptions()
 	RegistrationOptions = registration.NewOptions()
+	RaceOptions         = race.NewOptions()
 )
 
 func setupServerCmd(cmd *ServeCmd) {
@@ -57,6 +59,11 @@ func setupServerCmd(cmd *ServeCmd) {
 			LongDescription:  "registration settings",
 			Options:          RegistrationOptions,
 		},
+		swag.CommandLineOptionsGroup{
+			ShortDescription: "race",
+			LongDescription:  "race upload settings",
+			Options:          RaceOptions,
+		},
 	)
 }
 
@@ -86,6 +93,9 @@ func setupServeConfig(config *restapi.Config) error {
 	// Initialize registration options and rate limiter
 	config.RegistrationOptions = RegistrationOptions
 	config.RegistrationLimiter = registration.NewRateLimiter(RegistrationOptions)
+
+	// Initialize race options
+	config.RaceOptions = RaceOptions
 
 	runner, err := stars.NewRunner(&config.Log, StarsRunnerOptions)
 	if err != nil {

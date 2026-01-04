@@ -1421,6 +1421,9 @@ func init() {
           "403": {
             "$ref": "#/responses/forbidden"
           },
+          "429": {
+            "$ref": "#/responses/toomanyrequests"
+          },
           "default": {
             "$ref": "#/responses/default"
           }
@@ -1638,6 +1641,12 @@ func init() {
     },
     "preconditionfailed": {
       "description": "Precondition not met",
+      "schema": {
+        "$ref": "neper-types.yaml#/definitions/error"
+      }
+    },
+    "toomanyrequests": {
+      "description": "Limit exceeded",
       "schema": {
         "$ref": "neper-types.yaml#/definitions/error"
       }
@@ -3489,6 +3498,12 @@ func init() {
               "$ref": "#/definitions/error"
             }
           },
+          "429": {
+            "description": "Limit exceeded",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
           "default": {
             "description": "Generic error response",
             "schema": {
@@ -4472,6 +4487,12 @@ func init() {
     },
     "preconditionfailed": {
       "description": "Precondition not met",
+      "schema": {
+        "$ref": "#/definitions/error"
+      }
+    },
+    "toomanyrequests": {
+      "description": "Limit exceeded",
       "schema": {
         "$ref": "#/definitions/error"
       }
