@@ -1,3 +1,0 @@
-kind: Added
-body: New endpoint POST /v1/sessions/{session_id}/archive to archive finished sessions. Only session managers can archive.
-time: 2026-01-04T13:11:45.363847373+01:00

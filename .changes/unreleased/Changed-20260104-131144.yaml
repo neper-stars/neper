@@ -1,3 +1,0 @@
-kind: Changed
-body: Replace session 'started' boolean with 'state' enum (pending, started, archived). Archived sessions are not joinable and don't count towards session membership limits.
-time: 2026-01-04T13:11:44.363847373+01:00

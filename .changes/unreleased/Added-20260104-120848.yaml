@@ -1,3 +1,0 @@
-kind: Added
-body: 'Added a limit to the # of races per user, (configurable with RACE_LIMIT_PENDING, RACE_LIMIT_APPROVED)'
-time: 2026-01-04T12:08:48.577016419+01:00
