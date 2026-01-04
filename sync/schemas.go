@@ -1071,6 +1071,9 @@ type UserProfile struct {
 	// Nickname nickname of this user (name displayed to other users)
 	Nickname string `json:"nickname,omitempty"`
 
+	// Pending True if user registration is pending approval
+	Pending bool `json:"pending,omitempty"`
+
 	// SerialKey Serial key assigned to this user for Stars! game registration
 	SerialKey string `json:"serial_key,omitempty"`
 
@@ -3045,6 +3048,16 @@ func (s UserProfile) MarshalJSONStream(stream *jsoniter.Stream) {
 		stream.WriteString(s.Nickname)
 	}
 
+	// Marshal the Pending field
+	if !IsEmpty(s.Pending) {
+		ct.More()
+		stream.WriteObjectField("pending")
+		stream.WriteVal(s.Pending)
+		if stream.Error != nil {
+			return
+		}
+	}
+
 	// Marshal the SerialKey field
 	if !IsEmpty(s.SerialKey) {
 		ct.More()
@@ -3143,6 +3156,11 @@ func (s *UserProfile) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 				// received 'false', which we accept and ignore for now
 			}
 			s.Nickname = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+		case "pending":
+			s.Pending = iter.ReadBool()
 			if iter.Error != nil {
 				return
 			}

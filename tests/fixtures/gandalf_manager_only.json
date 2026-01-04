@@ -1,0 +1,17 @@
+{
+    "changes": [
+        {
+            "operation": "create",
+            "data": {
+                "__type__": "user_profile",
+                "id": "gandalfID",
+                "nickname": "GandalfTheGrey",
+                "email": "gandalf@gondor.com",
+                "api_key": "apikeyGandalf",
+                "is_active": true,
+                "is_manager": true,
+                "pending": false
+            }
+        }
+    ]
+}

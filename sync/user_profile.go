@@ -31,6 +31,7 @@ func (w *Worker) syncUserProfile(ctx context.Context, sql database.SQLHelper, op
 				Email:     data.Email,
 				IsActive:  data.IsActive,
 				IsManager: data.IsManager,
+				Pending:   data.Pending,
 			},
 			APIKey:    data.ApiKey,
 			SerialKey: serialKey,

@@ -42,6 +42,10 @@
       "description": "Serial key assigned to this user for Stars! game registration",
       "type": "string"
     },
+    "pending": {
+      "description": "True if user registration is pending approval",
+      "type": "boolean"
+    },
     "session_list": {
       "description": "List of session ID. Defines the sessions linked to this profile. Represented as user_profile_rel, user_profile_id is optional",
       "type": "array",

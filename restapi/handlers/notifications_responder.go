@@ -237,9 +237,10 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 		// Order status access is based on session membership
 		return r.canAccessSession(sqlH, resourceID)
 	case notify.ResourceChangeTypePendingRegistration:
-		// Pending registration notifications are only for global managers
-		// (already handled at the top of this function)
-		return false, nil
+		// Pending registration notifications are for:
+		// - Global managers (to update pending list) - handled at the top
+		// - The user who was approved/rejected (to know their status)
+		return r.canAccessPendingRegistration(change)
 	default:
 		return false, nil
 	}
@@ -349,4 +350,23 @@ func (r *NotificationsResponder) canAccessSessionPlayerRace(sqlH database.SQLHel
 	}
 	// Check if user is member of the session
 	return r.canAccessSession(sqlH, spr.SessionID)
+}
+
+// canAccessPendingRegistration checks if user is the subject of the approval/rejection
+func (r *NotificationsResponder) canAccessPendingRegistration(change *notify.ResourceChange) (bool, error) {
+	// The resource ID is the user profile ID that was approved/rejected
+	resourceID := ptrStr(change.ID)
+	if resourceID == "" {
+		r.logger.Debug().Msg("canAccessPendingRegistration: empty resource ID")
+		return false, nil
+	}
+
+	// User can see their own registration status changes
+	canAccess := resourceID == r.principal.Subject
+	r.logger.Debug().
+		Str("resourceID", resourceID).
+		Str("principalSubject", r.principal.Subject).
+		Bool("canAccess", canAccess).
+		Msg("canAccessPendingRegistration check")
+	return canAccess, nil
 }
