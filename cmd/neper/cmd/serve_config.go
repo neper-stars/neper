@@ -11,6 +11,7 @@ import (
 	"github.com/nats-io/nats.go"
 
 	"github.com/neper-stars/neper/auth"
+	"github.com/neper-stars/neper/lib/admin"
 	"github.com/neper-stars/neper/lib/embeddednats"
 	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/race"
@@ -31,6 +32,7 @@ var (
 	RegistrationOptions = registration.NewOptions()
 	RaceOptions         = race.NewOptions()
 	SessionOptions      = session.NewOptions()
+	AdminOptions        = admin.NewOptions()
 )
 
 func setupServerCmd(cmd *ServeCmd) {
@@ -71,6 +73,11 @@ func setupServerCmd(cmd *ServeCmd) {
 			LongDescription:  "session settings",
 			Options:          SessionOptions,
 		},
+		swag.CommandLineOptionsGroup{
+			ShortDescription: "admin",
+			LongDescription:  "admin user auto-creation settings",
+			Options:          AdminOptions,
+		},
 	)
 }
 
@@ -83,6 +90,21 @@ func setupServeConfig(config *restapi.Config) error {
 	// This is idempotent and safe to call on every startup
 	if err := serial.LoadKeysIntoDB(context.Background(), config.DB, &config.Log); err != nil {
 		return err
+	}
+
+	// Auto-create admin user if configured
+	// This is idempotent - safe to call on every startup
+	if AdminOptions.Enabled() {
+		apiKey, err := admin.EnsureAdminUser(context.Background(), config.DB, &config.Log, AdminOptions)
+		if err != nil {
+			return fmt.Errorf("failed to ensure admin user: %w", err)
+		}
+		if apiKey != "" {
+			config.Log.Info().
+				Str("username", AdminOptions.AdminUsername).
+				Str("apikey", apiKey).
+				Msg("new admin user created - save the API key!")
+		}
 	}
 
 	config.BaseURL = InfoOptions.BaseURL

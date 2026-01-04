@@ -1,0 +1,3 @@
+kind: Added
+body: New serve option --autocreate-admin (NEPER_SERVE_AUTOCREATE_ADMIN) to automatically create an admin user on startup if it doesn't exist. Simplifies first-time setup.
+time: 2026-01-04T16:10:44.532286506+01:00
