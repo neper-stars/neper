@@ -1,0 +1,3 @@
+kind: Added
+body: Added a new handler to allow removing a SessionPlayerRace. Admins can remove bots and players. Players can remove themselves. A player must not be ready.
+time: 2026-01-05T18:39:09.413386175+01:00

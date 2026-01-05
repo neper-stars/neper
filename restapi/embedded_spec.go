@@ -990,6 +990,47 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/player_race/{player_race_id}": {
+      "delete": {
+        "description": "Remove a player race mapping from a session.\n\nAuthorization rules:\n- Session managers and global managers can remove anyone, including bots\n- Regular users can only remove themselves\n\nRemoval rules:\n- Human players (non-bots) must not be ready to be removed\n- Bots can be removed regardless of their ready status\n",
+        "summary": "remove a player from a session",
+        "operationId": "sessionPlayerRaceDelete",
+        "responses": {
+          "204": {
+            "description": "player race mapping successfully deleted"
+          },
+          "400": {
+            "$ref": "#/responses/invalid"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "name": "player_race_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/promote/{user_profile_id}": {
       "post": {
         "description": "Promote an existing session member to manager status.\nOnly session managers or global managers can perform this action.\nThe target user must already be a member of the session.\n",
@@ -3005,6 +3046,62 @@ func init() {
         {
           "type": "string",
           "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/v1/sessions/{session_id}/player_race/{player_race_id}": {
+      "delete": {
+        "description": "Remove a player race mapping from a session.\n\nAuthorization rules:\n- Session managers and global managers can remove anyone, including bots\n- Regular users can only remove themselves\n\nRemoval rules:\n- Human players (non-bots) must not be ready to be removed\n- Bots can be removed regardless of their ready status\n",
+        "summary": "remove a player from a session",
+        "operationId": "sessionPlayerRaceDelete",
+        "responses": {
+          "204": {
+            "description": "player race mapping successfully deleted"
+          },
+          "400": {
+            "description": "invalid client request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "name": "player_race_id",
           "in": "path",
           "required": true
         }

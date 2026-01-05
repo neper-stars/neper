@@ -130,6 +130,11 @@ func (s *Service) PublishSessionPlayerRaceUpdate(sprID string) error {
 	return s.Publish(ResourceChangeTypeSessionPlayerRace, sprID, ResourceChangeActionUpdated)
 }
 
+// PublishSessionPlayerRaceDelete is a convenience method for session player race deletion
+func (s *Service) PublishSessionPlayerRaceDelete(sprID string) error {
+	return s.Publish(ResourceChangeTypeSessionPlayerRace, sprID, ResourceChangeActionDeleted)
+}
+
 // PublishWithMetadata sends a resource change notification with additional metadata
 func (s *Service) PublishWithMetadata(resourceType, resourceID, action string, metadata any) error {
 	timestamp := time.Now().Unix()

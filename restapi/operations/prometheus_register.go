@@ -128,6 +128,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		sessionPlayerRaceCreateHandlerInFlight,
 	)
 	reg.MustRegister(
+		sessionPlayerRaceDeleteHandlerDuration,
+		sessionPlayerRaceDeleteHandlerInFlight,
+	)
+	reg.MustRegister(
 		sessionPlayerRaceGetHandlerDuration,
 		sessionPlayerRaceGetHandlerInFlight,
 	)

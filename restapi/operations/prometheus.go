@@ -99,6 +99,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/sessions/{session_id}/player_race"] = SessionPlayerRaceCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/player_race"])
 
+	o.handlers["DELETE"]["/v1/sessions/{session_id}/player_race/{player_race_id}"] = SessionPlayerRaceDeleteInstrumentHandler(
+		o.handlers["DELETE"]["/v1/sessions/{session_id}/player_race/{player_race_id}"])
+
 	o.handlers["GET"]["/v1/sessions/{session_id}/player_race"] = SessionPlayerRaceGetInstrumentHandler(
 		o.handlers["GET"]["/v1/sessions/{session_id}/player_race"])
 

@@ -202,6 +202,7 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.SessionPlayerRaceCreateHandler = handlers.NewSessionPlayerRaceCreateHandler(&config.Log, config.DB, config.NotifyService)
 	api.SessionPlayerRaceGetHandler = handlers.NewSessionPlayerRaceGetHandler(config.DB)
 	api.SessionPlayerRaceSetReadyHandler = handlers.NewSessionPlayerRaceSetReadyHandler(&config.Log, config.DB, config.NotifyService)
+	api.SessionPlayerRaceDeleteHandler = handlers.NewSessionPlayerRaceDeleteHandler(config.DB, config.NotifyService)
 	// player order on a session
 	api.ReorderPlayersHandler = handlers.NewReorderPlayersHandler(&config.Log, config.DB, config.NotifyService)
 	// ruleset

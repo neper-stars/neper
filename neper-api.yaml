@@ -538,6 +538,43 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/player_race/{player_race_id}:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+      - name: player_race_id
+        in: path
+        type: string
+        required: true
+    delete:
+      operationId: sessionPlayerRaceDelete
+      summary: "remove a player from a session"
+      description: |
+        Remove a player race mapping from a session.
+
+        Authorization rules:
+        - Session managers and global managers can remove anyone, including bots
+        - Regular users can only remove themselves
+
+        Removal rules:
+        - Human players (non-bots) must not be ready to be removed
+        - Bots can be removed regardless of their ready status
+      responses:
+        204:
+          description: player race mapping successfully deleted
+        400:
+          $ref: "#/responses/invalid"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}/player_race/ready:
     parameters:
       - name: session_id
