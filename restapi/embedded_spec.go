@@ -4499,6 +4499,11 @@ func init() {
           "type": "string",
           "x-nullable": true
         },
+        "id": {
+          "description": "the session_player_race ID (needed for deletion/updates)",
+          "type": "string",
+          "x-nullable": false
+        },
         "is_bot": {
           "description": "Whether this player is an AI/bot player",
           "type": "boolean",

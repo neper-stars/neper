@@ -65,6 +65,7 @@ func (c *SessionDB) PlayersID(sql *database.SQLHelper) ([]string, error) {
 
 // sessionPlayerInfo is a helper struct for querying player info
 type sessionPlayerInfo struct {
+	ID            string  `db:"id"`
 	UserProfileID string  `db:"user_profile_id"`
 	Ready         bool    `db:"ready"`
 	PlayerOrder   int64   `db:"player_order"`
@@ -80,6 +81,7 @@ func (c *SessionDB) PlayersInfo(sql *database.SQLHelper) ([]*SessionPlayer, erro
 	// Join with race table to get race name for bots
 	if err := sql.Select(&infos,
 		sq.Select(
+			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBIDColumn,
 			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBUserProfileIDColumn,
 			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBReadyColumn,
 			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBPlayerOrderColumn,
@@ -99,6 +101,7 @@ func (c *SessionDB) PlayersInfo(sql *database.SQLHelper) ([]*SessionPlayer, erro
 	var players []*SessionPlayer
 	for _, info := range infos {
 		player := &SessionPlayer{
+			ID:            info.ID,
 			UserProfileID: info.UserProfileID,
 			Ready:         info.Ready,
 			PlayerOrder:   info.PlayerOrder,

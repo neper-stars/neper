@@ -133,6 +133,10 @@ definitions:
     type: object
     description: Information about a player in a session
     properties:
+      id:
+        type: string
+        description: the session_player_race ID (needed for deletion/updates)
+        x-nullable: false
       user_profile_id:
         type: string
         description: the user profile id of the player

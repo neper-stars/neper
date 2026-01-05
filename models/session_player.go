@@ -32,6 +32,9 @@ type SessionPlayer struct {
 	//
 	BotRaceName *string `json:"bot_race_name,omitempty"`
 
+	// the session_player_race ID (needed for deletion/updates)
+	ID string `json:"id,omitempty"`
+
 	// Whether this player is an AI/bot player
 	IsBot bool `json:"is_bot,omitempty"`
 
