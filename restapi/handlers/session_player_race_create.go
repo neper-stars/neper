@@ -13,6 +13,7 @@ import (
 	"github.com/rs/zerolog"
 	"orus.io/orus-io/go-orusapi/database"
 
+	neper "github.com/neper-stars/neper/lib"
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/race"
@@ -131,7 +132,29 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 	sessionPlayerRaceDB.SessionPlayerRace = *params.SessionPlayerRace
 	sessionPlayerRaceDB.ID = uid.String()
 	sessionPlayerRaceDB.SessionID = params.SessionID
-	sessionPlayerRaceDB.UserProfileID = principal.Subject
+
+	// For bots, use the system user ID
+	// For human players, use the principal's user ID
+	if params.SessionPlayerRace.IsBot {
+		sessionPlayerRaceDB.UserProfileID = neper.SystemUserID
+	} else {
+		sessionPlayerRaceDB.UserProfileID = principal.Subject
+
+		// Enforce uniqueness for non-system users: only one entry per session per human player
+		var existingCount int64
+		if err := sqlH.Get(&existingCount, database.SQ.
+			Select("COUNT(*)").
+			From(models.SessionPlayerRaceDBTable).
+			Where(sq.And{
+				sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: params.SessionID},
+				sq.Eq{models.SessionPlayerRaceDBUserProfileIDColumn: principal.Subject},
+			})); err != nil {
+			return nil, err
+		}
+		if existingCount > 0 {
+			return nil, errs.NewErrInvalidSomething("player already registered in this session")
+		}
+	}
 
 	// Automatically assign the next available player_order
 	nextOrder, err := getNextPlayerOrder(sqlH, params.SessionID)
