@@ -1,0 +1,4 @@
+-- PostgreSQL doesn't support removing enum values directly
+-- Any sessions in 'starting' state should be manually fixed before rollback
+-- This is a no-op migration since we can't remove enum values
+-- If needed, recreate the enum type without 'starting' and migrate data

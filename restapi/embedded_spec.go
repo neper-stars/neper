@@ -4428,10 +4428,11 @@ func init() {
           "x-nullable": false
         },
         "state": {
-          "description": "Session state:\n- pending: session is not started yet, players can modify their races\n- started: game is in progress, players cannot modify their races\n- archived: game is finished, not joinable, does not count towards session limits\n",
+          "description": "Session state:\n- pending: session is not started yet, players can modify their races\n- starting: game generation is in progress, prevents duplicate start commands\n- started: game is in progress, players cannot modify their races\n- archived: game is finished, not joinable, does not count towards session limits\n",
           "type": "string",
           "enum": [
             "pending",
+            "starting",
             "started",
             "archived"
           ],

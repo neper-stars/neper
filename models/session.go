@@ -59,10 +59,11 @@ type Session struct {
 
 	// Session state:
 	// - pending: session is not started yet, players can modify their races
+	// - starting: game generation is in progress, prevents duplicate start commands
 	// - started: game is in progress, players cannot modify their races
 	// - archived: game is finished, not joinable, does not count towards session limits
 	//
-	// Enum: [pending started archived]
+	// Enum: [pending starting started archived]
 	State string `json:"state,omitempty" db:"state"`
 }
 
@@ -125,7 +126,7 @@ var sessionTypeStatePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["pending","started","archived"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["pending","starting","started","archived"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -137,6 +138,9 @@ const (
 
 	// SessionStatePending captures enum value "pending"
 	SessionStatePending string = "pending"
+
+	// SessionStateStarting captures enum value "starting"
+	SessionStateStarting string = "starting"
 
 	// SessionStateStarted captures enum value "started"
 	SessionStateStarted string = "started"

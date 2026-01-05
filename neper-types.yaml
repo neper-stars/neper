@@ -94,10 +94,11 @@ definitions:
           type: string
       state:
         type: string
-        enum: [pending, started, archived]
+        enum: [pending, starting, started, archived]
         description: |
           Session state:
           - pending: session is not started yet, players can modify their races
+          - starting: game generation is in progress, prevents duplicate start commands
           - started: game is in progress, players cannot modify their races
           - archived: game is finished, not joinable, does not count towards session limits
         x-go-custom-tag: db:"state"

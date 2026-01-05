@@ -47,102 +47,151 @@ func (h *GameCreateHandler) handle(
 	}
 
 	sessionID := params.SessionID
-
 	log := *zerolog.Ctx(ctx)
-	tx, err := database.Begin(ctx, h.db)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.RollbackIfOpened(log)
-	sqlH := database.NewSQLHelper(ctx, tx, log)
+
+	// Phase 1: Validate and set state to "starting" to prevent concurrent start commands
 	var sessionDB models.SessionDB
-	if err := sqlH.GetByPKey(&sessionDB, sessionID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errs.NewErrSessionNotFound("session not found: " + sessionID)
-		}
-		h.log.Err(err).Msg("failed to get session from DB")
-		return nil, err
-	}
+	var sessionPlayerRaces []models.SessionPlayerRace
+	var ruleset *models.Ruleset
+	var races []models.Race
 
-	sessionPlayerRaces, err := sessionDB.SessionPlayerRaces(&sqlH)
-	if err != nil {
-		h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get player races for session")
-		return nil, err
-	}
-
-	// Check that all players are ready
-	for _, spr := range sessionPlayerRaces {
-		if !spr.Ready {
-			return nil, errs.NewErrPlayersNotReady("all players must be ready before starting the game")
-		}
-	}
-
-	ruleset, err := sessionDB.Ruleset(&sqlH)
-	if err != nil {
-		h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get ruleset for session")
-		return nil, err
-	}
-
-	races, err := sessionDB.PlayerRaces(&sqlH, sessionPlayerRaces)
-	if err != nil {
-		h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get player races for session")
-		return nil, err
-	}
-
-	// Validate all races before starting the game to ensure Stars! binary won't fail silently
-	var allValidationErrs []string
-	for _, race := range races {
-		rawData, err := race.RawData()
+	if err := func() error {
+		tx, err := database.Begin(ctx, h.db)
 		if err != nil {
-			h.log.Err(err).Str("raceID", race.ID).Msg("failed to decode race data for validation")
-			allValidationErrs = append(allValidationErrs, fmt.Sprintf("race %s: failed to decode data", race.NamePlural))
-			continue
+			return err
 		}
-		_, validationErrs := store.ValidateRaceData(rawData)
-		if len(validationErrs) > 0 {
-			for _, ve := range validationErrs {
-				allValidationErrs = append(allValidationErrs, fmt.Sprintf("race %s: %s", race.NamePlural, ve.Error()))
+		defer tx.RollbackIfOpened(log)
+		sqlH := database.NewSQLHelper(ctx, tx, log)
+
+		if err := sqlH.GetByPKey(&sessionDB, sessionID); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return errs.NewErrSessionNotFound("session not found: " + sessionID)
+			}
+			h.log.Err(err).Msg("failed to get session from DB")
+			return err
+		}
+
+		// Check session state - only pending sessions can be started
+		switch sessionDB.State {
+		case models.SessionStateStarting:
+			return errs.NewErrInvalidSomething("game generation is already in progress")
+		case models.SessionStateStarted:
+			return errs.NewErrInvalidSomething("session is already started")
+		case models.SessionStateArchived:
+			return errs.NewErrInvalidSomething("cannot start an archived session")
+		case models.SessionStatePending:
+			// OK to proceed
+		default:
+			return errs.NewErrInvalidSomething("invalid session state: " + sessionDB.State)
+		}
+
+		sessionPlayerRaces, err = sessionDB.SessionPlayerRaces(&sqlH)
+		if err != nil {
+			h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get player races for session")
+			return err
+		}
+
+		// Check that all players are ready
+		for _, spr := range sessionPlayerRaces {
+			if !spr.Ready {
+				return errs.NewErrPlayersNotReady("all players must be ready before starting the game")
 			}
 		}
-	}
-	if len(allValidationErrs) > 0 {
-		h.log.Warn().Strs("validation_errors", allValidationErrs).Str("sessionID", sessionID).Msg("race validation failed before game start")
-		return nil, errs.NewErrInvalidRace("race validation failed: " + strings.Join(allValidationErrs, "; "))
+
+		ruleset, err = sessionDB.Ruleset(&sqlH)
+		if err != nil {
+			h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get ruleset for session")
+			return err
+		}
+
+		races, err = sessionDB.PlayerRaces(&sqlH, sessionPlayerRaces)
+		if err != nil {
+			h.log.Err(err).Str("sessionID", sessionID).Msg("failed to get player races for session")
+			return err
+		}
+
+		// Validate all races before starting the game to ensure Stars! binary won't fail silently
+		var allValidationErrs []string
+		for _, race := range races {
+			rawData, err := race.RawData()
+			if err != nil {
+				h.log.Err(err).Str("raceID", race.ID).Msg("failed to decode race data for validation")
+				allValidationErrs = append(allValidationErrs, fmt.Sprintf("race %s: failed to decode data", race.NamePlural))
+				continue
+			}
+			_, validationErrs := store.ValidateRaceData(rawData)
+			if len(validationErrs) > 0 {
+				for _, ve := range validationErrs {
+					allValidationErrs = append(allValidationErrs, fmt.Sprintf("race %s: %s", race.NamePlural, ve.Error()))
+				}
+			}
+		}
+		if len(allValidationErrs) > 0 {
+			h.log.Warn().Strs("validation_errors", allValidationErrs).Str("sessionID", sessionID).Msg("race validation failed before game start")
+			return errs.NewErrInvalidRace("race validation failed: " + strings.Join(allValidationErrs, "; "))
+		}
+
+		// Set state to "starting" to prevent concurrent start commands
+		sessionDB.State = models.SessionStateStarting
+		if err := sqlH.Update(&sessionDB); err != nil {
+			h.log.Err(err).Msg("failed to update session to starting state")
+			return err
+		}
+
+		return tx.Commit()
+	}(); err != nil {
+		return nil, err
 	}
 
+	// Phase 2: Generate the game (this can take time)
+	// If this fails, we need to revert the state to "pending"
 	gameInput := stars.NewGameInput(h.log, sessionID, sessionDB.Name, *ruleset, sessionPlayerRaces)
 	gameFiles, err := h.runner.NewGame(ctx, h.log, sessionID, gameInput, sessionPlayerRaces, races)
 	if err != nil {
 		h.log.Err(err).Msg("failed to create new game")
+		// Revert state to pending
+		h.revertSessionState(ctx, sessionID, models.SessionStatePending)
 		return nil, err
 	}
 
 	var sfDB models.SessionFilesDB
 	if err := gameFiles.HydrateSessionFiles(&sfDB.SessionFiles); err != nil {
 		h.log.Err(err).Msg("failed to parse game files")
+		h.revertSessionState(ctx, sessionID, models.SessionStatePending)
 		return nil, err
 	}
 
-	id, err := uuid.V4()
-	if err != nil {
-		return nil, err
-	}
-	sfDB.ID = id.String()
-	sfDB.SessionID = sessionID
+	// Phase 3: Save results and set state to "started"
+	if err := func() error {
+		tx, err := database.Begin(ctx, h.db)
+		if err != nil {
+			return err
+		}
+		defer tx.RollbackIfOpened(log)
+		sqlH := database.NewSQLHelper(ctx, tx, log)
 
-	if _, err := sqlH.Insert(&sfDB); err != nil {
-		h.log.Err(err).Msg("failed to insert session files in database")
-		return nil, err
-	}
+		id, err := uuid.V4()
+		if err != nil {
+			return err
+		}
+		sfDB.ID = id.String()
+		sfDB.SessionID = sessionID
 
-	// Mark the session as started
-	sessionDB.State = models.SessionStateStarted
-	if err := sqlH.Update(&sessionDB); err != nil {
-		h.log.Err(err).Msg("failed to update session started flag")
-		return nil, err
-	}
+		if _, err := sqlH.Insert(&sfDB); err != nil {
+			h.log.Err(err).Msg("failed to insert session files in database")
+			return err
+		}
 
-	if err := tx.Commit(); err != nil {
+		// Mark the session as started
+		sessionDB.State = models.SessionStateStarted
+		if err := sqlH.Update(&sessionDB); err != nil {
+			h.log.Err(err).Msg("failed to update session started flag")
+			return err
+		}
+
+		return tx.Commit()
+	}(); err != nil {
+		h.revertSessionState(ctx, sessionID, models.SessionStatePending)
 		return nil, err
 	}
 
@@ -169,6 +218,34 @@ func (h *GameCreateHandler) handle(
 
 	turnFiles := sfDB.ToTurnFiles(playerOrder)
 	return &turnFiles, nil
+}
+
+// revertSessionState reverts the session state in case of failure during game generation
+func (h *GameCreateHandler) revertSessionState(ctx context.Context, sessionID string, state string) {
+	log := h.log.With().Str("sessionID", sessionID).Logger()
+	tx, err := database.Begin(ctx, h.db)
+	if err != nil {
+		log.Err(err).Msg("failed to begin transaction to revert session state")
+		return
+	}
+	defer tx.RollbackIfOpened(log)
+	sqlH := database.NewSQLHelper(ctx, tx, log)
+
+	var sessionDB models.SessionDB
+	if err := sqlH.GetByPKey(&sessionDB, sessionID); err != nil {
+		log.Err(err).Msg("failed to get session to revert state")
+		return
+	}
+
+	sessionDB.State = state
+	if err := sqlH.Update(&sessionDB); err != nil {
+		log.Err(err).Msg("failed to revert session state")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Err(err).Msg("failed to commit session state revert")
+	}
 }
 
 // Handle handles the request
