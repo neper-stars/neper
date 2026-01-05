@@ -63,7 +63,9 @@ func (h *GameCreateHandler) handle(
 		defer tx.RollbackIfOpened(log)
 		sqlH := database.NewSQLHelper(ctx, tx, log)
 
-		if err := sqlH.GetByPKey(&sessionDB, sessionID); err != nil {
+		// Lock the session row to prevent concurrent start commands
+		// FOR UPDATE ensures only one transaction can proceed at a time
+		if err := sqlH.GetByPKeyForUpdate(&sessionDB, sessionID); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				return errs.NewErrSessionNotFound("session not found: " + sessionID)
 			}
