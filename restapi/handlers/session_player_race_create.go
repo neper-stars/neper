@@ -15,6 +15,7 @@ import (
 
 	errs "github.com/neper-stars/neper/lib/errors"
 	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/race"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
@@ -42,6 +43,16 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 	defer tx.RollbackIfOpened(log)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
+	// Validate bot race ID if this is a bot player
+	if params.SessionPlayerRace.IsBot {
+		if !race.IsValidBotRaceID(params.SessionPlayerRace.RaceID) {
+			return nil, errs.NewErrInvalidSomething("invalid bot race ID, must be 0-6")
+		}
+		if params.SessionPlayerRace.BotLevel == nil {
+			return nil, errs.NewErrInvalidSomething("bot_level is required for bot players")
+		}
+	}
+
 	// ** AUTHORIZATION **
 	authorized, err := h.Authorize(sqlH, params, principal)
 	if err != nil {
@@ -52,25 +63,42 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 	}
 	// ** AUTHORIZATION END **
 
-	// Check if a session_player_race already exists for this user in this session
-	var existingSPR models.SessionPlayerRaceDB
-	existingQuery := sessionPlayerRaceQuery(principal.Subject, params.SessionID)
-	existingErr := sqlH.Get(&existingSPR, existingQuery)
-
-	isUpdate := existingErr == nil
-	if existingErr != nil && !errors.Is(existingErr, sql.ErrNoRows) {
-		return nil, existingErr
-	}
-
-	// If updating, check that the player is not ready
-	if isUpdate && existingSPR.Ready {
-		return nil, errs.NewErrInvalidSomething("cannot update race while player is ready")
-	}
-
 	var sessionPlayerRaceDB models.SessionPlayerRaceDB
+	providedID := params.SessionPlayerRace.ID
 
-	if isUpdate {
-		// Update existing entry - keep the same ID and player_order
+	// If ID is provided, this is an update
+	if providedID != "" {
+		var existingSPR models.SessionPlayerRaceDB
+		if err := sqlH.GetByPKey(&existingSPR, providedID); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil, errs.NewErrSomethingNotFound("player not found with id: " + providedID)
+			}
+			return nil, err
+		}
+
+		// Verify the entry belongs to this session
+		if existingSPR.SessionID != params.SessionID {
+			return nil, errs.NewErrInvalidSomething("player does not belong to this session")
+		}
+
+		// Authorization for updates:
+		// - Bots: only managers can update (already checked in Authorize)
+		// - Humans: must be the owner
+		if !existingSPR.IsBot && existingSPR.UserProfileID != principal.Subject {
+			return nil, errs.ErrForbidden
+		}
+
+		// Cannot change bot status
+		if existingSPR.IsBot != params.SessionPlayerRace.IsBot {
+			return nil, errs.NewErrInvalidSomething("cannot change player type between bot and human")
+		}
+
+		// Cannot update while ready
+		if existingSPR.Ready {
+			return nil, errs.NewErrInvalidSomething("cannot update race while player is ready")
+		}
+
+		// Update existing entry - keep the same ID, player_order, and user_profile_id
 		sessionPlayerRaceDB = existingSPR
 		sessionPlayerRaceDB.RaceID = params.SessionPlayerRace.RaceID
 		sessionPlayerRaceDB.BotLevel = params.SessionPlayerRace.BotLevel
@@ -83,41 +111,46 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		// Create new entry
-		uid, err := uuid.V4()
-		if err != nil {
-			return nil, err
-		}
-		sessionPlayerRaceDB.SessionPlayerRace = *params.SessionPlayerRace
-		sessionPlayerRaceDB.ID = uid.String()
-		sessionPlayerRaceDB.SessionID = params.SessionID
-		sessionPlayerRaceDB.UserProfileID = principal.Subject
 
-		// Automatically assign the next available player_order
-		nextOrder, err := getNextPlayerOrder(sqlH, params.SessionID)
-		if err != nil {
+		if err := tx.Commit(); err != nil {
 			return nil, err
 		}
-		sessionPlayerRaceDB.PlayerOrder = nextOrder
 
-		_, err = sqlH.Insert(&sessionPlayerRaceDB)
-		if err != nil {
-			return nil, err
+		if h.notifyService != nil {
+			_ = h.notifyService.PublishSessionPlayerRaceUpdate(sessionPlayerRaceDB.ID)
 		}
+
+		return &sessionPlayerRaceDB.SessionPlayerRace, nil
+	}
+
+	// No ID provided - create new entry
+	uid, err := uuid.V4()
+	if err != nil {
+		return nil, err
+	}
+	sessionPlayerRaceDB.SessionPlayerRace = *params.SessionPlayerRace
+	sessionPlayerRaceDB.ID = uid.String()
+	sessionPlayerRaceDB.SessionID = params.SessionID
+	sessionPlayerRaceDB.UserProfileID = principal.Subject
+
+	// Automatically assign the next available player_order
+	nextOrder, err := getNextPlayerOrder(sqlH, params.SessionID)
+	if err != nil {
+		return nil, err
+	}
+	sessionPlayerRaceDB.PlayerOrder = nextOrder
+
+	_, err = sqlH.Insert(&sessionPlayerRaceDB)
+	if err != nil {
+		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
-	// Publish notification after successful commit
 	if h.notifyService != nil {
-		if isUpdate {
-			_ = h.notifyService.PublishSessionPlayerRaceUpdate(sessionPlayerRaceDB.ID)
-		} else {
-			_ = h.notifyService.PublishSessionPlayerRaceCreate(sessionPlayerRaceDB.ID)
-		}
+		_ = h.notifyService.PublishSessionPlayerRaceCreate(sessionPlayerRaceDB.ID)
 	}
 
 	return &sessionPlayerRaceDB.SessionPlayerRace, nil
@@ -153,18 +186,31 @@ func (h *SessionPlayerRaceCreateHandler) Authorize(
 	if principal.IsPending {
 		return false, nil
 	}
+
+	sessionID := params.SessionID
+	isBot := params.SessionPlayerRace.IsBot
+
+	// Check if user is a session manager
+	manager, err := IsSessionManager(sqlH, principal.Subject, sessionID)
+	if err != nil {
+		return false, err
+	}
+
+	// Bot players can only be added by managers (session or global)
+	if isBot {
+		if principal.IsGlobalManager || manager {
+			return true, nil
+		}
+		return false, nil
+	}
+
+	// For human players, global managers can do anything
 	if principal.IsGlobalManager {
 		return true, nil
 	}
 
-	sessionID := params.SessionID
-	raceID := params.SessionPlayerRace.RaceID
-
+	// Check if user is a session member
 	member, err := IsSessionMember(sqlH, principal.Subject, sessionID)
-	if err != nil {
-		return false, err
-	}
-	manager, err := IsSessionManager(sqlH, principal.Subject, sessionID)
 	if err != nil {
 		return false, err
 	}
@@ -173,7 +219,8 @@ func (h *SessionPlayerRaceCreateHandler) Authorize(
 		return false, nil
 	}
 
-	// TODO: we could optimize to load only the userID and not the whole dataset
+	// For human players, verify the race belongs to the user
+	raceID := params.SessionPlayerRace.RaceID
 	var raceDB models.RaceDB
 	filter := sq.And{
 		sq.Eq{models.RaceDBIDColumn: raceID},

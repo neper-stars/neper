@@ -194,10 +194,11 @@ func TestSessionPlayerRaceCreateHandler_UpdateExisting(t *testing.T) {
 		originalID := spr1.ID
 		originalPlayerOrder := spr1.PlayerOrder
 
-		// Second call should update the existing entry (not create a duplicate)
+		// Second call with ID provided should update the existing entry
 		spr2, err := createHandler.handle(ctx, operations.SessionPlayerRaceCreateParams{
 			SessionID: sessionID,
 			SessionPlayerRace: &models.SessionPlayerRace{
+				ID:     originalID,     // Provide ID to trigger update
 				RaceID: "gondoriansID", // Different race
 			},
 		}, &boromirPrincipal)
@@ -234,10 +235,11 @@ func TestSessionPlayerRaceCreateHandler_CannotUpdateWhenReady(t *testing.T) {
 
 	t.Run("cannot_update_race_when_ready", func(t *testing.T) {
 		// Finduilas is already ready in the session (from fixture)
-		// Trying to update should fail
+		// Trying to update by providing the ID should fail
 		_, err := createHandler.handle(ctx, operations.SessionPlayerRaceCreateParams{
 			SessionID: "gondorID",
 			SessionPlayerRace: &models.SessionPlayerRace{
+				ID:     "finduilasSprID",  // Provide ID to trigger update
 				RaceID: "finduilasRaceID", // Same or different race, doesn't matter
 			},
 		}, &finduilasPrincipal)

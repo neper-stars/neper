@@ -19,6 +19,16 @@ import (
 // swagger:model sessionPlayer
 type SessionPlayer struct {
 
+	// The difficulty level for AI players (0=Random, 1=Easy, 2=Standard, 3=Tough, 4=Expert).
+	// Only applicable when is_bot is true.
+	//
+	// Maximum: 4
+	// Minimum: 0
+	BotLevel *int64 `json:"bot_level,omitempty"`
+
+	// Whether this player is an AI/bot player
+	IsBot bool `json:"is_bot,omitempty"`
+
 	// The order number for this player in the game.
 	// As there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15
 	//
@@ -37,6 +47,10 @@ type SessionPlayer struct {
 func (m *SessionPlayer) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateBotLevel(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validatePlayerOrder(formats); err != nil {
 		res = append(res, err)
 	}
@@ -44,6 +58,22 @@ func (m *SessionPlayer) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *SessionPlayer) validateBotLevel(formats strfmt.Registry) error {
+	if swag.IsZero(m.BotLevel) { // not required
+		return nil
+	}
+
+	if err := validate.MinimumInt("bot_level", "body", *m.BotLevel, 0, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("bot_level", "body", *m.BotLevel, 4, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 

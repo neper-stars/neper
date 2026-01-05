@@ -487,6 +487,9 @@ const (
 	// SessionPlayerRaceIDColumn is the name of the column containing field "ID" data
 	SessionPlayerRaceIDColumn = "id"
 
+	// SessionPlayerRaceIsBotColumn is the name of the column containing field "IsBot" data
+	SessionPlayerRaceIsBotColumn = "is_bot"
+
 	// SessionPlayerRacePlayerOrderColumn is the name of the column containing field "PlayerOrder" data
 	SessionPlayerRacePlayerOrderColumn = "player_order"
 
@@ -513,6 +516,9 @@ const (
 
 	// SessionPlayerRaceDBIDColumn is the name of the column containing field "ID" data
 	SessionPlayerRaceDBIDColumn = "id"
+
+	// SessionPlayerRaceDBIsBotColumn is the name of the column containing field "IsBot" data
+	SessionPlayerRaceDBIsBotColumn = "is_bot"
 
 	// SessionPlayerRaceDBPlayerOrderColumn is the name of the column containing field "PlayerOrder" data
 	SessionPlayerRaceDBPlayerOrderColumn = "player_order"
@@ -815,6 +821,7 @@ var (
 	SessionPlayerRaceColumns = []string{
 		SessionPlayerRaceBotLevelColumn,
 		SessionPlayerRaceIDColumn,
+		SessionPlayerRaceIsBotColumn,
 		SessionPlayerRacePlayerOrderColumn,
 		SessionPlayerRaceRaceIDColumn,
 		SessionPlayerRaceReadyColumn,
@@ -824,6 +831,7 @@ var (
 	// SessionPlayerRaceDBDataColumns is the list of the columns for the SessionPlayerRaceDB structure, expect its primary key
 	SessionPlayerRaceDBDataColumns = []string{
 		SessionPlayerRaceDBBotLevelColumn,
+		SessionPlayerRaceDBIsBotColumn,
 		SessionPlayerRaceDBPlayerOrderColumn,
 		SessionPlayerRaceDBRaceIDColumn,
 		SessionPlayerRaceDBReadyColumn,
@@ -2271,6 +2279,8 @@ func (s SessionPlayerRace) Values(columns ...string) []interface{} {
 			values[i] = s.BotLevel
 		case "id":
 			values[i] = s.ID
+		case "is_bot":
+			values[i] = s.IsBot
 		case "player_order":
 			values[i] = s.PlayerOrder
 		case "race_id":
@@ -2296,6 +2306,8 @@ func (s SessionPlayerRace) ValuesMap(columns ...string) map[string]interface{} {
 			values["bot_level"] = s.BotLevel
 		case "id":
 			values["id"] = s.ID
+		case "is_bot":
+			values["is_bot"] = s.IsBot
 		case "player_order":
 			values["player_order"] = s.PlayerOrder
 		case "race_id":
@@ -2339,6 +2351,8 @@ func (s SessionPlayerRaceDB) Values(columns ...string) []interface{} {
 			values[i] = s.BotLevel
 		case "id":
 			values[i] = s.ID
+		case "is_bot":
+			values[i] = s.IsBot
 		case "player_order":
 			values[i] = s.PlayerOrder
 		case "race_id":
@@ -2364,6 +2378,8 @@ func (s SessionPlayerRaceDB) ValuesMap(columns ...string) map[string]interface{}
 			values["bot_level"] = s.BotLevel
 		case "id":
 			values["id"] = s.ID
+		case "is_bot":
+			values["is_bot"] = s.IsBot
 		case "player_order":
 			values["player_order"] = s.PlayerOrder
 		case "race_id":
@@ -2383,6 +2399,7 @@ func NewSessionPlayerRaceDBTableSchema() *SessionPlayerRaceDBTableSchema {
 	t := SessionPlayerRaceDBTableSchema{}
 	t.BotLevel = NewColumn(&t, "bot_level")
 	t.ID = NewColumn(&t, "id")
+	t.IsBot = NewColumn(&t, "is_bot")
 	t.PlayerOrder = NewColumn(&t, "player_order")
 	t.RaceID = NewColumn(&t, "race_id")
 	t.Ready = NewColumn(&t, "ready")
@@ -2395,6 +2412,7 @@ type SessionPlayerRaceDBTableSchema struct {
 	alias string
 	BotLevel Column
 	ID Column
+	IsBot Column
 	PlayerOrder Column
 	RaceID Column
 	Ready Column
@@ -2430,6 +2448,7 @@ func (t SessionPlayerRaceDBTableSchema) As(name string) *SessionPlayerRaceDBTabl
 	t.alias = name
 	t.BotLevel = NewColumn(&t, "bot_level")
 	t.ID = NewColumn(&t, "id")
+	t.IsBot = NewColumn(&t, "is_bot")
 	t.PlayerOrder = NewColumn(&t, "player_order")
 	t.RaceID = NewColumn(&t, "race_id")
 	t.Ready = NewColumn(&t, "ready")

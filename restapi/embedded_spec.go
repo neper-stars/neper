@@ -4389,6 +4389,19 @@ func init() {
       "description": "Information about a player in a session",
       "type": "object",
       "properties": {
+        "bot_level": {
+          "description": "The difficulty level for AI players (0=Random, 1=Easy, 2=Standard, 3=Tough, 4=Expert).\nOnly applicable when is_bot is true.\n",
+          "type": "integer",
+          "format": "int64",
+          "maximum": 4,
+          "minimum": 0,
+          "x-nullable": true
+        },
+        "is_bot": {
+          "description": "Whether this player is an AI/bot player",
+          "type": "boolean",
+          "x-nullable": false
+        },
         "player_order": {
           "description": "The order number for this player in the game.\nAs there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15\n",
           "type": "integer",
@@ -4422,15 +4435,15 @@ func init() {
           "x-nullable": true
         },
         "id": {
-          "description": "id of this mapping",
+          "description": "id of this mapping. When creating a new entry, leave empty.\nWhen updating an existing bot player, provide the id to identify which bot to update.\n",
           "type": "string",
           "x-go-custom-tag": "db:\"id\"",
-          "x-nullable": false,
-          "readOnly": true
+          "x-nullable": false
         },
         "is_bot": {
           "description": "if this player race should be player by a bot.\nIf this value is true then you need to provide the bot_level.\nIf this value is false any value given in the bot_level will be ignored\n",
-          "type": "boolean"
+          "type": "boolean",
+          "x-go-custom-tag": "db:\"is_bot\""
         },
         "player_order": {
           "description": "The order number for this player. Only the host can set this value.\nAs there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15\n",
@@ -4441,7 +4454,7 @@ func init() {
           "x-nullable": false
         },
         "race_id": {
-          "description": "the race ID you will use during this session\nFor a normal player you must use the ID of a race file you previously uploaded\nin your user profile.\n\nIf the host is adding a bot player here is the list of race ids to chose from:\n  \"0\"=Random\n  \"1\"=Robotoids\n  \"2\"=Turndrones\n  \"3\"=Automitrons\n  \"4\"=Rototills\n  \"5\"=Cybertrons\n  \"6\"=Mcinti\n",
+          "description": "the race ID you will use during this session\nFor a normal player you must use the ID of a race file you previously uploaded\nin your user profile.\n\nIf the host is adding a bot player here is the list of race ids to chose from:\n  \"0\"=Random\n  \"1\"=Robotoids\n  \"2\"=Turindrones\n  \"3\"=Automitrons\n  \"4\"=Rototills\n  \"5\"=Cybertrons\n  \"6\"=Macintis\n",
           "type": "string",
           "x-go-custom-tag": "db:\"race_id\"",
           "x-nullable": false

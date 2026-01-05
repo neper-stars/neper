@@ -150,6 +150,19 @@ definitions:
         minimum: 0
         maximum: 15
         x-nullable: false
+      is_bot:
+        type: boolean
+        description: Whether this player is an AI/bot player
+        x-nullable: false
+      bot_level:
+        type: integer
+        format: int64
+        description: |
+          The difficulty level for AI players (0=Random, 1=Easy, 2=Standard, 3=Tough, 4=Expert).
+          Only applicable when is_bot is true.
+        minimum: 0
+        maximum: 4
+        x-nullable: true
 
   invitation:
     type: object
@@ -315,8 +328,9 @@ definitions:
     properties:
       id:
         type: string
-        description: "id of this mapping"
-        readOnly: true
+        description: |
+          id of this mapping. When creating a new entry, leave empty.
+          When updating an existing bot player, provide the id to identify which bot to update.
         x-go-custom-tag: db:"id"
         x-nullable: false
       session_id:
@@ -350,11 +364,11 @@ definitions:
           If the host is adding a bot player here is the list of race ids to chose from:
             "0"=Random
             "1"=Robotoids
-            "2"=Turndrones
+            "2"=Turindrones
             "3"=Automitrons
             "4"=Rototills
             "5"=Cybertrons
-            "6"=Mcinti
+            "6"=Macintis
         x-go-custom-tag: db:"race_id"
         x-nullable: false
       ready:
@@ -374,6 +388,7 @@ definitions:
           if this player race should be player by a bot.
           If this value is true then you need to provide the bot_level.
           If this value is false any value given in the bot_level will be ignored
+        x-go-custom-tag: db:"is_bot"
       bot_level:
         type: integer
         minimum: 0

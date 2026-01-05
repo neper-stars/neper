@@ -30,15 +30,16 @@ type SessionPlayerRace struct {
 	// Minimum: 0
 	BotLevel *int64 `json:"bot_level,omitempty" db:"bot_level"`
 
-	// id of this mapping
-	// Read Only: true
+	// id of this mapping. When creating a new entry, leave empty.
+	// When updating an existing bot player, provide the id to identify which bot to update.
+	//
 	ID string `json:"id,omitempty" db:"id"`
 
 	// if this player race should be player by a bot.
 	// If this value is true then you need to provide the bot_level.
 	// If this value is false any value given in the bot_level will be ignored
 	//
-	IsBot bool `json:"is_bot,omitempty"`
+	IsBot bool `json:"is_bot,omitempty" db:"is_bot"`
 
 	// The order number for this player. Only the host can set this value.
 	// As there can be a maximum of 16 players in a Stars! game, the value range is limited between 0 and 15
@@ -54,11 +55,11 @@ type SessionPlayerRace struct {
 	// If the host is adding a bot player here is the list of race ids to chose from:
 	//   "0"=Random
 	//   "1"=Robotoids
-	//   "2"=Turndrones
+	//   "2"=Turindrones
 	//   "3"=Automitrons
 	//   "4"=Rototills
 	//   "5"=Cybertrons
-	//   "6"=Mcinti
+	//   "6"=Macintis
 	//
 	RaceID string `json:"race_id,omitempty" db:"race_id"`
 
@@ -134,10 +135,6 @@ func (m *SessionPlayerRace) validatePlayerOrder(formats strfmt.Registry) error {
 func (m *SessionPlayerRace) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.contextValidateID(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateSessionID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -149,15 +146,6 @@ func (m *SessionPlayerRace) ContextValidate(ctx context.Context, formats strfmt.
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *SessionPlayerRace) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "id", "body", string(m.ID)); err != nil {
-		return err
-	}
-
 	return nil
 }
 

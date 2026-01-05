@@ -91,6 +91,11 @@ run = "govulncheck ./..."
 description = "Lint our golang code to make sure we catch as much errors as possible"
 run = "golangci-lint run"
 
+# Fix import ordering (and other auto-fixable issues)
+[tasks.fix-imports]
+description = "Auto-fix import ordering and other fixable lint issues"
+run = "golangci-lint run --fix"
+
 # Fetch go-swagger
 [tasks.fetch-go-swagger]
 description = "Download go-swagger binary"
