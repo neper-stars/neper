@@ -1,0 +1,3 @@
+kind: Changed
+body: Bots are now always ready in a session and only players needs to be not ready to be changed (allowing admin to modify bots even when ready)
+time: 2026-01-05T18:21:53.292908285+01:00

@@ -94,8 +94,8 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 			return nil, errs.NewErrInvalidSomething("cannot change player type between bot and human")
 		}
 
-		// Cannot update while ready
-		if existingSPR.Ready {
+		// Human players cannot update while ready (bots are always ready and can be updated by managers)
+		if !existingSPR.IsBot && existingSPR.Ready {
 			return nil, errs.NewErrInvalidSomething("cannot update race while player is ready")
 		}
 
@@ -133,10 +133,11 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 	sessionPlayerRaceDB.ID = uid.String()
 	sessionPlayerRaceDB.SessionID = params.SessionID
 
-	// For bots, use the system user ID
+	// For bots, use the system user ID and always mark as ready
 	// For human players, use the principal's user ID
 	if params.SessionPlayerRace.IsBot {
 		sessionPlayerRaceDB.UserProfileID = neper.SystemUserID
+		sessionPlayerRaceDB.Ready = true
 	} else {
 		sessionPlayerRaceDB.UserProfileID = principal.Subject
 
