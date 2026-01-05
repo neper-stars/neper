@@ -26,6 +26,12 @@ type SessionPlayer struct {
 	// Minimum: 0
 	BotLevel *int64 `json:"bot_level,omitempty"`
 
+	// The race name for bot players (e.g., "Robotoids", "Turindrones").
+	// Only populated when is_bot is true. Human player race names are not
+	// revealed to preserve the element of surprise.
+	//
+	BotRaceName *string `json:"bot_race_name,omitempty"`
+
 	// Whether this player is an AI/bot player
 	IsBot bool `json:"is_bot,omitempty"`
 

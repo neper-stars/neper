@@ -1,0 +1,3 @@
+kind: Changed
+body: The sessionPlayer request now returns an optional race name when the player is a bot
+time: 2026-01-05T17:07:22.642093682+01:00

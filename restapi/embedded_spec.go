@@ -4397,6 +4397,11 @@ func init() {
           "minimum": 0,
           "x-nullable": true
         },
+        "bot_race_name": {
+          "description": "The race name for bot players (e.g., \"Robotoids\", \"Turindrones\").\nOnly populated when is_bot is true. Human player race names are not\nrevealed to preserve the element of surprise.\n",
+          "type": "string",
+          "x-nullable": true
+        },
         "is_bot": {
           "description": "Whether this player is an AI/bot player",
           "type": "boolean",

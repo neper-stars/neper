@@ -65,42 +65,51 @@ func (c *SessionDB) PlayersID(sql *database.SQLHelper) ([]string, error) {
 
 // sessionPlayerInfo is a helper struct for querying player info
 type sessionPlayerInfo struct {
-	UserProfileID string `db:"user_profile_id"`
-	Ready         bool   `db:"ready"`
-	PlayerOrder   int64  `db:"player_order"`
-	IsBot         bool   `db:"is_bot"`
-	BotLevel      *int64 `db:"bot_level"`
+	UserProfileID string  `db:"user_profile_id"`
+	Ready         bool    `db:"ready"`
+	PlayerOrder   int64   `db:"player_order"`
+	IsBot         bool    `db:"is_bot"`
+	BotLevel      *int64  `db:"bot_level"`
+	RaceName      *string `db:"race_name"`
 }
 
 // PlayersInfo returns the list of Players with their ready status, sorted by player order
 func (c *SessionDB) PlayersInfo(sql *database.SQLHelper) ([]*SessionPlayer, error) {
 	var infos []sessionPlayerInfo
 
+	// Join with race table to get race name for bots
 	if err := sql.Select(&infos,
 		sq.Select(
-			SessionPlayerRaceDBUserProfileIDColumn,
-			SessionPlayerRaceDBReadyColumn,
-			SessionPlayerRaceDBPlayerOrderColumn,
-			SessionPlayerRaceDBIsBotColumn,
-			SessionPlayerRaceDBBotLevelColumn,
+			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBUserProfileIDColumn,
+			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBReadyColumn,
+			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBPlayerOrderColumn,
+			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBIsBotColumn,
+			SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBBotLevelColumn,
+			RaceDBTable+"."+RaceDBNamePluralColumn+" AS race_name",
 		).
 			From(SessionPlayerRaceDBTable).
+			LeftJoin(RaceDBTable+" ON "+SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBRaceIDColumn+" = "+RaceDBTable+"."+RaceDBIDColumn).
 			Where(sq.And{
-				sq.Eq{SessionPlayerRaceDBSessionIDColumn: c.ID},
-			}).OrderBy(SessionPlayerRaceDBPlayerOrderColumn+" ASC"),
+				sq.Eq{SessionPlayerRaceDBTable + "." + SessionPlayerRaceDBSessionIDColumn: c.ID},
+			}).OrderBy(SessionPlayerRaceDBTable+"."+SessionPlayerRaceDBPlayerOrderColumn+" ASC"),
 	); err != nil {
 		return nil, err
 	}
 
 	var players []*SessionPlayer
 	for _, info := range infos {
-		players = append(players, &SessionPlayer{
+		player := &SessionPlayer{
 			UserProfileID: info.UserProfileID,
 			Ready:         info.Ready,
 			PlayerOrder:   info.PlayerOrder,
 			IsBot:         info.IsBot,
 			BotLevel:      info.BotLevel,
-		})
+		}
+		// Only include race name for bots to preserve surprise for human players
+		if info.IsBot {
+			player.BotRaceName = info.RaceName
+		}
+		players = append(players, player)
 	}
 	return players, nil
 }

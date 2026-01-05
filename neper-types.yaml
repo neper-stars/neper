@@ -163,6 +163,13 @@ definitions:
         minimum: 0
         maximum: 4
         x-nullable: true
+      bot_race_name:
+        type: string
+        description: |
+          The race name for bot players (e.g., "Robotoids", "Turindrones").
+          Only populated when is_bot is true. Human player race names are not
+          revealed to preserve the element of surprise.
+        x-nullable: true
 
   invitation:
     type: object
