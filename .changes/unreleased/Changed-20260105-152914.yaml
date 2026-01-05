@@ -1,3 +1,0 @@
-kind: Changed
-body: Remove unique constraint on players per session to allow multiple bots (system user) on a single session
-time: 2026-01-05T15:29:14.328566018+01:00
