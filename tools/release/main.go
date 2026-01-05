@@ -50,6 +50,23 @@ func run() error {
 		fmt.Printf("%s=== Changie already processed for %s (found %s), skipping ===%s\n\n",
 			colorYellow, version, changieVersionFile, colorReset)
 	} else {
+		// Show dry-run preview of changelog content
+		fmt.Printf("\n%s=== Changelog preview (dry-run) ===%s\n\n", colorBlue, colorReset)
+		if err := runCommand("changie", "batch", version, "--dry-run"); err != nil {
+			return fmt.Errorf("changie batch dry-run failed: %w", err)
+		}
+
+		// Confirm before making changes
+		fmt.Println()
+		confirmChangie, err := confirm("Do you want to proceed with this changelog?")
+		if err != nil {
+			return err
+		}
+		if !confirmChangie {
+			fmt.Printf("%sAborted.%s\n", colorYellow, colorReset)
+			return nil
+		}
+
 		// Run changie batch
 		fmt.Printf("\n%s=== Running changie batch %s ===%s\n\n", colorBlue, version, colorReset)
 		if err := runCommand("changie", "batch", version); err != nil {
