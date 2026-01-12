@@ -190,6 +190,17 @@ func (s *Service) PublishOrderStatusUpdate(sessionID string, year int64) error {
 	})
 }
 
+// PublishPlayerControlUpdate is a convenience method for player control change notifications
+// This is sent when a player is switched between human and AI control
+// aiControlType is nil when switching to human, or the AI type code when switching to AI
+func (s *Service) PublishPlayerControlUpdate(sessionID string, playerOrder int64, aiControlType *string) error {
+	return s.PublishWithMetadata(ResourceChangeTypePlayerControl, sessionID, ResourceChangeActionUpdated, PlayerControlMeta{
+		SessionID:     sessionID,
+		PlayerOrder:   playerOrder,
+		AIControlType: aiControlType,
+	})
+}
+
 // PublishPendingRegistrationCreate is a convenience method for new pending registration
 func (s *Service) PublishPendingRegistrationCreate(userProfileID string) error {
 	return s.Publish(ResourceChangeTypePendingRegistration, userProfileID, ResourceChangeActionCreated)

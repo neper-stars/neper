@@ -156,7 +156,9 @@ outputs = [
   "lib/notify/session_member_left_meta.go",
   "lib/notify/invitation_delete_meta.go",
   "lib/notify/session_turn_meta.go",
-  "lib/notify/order_status_meta.go"
+  "lib/notify/order_status_meta.go",
+  "lib/notify/registration_approval_meta.go",
+  "lib/notify/player_control_meta.go"
 ]
 run = "{{vars.swagger_bin}} generate model --accept-definitions-only -f neper-async-types.yaml -t . -m lib/notify"
 

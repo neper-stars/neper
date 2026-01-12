@@ -22,7 +22,7 @@ import (
 )
 
 // NewSessionPlayerSwitchToAIHandler creates a new handler for switching a player to AI control
-func NewSessionPlayerSwitchToAIHandler(log *zerolog.Logger, db *sqlx.DB, submitter sessionSubmitter.SessionSubmitter, notifyService *notify.Service) *SessionPlayerSwitchToAIHandler {
+func NewSessionPlayerSwitchToAIHandler(log *zerolog.Logger, db *sqlx.DB, submitter sessionSubmitter.SessionSubmitter, notifyService notify.NotifyService) *SessionPlayerSwitchToAIHandler {
 	return &SessionPlayerSwitchToAIHandler{db: db, log: log, submitter: submitter, notifyService: notifyService}
 }
 
@@ -31,7 +31,7 @@ type SessionPlayerSwitchToAIHandler struct {
 	db            *sqlx.DB
 	log           *zerolog.Logger
 	submitter     sessionSubmitter.SessionSubmitter
-	notifyService *notify.Service
+	notifyService notify.NotifyService
 }
 
 func (h *SessionPlayerSwitchToAIHandler) handle(
@@ -134,6 +134,11 @@ func (h *SessionPlayerSwitchToAIHandler) handle(
 
 	if err := tx.Commit(); err != nil {
 		return err
+	}
+
+	// Notify session managers about the player control change
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishPlayerControlUpdate(sessionID, int64(playerOrder), &aiTypeStr)
 	}
 
 	// After switching a player to AI, check if all remaining human players have submitted

@@ -15,6 +15,7 @@ import (
 
 	"github.com/neper-stars/neper/fixtures"
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/migration"
@@ -40,7 +41,8 @@ func TestSessionPlayerSwitchToAIHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_turn0_files.json")
 
 	testSubmitter := sessionSubmitter.NewTestSessionSubmitter(&log)
-	handler := NewSessionPlayerSwitchToAIHandler(&log, testdb.DB, testSubmitter, nil)
+	testNotify := notify.NewTestNotifyService(&log)
+	handler := NewSessionPlayerSwitchToAIHandler(&log, testdb.DB, testSubmitter, testNotify)
 
 	t.Run("session_manager_can_switch_player_to_ai", func(t *testing.T) {
 		// Merry is the session manager
@@ -398,5 +400,53 @@ func TestSessionPlayerSwitchToAIHandler(t *testing.T) {
 
 		// Verify turn generation was NOT triggered because player 1 still hasn't submitted
 		require.Len(t, testSubmitter.Msgs, 0, "turn generation should NOT be triggered when other humans still haven't submitted")
+	})
+
+	t.Run("sends_notification_when_switching_to_ai", func(t *testing.T) {
+		// Reset fixtures
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_started.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_merry.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_gollum.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_session_player_race.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_turn0_files.json")
+
+		testNotify.Clear()
+
+		merryPrincipal := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+
+		// Switch player 1 to AI (CA - Claim Adjuster)
+		params := operations.SessionPlayerSwitchToAIParams{
+			SessionID:   "merryvsgollumID",
+			PlayerOrder: 1,
+			SwitchRequest: &models.SwitchToAiRequest{
+				AiType: "CA",
+			},
+		}
+
+		err := handler.handle(ctx, params, merryPrincipal)
+		require.NoError(t, err)
+
+		// Verify notification was sent
+		notifications := testNotify.GetPlayerControlMessages()
+		require.Len(t, notifications, 1, "should have sent one player_control notification")
+
+		notif := notifications[0]
+		require.Equal(t, notify.ResourceChangeTypePlayerControl, *notif.Type)
+		require.Equal(t, "merryvsgollumID", *notif.ID)
+		require.Equal(t, notify.ResourceChangeActionUpdated, *notif.Action)
+
+		// Parse metadata and verify
+		meta := notify.ParseMetadata[notify.PlayerControlMeta](&notif)
+		require.NotNil(t, meta, "notification should have metadata")
+		require.Equal(t, "merryvsgollumID", meta.SessionID)
+		require.Equal(t, int64(1), meta.PlayerOrder)
+		require.NotNil(t, meta.AIControlType, "ai_control_type should be set when switching to AI")
+		require.Equal(t, "CA", *meta.AIControlType)
 	})
 }

@@ -13,20 +13,22 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewSessionPlayerSwitchToHumanHandler creates a new handler for switching a player to human control
-func NewSessionPlayerSwitchToHumanHandler(log *zerolog.Logger, db *sqlx.DB) *SessionPlayerSwitchToHumanHandler {
-	return &SessionPlayerSwitchToHumanHandler{db: db, log: log}
+func NewSessionPlayerSwitchToHumanHandler(log *zerolog.Logger, db *sqlx.DB, notifyService notify.NotifyService) *SessionPlayerSwitchToHumanHandler {
+	return &SessionPlayerSwitchToHumanHandler{db: db, log: log, notifyService: notifyService}
 }
 
 // SessionPlayerSwitchToHumanHandler handles POST /sessions/{session_id}/player/{player_order}/switch_to_human
 type SessionPlayerSwitchToHumanHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	notifyService notify.NotifyService
 }
 
 func (h *SessionPlayerSwitchToHumanHandler) handle(
@@ -110,6 +112,11 @@ func (h *SessionPlayerSwitchToHumanHandler) handle(
 
 	if err := tx.Commit(); err != nil {
 		return err
+	}
+
+	// Notify session managers about the player control change
+	if h.notifyService != nil {
+		_ = h.notifyService.PublishPlayerControlUpdate(sessionID, int64(playerOrder), nil)
 	}
 
 	return nil

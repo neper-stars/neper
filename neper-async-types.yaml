@@ -24,6 +24,7 @@ definitions:
           - ruleset
           - session_player_race
           - pending_registration
+          - player_control
       id:
         type: string
         description: The resource ID
@@ -126,3 +127,25 @@ definitions:
       nickname:
         type: string
         description: The nickname of the approved user
+
+  player-control-meta:
+    type: object
+    x-go-name: PlayerControlMeta
+    description: |
+      Metadata for player_control notifications.
+      Sent when a player's control status changes (human to AI or AI to human).
+      Only session managers receive these notifications.
+    properties:
+      session_id:
+        type: string
+        x-go-name: SessionID
+        description: The session ID where the control change occurred
+      player_order:
+        type: integer
+        format: int64
+        description: The player order (0-indexed) of the affected player
+      ai_control_type:
+        type: string
+        x-nullable: true
+        x-go-name: AIControlType
+        description: The new AI control type (null if switched to human, AI type code if switched to AI)

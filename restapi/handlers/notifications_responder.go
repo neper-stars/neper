@@ -241,6 +241,9 @@ func (r *NotificationsResponder) canAccess(ctx context.Context, change *notify.R
 		// - Global managers (to update pending list) - handled at the top
 		// - The user who was approved/rejected (to know their status)
 		return r.canAccessPendingRegistration(change)
+	case notify.ResourceChangeTypePlayerControl:
+		// Player control notifications are only for session managers
+		return r.canAccessPlayerControl(sqlH, change)
 	default:
 		return false, nil
 	}
@@ -369,4 +372,21 @@ func (r *NotificationsResponder) canAccessPendingRegistration(change *notify.Res
 		Bool("canAccess", canAccess).
 		Msg("canAccessPendingRegistration check")
 	return canAccess, nil
+}
+
+// canAccessPlayerControl checks if user is a manager of the session for player control notifications
+// Only session managers (not regular members) can receive player control change notifications
+func (r *NotificationsResponder) canAccessPlayerControl(sqlH database.SQLHelper, change *notify.ResourceChange) (bool, error) {
+	meta := notify.ParseMetadata[notify.PlayerControlMeta](change)
+	if meta == nil {
+		// No metadata, use the resource ID as session ID
+		sessionID := ptrStr(change.ID)
+		if sessionID == "" {
+			return false, nil
+		}
+		return IsSessionManager(sqlH, r.principal.Subject, sessionID)
+	}
+
+	// Use session ID from metadata
+	return IsSessionManager(sqlH, r.principal.Subject, meta.SessionID)
 }
