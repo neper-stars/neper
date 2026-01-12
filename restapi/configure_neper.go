@@ -219,6 +219,10 @@ func ConfigureAPI(api *operations.NeperAPI, server *orusapi.Server, config Confi
 	api.SessionFilesGetHandler = handlers.NewSessionFilesGetHandler(&config.Log, config.DB)
 	// switch player to AI control (managers only - modifies .hst file)
 	api.SessionPlayerSwitchToAIHandler = handlers.NewSessionPlayerSwitchToAIHandler(&config.Log, config.DB)
+	// switch player to human control (managers only - modifies .hst file)
+	api.SessionPlayerSwitchToHumanHandler = handlers.NewSessionPlayerSwitchToHumanHandler(&config.Log, config.DB)
+	// get player control status (managers only)
+	api.SessionPlayerControlHandler = handlers.NewSessionPlayerControlHandler(&config.Log, config.DB)
 
 	turnSubmitter := sessionSubmitter.NewSessionSubmitter(&config.Log, config.NatsClientConn)
 	api.TurnSubmitHandler = handlers.NewTurnSubmitHandler(&config.Log, config.DB, turnSubmitter, config.NotifyService)

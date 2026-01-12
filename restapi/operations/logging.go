@@ -141,6 +141,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 		"", "sessionJoin",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/join"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/player_control"] = LogOperation(
+		"", "sessionPlayerControl",
+	)(o.handlers["GET"]["/v1/sessions/{session_id}/player_control"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/player_race"] = LogOperation(
 		"", "sessionPlayerRaceCreate",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/player_race"])
@@ -160,6 +164,10 @@ func (o *NeperAPI) LoggingInstrumentHandlers() {
 	o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_ai"] = LogOperation(
 		"", "sessionPlayerSwitchToAI",
 	)(o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_ai"])
+
+	o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_human"] = LogOperation(
+		"", "sessionPlayerSwitchToHuman",
+	)(o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_human"])
 
 	o.handlers["POST"]["/v1/sessions/{session_id}/promote/{user_profile_id}"] = LogOperation(
 		"", "sessionPromoteMember",

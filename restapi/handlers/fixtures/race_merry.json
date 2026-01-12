@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "race",
+        "id": "hobbitsID",
+        "name_plural": "Hobbits",
+        "name_singular": "Hobbit",
+        "user_id": "merryID",
+        "data": "ECBKM0ozAAAAAGAqBwDfCwUAfRgGLO8a9nahWBLxzu8K0QX+OMP4/pYC5ncbrRrG9trmHvDENliQuqXS3k3S6NcQq+/POOf6/StvJRbLWqr+zDYJP0Wwq/YFhwzys5Pu3sqIsIP4YDLuWMJrGJ50UUTArj69j3zdXaBIROjkkR2hKefZm3mHrcRV97WEknON4AIAnIw="
+      }
+    }
+  ]
+}

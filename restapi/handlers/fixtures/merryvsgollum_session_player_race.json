@@ -1,0 +1,30 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session_player_race",
+        "id": "spr_started_1",
+        "session_id": "merryvsgollumID",
+        "user_profile_id": "merryID",
+        "is_bot": false,
+        "race_id": "hobbitsID",
+        "player_order": 0,
+        "ready": true
+      }
+    },
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "session_player_race",
+        "id": "spr_started_2",
+        "session_id": "merryvsgollumID",
+        "user_profile_id": "gollumID",
+        "is_bot": false,
+        "race_id": "halflingsID",
+        "player_order": 1,
+        "ready": true
+      }
+    }
+  ]
+}

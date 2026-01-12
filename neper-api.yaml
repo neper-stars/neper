@@ -686,6 +686,73 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/player/{player_order}/switch_to_human:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+      - name: player_order
+        in: path
+        type: integer
+        minimum: 0
+        maximum: 15
+        required: true
+    post:
+      operationId: sessionPlayerSwitchToHuman
+      summary: "switch an AI player back to human control"
+      description: |
+        Switch an AI-controlled player back to human control by modifying the .hst file.
+        This is useful when a player returns to the game and wants to take back control
+        from the AI that was managing their position.
+
+        Preconditions:
+        - The game must be started (session files must exist)
+        - The player must currently be AI-controlled (ai_control_type is NOT NULL)
+        - The player must have a real user associated (not a bot slot)
+        - Only session managers or global managers can perform this action
+      responses:
+        204:
+          description: player successfully switched to human control
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        412:
+          $ref: "#/responses/preconditionfailed"
+        default:
+          $ref: "#/responses/default"
+
+  /v1/sessions/{session_id}/player_control:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+    get:
+      operationId: sessionPlayerControl
+      summary: "get control status for all players in a session"
+      description: |
+        Returns the control status (human vs AI) for all players in the session.
+        Shows whether each player is human controlled or AI controlled, and the AI type if applicable.
+
+        Only session managers or global managers can access this endpoint.
+      responses:
+        200:
+          description: list of player control statuses
+          schema:
+            $ref: "neper-types.yaml#/definitions/player_control_list"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}:
     parameters:
       - name: session_id

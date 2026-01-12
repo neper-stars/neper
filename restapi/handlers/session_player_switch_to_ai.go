@@ -115,11 +115,31 @@ func (h *SessionPlayerSwitchToAIHandler) handle(
 		return err
 	}
 
+	// Update session_player_race.ai_control_type to track the control change
+	aiTypeStr := params.SwitchRequest.AiType
+	if err := h.updateAIControlType(sqlH, sessionID, playerOrder, &aiTypeStr); err != nil {
+		return err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// updateAIControlType updates the ai_control_type column in session_player_race
+func (h *SessionPlayerSwitchToAIHandler) updateAIControlType(
+	sqlH database.SQLHelper, sessionID string, playerOrder int, aiType *string,
+) error {
+	// Find the session_player_race entry for this player
+	var spr models.SessionPlayerRaceDB
+	query := sessionPlayerRaceByOrderQuery(sessionID, playerOrder)
+	if err := sqlH.Get(&spr, query); err != nil {
+		return err
+	}
+	spr.AIControlType = aiType
+	return sqlH.UpdateColumns(&spr, models.SessionPlayerRaceDBAIControlTypeColumn)
 }
 
 // Handle handles the request

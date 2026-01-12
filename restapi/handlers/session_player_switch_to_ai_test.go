@@ -33,6 +33,9 @@ func TestSessionPlayerSwitchToAIHandler(t *testing.T) {
 
 	// Load a started session with turn files
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_started.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_merry.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_gollum.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_session_player_race.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_turn0_files.json")
 
 	handler := NewSessionPlayerSwitchToAIHandler(&log, testdb.DB)
@@ -102,6 +105,9 @@ func TestSessionPlayerSwitchToAIHandler(t *testing.T) {
 	t.Run("global_manager_can_switch_player_to_ai", func(t *testing.T) {
 		// Reset by reloading fixtures
 		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_started.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_merry.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_gollum.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_session_player_race.json")
 		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_turn0_files.json")
 
 		// A global manager who is not a member of the session

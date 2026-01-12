@@ -910,3 +910,54 @@ definitions:
         x-nullable: false
     required:
       - ai_type
+
+  player_control_status:
+    type: object
+    description: |
+      Control status for a player in a session.
+      Shows whether the player is human or AI controlled, and the AI type if applicable.
+    properties:
+      player_order:
+        type: integer
+        format: int64
+        description: The player order number (0-15)
+        minimum: 0
+        maximum: 15
+        x-nullable: false
+      user_profile_id:
+        type: string
+        description: The user profile ID associated with this player slot
+        x-nullable: false
+      nickname:
+        type: string
+        description: The player's nickname
+        x-nullable: false
+      is_bot:
+        type: boolean
+        description: |
+          Whether this player was originally created as a bot slot.
+          This tracks the initial player type, not the current control status.
+        x-nullable: false
+      ai_control_type:
+        type: string
+        description: |
+          The AI expert type if this player is AI-controlled.
+          NULL means human controlled.
+          Valid values: HE, SS, IS, CA, PP, AR
+        enum: [HE, SS, IS, CA, PP, AR]
+        x-nullable: true
+      control_status:
+        type: string
+        description: |
+          Current control status: "human" or "ai"
+        enum: [human, ai]
+        x-nullable: false
+
+  player_control_list:
+    type: object
+    description: List of player control statuses for a session
+    properties:
+      players:
+        type: array
+        items:
+          $ref: "#/definitions/player_control_status"

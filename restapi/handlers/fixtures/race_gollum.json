@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "operation": "create",
+      "data": {
+        "__type__": "race",
+        "id": "halflingsID",
+        "name_plural": "Halflings",
+        "name_singular": "Halfling",
+        "user_id": "gollumID",
+        "data": "ECBKM0ozAAAAAGAqAAD/AQUAfhgyZ63tcyzDHFWkoiKz1eM1oL9ZJK/kHmgXR/cJ+GkM9Y1QD/P+OiWphl6wXZgdRN48HDO2TOUr8jxgqeaS/rMmn/Ru5X21wRegrnEFH38TZEm5/fbjiE1IwZGK/JP/hgalgwmUpvxHPJMVfebX/Gj+U0no2MaJuLIb/75DBVsCADhD"
+      }
+    }
+  ]
+}

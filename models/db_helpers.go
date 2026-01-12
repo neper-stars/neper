@@ -535,6 +535,9 @@ const (
 	// SessionPlayerRaceDBUserProfileIDColumn is the name of the column containing field "UserProfileID" data
 	SessionPlayerRaceDBUserProfileIDColumn = "user_profile_id"
 
+	// SessionPlayerRaceDBAIControlTypeColumn is the name of the column containing field "AIControlType" data
+	SessionPlayerRaceDBAIControlTypeColumn = "ai_control_type"
+
 	// TurnFilesIDColumn is the name of the column containing field "ID" data
 	TurnFilesIDColumn = "id"
 
@@ -619,6 +622,9 @@ const (
 	// UserProfileSessionRelDBIsManagerColumn is the name of the column containing field "IsManager" data
 	UserProfileSessionRelDBIsManagerColumn = "is_manager"
 
+	// sessionPlayerInfoIDColumn is the name of the column containing field "ID" data
+	sessionPlayerInfoIDColumn = "id"
+
 	// sessionPlayerInfoUserProfileIDColumn is the name of the column containing field "UserProfileID" data
 	sessionPlayerInfoUserProfileIDColumn = "user_profile_id"
 
@@ -627,6 +633,15 @@ const (
 
 	// sessionPlayerInfoPlayerOrderColumn is the name of the column containing field "PlayerOrder" data
 	sessionPlayerInfoPlayerOrderColumn = "player_order"
+
+	// sessionPlayerInfoIsBotColumn is the name of the column containing field "IsBot" data
+	sessionPlayerInfoIsBotColumn = "is_bot"
+
+	// sessionPlayerInfoBotLevelColumn is the name of the column containing field "BotLevel" data
+	sessionPlayerInfoBotLevelColumn = "bot_level"
+
+	// sessionPlayerInfoRaceNameColumn is the name of the column containing field "RaceName" data
+	sessionPlayerInfoRaceNameColumn = "race_name"
 )
 
 var (
@@ -837,6 +852,7 @@ var (
 		SessionPlayerRaceDBReadyColumn,
 		SessionPlayerRaceDBSessionIDColumn,
 		SessionPlayerRaceDBUserProfileIDColumn,
+		SessionPlayerRaceDBAIControlTypeColumn,
 	}
 
 	// SessionPlayerRaceDBColumns is the list of the columns for the SessionPlayerRaceDB structure
@@ -895,9 +911,13 @@ var (
 	)
 	// sessionPlayerInfoColumns is the list of the columns for the sessionPlayerInfo structure
 	sessionPlayerInfoColumns = []string{
+		sessionPlayerInfoIDColumn,
 		sessionPlayerInfoUserProfileIDColumn,
 		sessionPlayerInfoReadyColumn,
 		sessionPlayerInfoPlayerOrderColumn,
+		sessionPlayerInfoIsBotColumn,
+		sessionPlayerInfoBotLevelColumn,
+		sessionPlayerInfoRaceNameColumn,
 	}
 )
 
@@ -2363,6 +2383,8 @@ func (s SessionPlayerRaceDB) Values(columns ...string) []interface{} {
 			values[i] = s.SessionID
 		case "user_profile_id":
 			values[i] = s.UserProfileID
+		case "ai_control_type":
+			values[i] = s.AIControlType
 		}
 	}
 	return values
@@ -2390,6 +2412,8 @@ func (s SessionPlayerRaceDB) ValuesMap(columns ...string) map[string]interface{}
 			values["session_id"] = s.SessionID
 		case "user_profile_id":
 			values["user_profile_id"] = s.UserProfileID
+		case "ai_control_type":
+			values["ai_control_type"] = s.AIControlType
 		}
 	}
 	return values
@@ -2405,6 +2429,7 @@ func NewSessionPlayerRaceDBTableSchema() *SessionPlayerRaceDBTableSchema {
 	t.Ready = NewColumn(&t, "ready")
 	t.SessionID = NewColumn(&t, "session_id")
 	t.UserProfileID = NewColumn(&t, "user_profile_id")
+	t.AIControlType = NewColumn(&t, "ai_control_type")
 	return &t
 }
 
@@ -2418,6 +2443,7 @@ type SessionPlayerRaceDBTableSchema struct {
 	Ready Column
 	SessionID Column
 	UserProfileID Column
+	AIControlType Column
 }
 
 // Columns returns the database table column names
@@ -2454,6 +2480,7 @@ func (t SessionPlayerRaceDBTableSchema) As(name string) *SessionPlayerRaceDBTabl
 	t.Ready = NewColumn(&t, "ready")
 	t.SessionID = NewColumn(&t, "session_id")
 	t.UserProfileID = NewColumn(&t, "user_profile_id")
+	t.AIControlType = NewColumn(&t, "ai_control_type")
 	return &t
 }
 
@@ -2903,12 +2930,20 @@ func (s sessionPlayerInfo) Values(columns ...string) []interface{} {
 	values := make([]interface{}, len(columns))
 	for i, column := range columns {
 		switch column {
+		case "id":
+			values[i] = s.ID
 		case "user_profile_id":
 			values[i] = s.UserProfileID
 		case "ready":
 			values[i] = s.Ready
 		case "player_order":
 			values[i] = s.PlayerOrder
+		case "is_bot":
+			values[i] = s.IsBot
+		case "bot_level":
+			values[i] = s.BotLevel
+		case "race_name":
+			values[i] = s.RaceName
 		}
 	}
 	return values
@@ -2920,12 +2955,20 @@ func (s sessionPlayerInfo) ValuesMap(columns ...string) map[string]interface{} {
 	values := make(map[string]interface{})
 	for _, column := range columns {
 		switch column {
+		case "id":
+			values["id"] = s.ID
 		case "user_profile_id":
 			values["user_profile_id"] = s.UserProfileID
 		case "ready":
 			values["ready"] = s.Ready
 		case "player_order":
 			values["player_order"] = s.PlayerOrder
+		case "is_bot":
+			values["is_bot"] = s.IsBot
+		case "bot_level":
+			values["bot_level"] = s.BotLevel
+		case "race_name":
+			values["race_name"] = s.RaceName
 		}
 	}
 	return values

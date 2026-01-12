@@ -124,6 +124,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 		sessionJoinHandlerInFlight,
 	)
 	reg.MustRegister(
+		sessionPlayerControlHandlerDuration,
+		sessionPlayerControlHandlerInFlight,
+	)
+	reg.MustRegister(
 		sessionPlayerRaceCreateHandlerDuration,
 		sessionPlayerRaceCreateHandlerInFlight,
 	)
@@ -142,6 +146,10 @@ func RegisterPrometheus(reg prometheus.Registerer) {
 	reg.MustRegister(
 		sessionPlayerSwitchToAIHandlerDuration,
 		sessionPlayerSwitchToAIHandlerInFlight,
+	)
+	reg.MustRegister(
+		sessionPlayerSwitchToHumanHandlerDuration,
+		sessionPlayerSwitchToHumanHandlerInFlight,
 	)
 	reg.MustRegister(
 		sessionPromoteMemberHandlerDuration,

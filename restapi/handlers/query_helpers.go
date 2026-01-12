@@ -170,6 +170,19 @@ func sessionPlayerRaceForSessionQuery(sessionID string) sq.SelectBuilder {
 		)
 }
 
+func sessionPlayerRaceByOrderQuery(sessionID string, playerOrder int) sq.SelectBuilder {
+	return database.SQ.
+		Select().
+		Columns(models.SessionPlayerRaceDBColumns...).
+		From(models.SessionPlayerRaceDBTable).
+		Where(
+			sq.And{
+				sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID},
+				sq.Eq{models.SessionPlayerRaceDBPlayerOrderColumn: playerOrder},
+			},
+		)
+}
+
 func lastSessionFilesQuery(sessionID string) sq.SelectBuilder {
 	return database.SQ.
 		Select().

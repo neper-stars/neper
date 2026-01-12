@@ -1,0 +1,3 @@
+kind: Added
+body: 'Added a special endpoint reserved for Admins to track who controls a player: human or ai'
+time: 2026-01-12T17:52:02.346284669+01:00

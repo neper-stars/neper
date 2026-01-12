@@ -137,6 +137,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		SessionJoinHandler: SessionJoinHandlerFunc(func(params SessionJoinParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionJoin has not yet been implemented")
 		}),
+		SessionPlayerControlHandler: SessionPlayerControlHandlerFunc(func(params SessionPlayerControlParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation SessionPlayerControl has not yet been implemented")
+		}),
 		SessionPlayerRaceCreateHandler: SessionPlayerRaceCreateHandlerFunc(func(params SessionPlayerRaceCreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPlayerRaceCreate has not yet been implemented")
 		}),
@@ -151,6 +154,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		}),
 		SessionPlayerSwitchToAIHandler: SessionPlayerSwitchToAIHandlerFunc(func(params SessionPlayerSwitchToAIParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPlayerSwitchToAI has not yet been implemented")
+		}),
+		SessionPlayerSwitchToHumanHandler: SessionPlayerSwitchToHumanHandlerFunc(func(params SessionPlayerSwitchToHumanParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation SessionPlayerSwitchToHuman has not yet been implemented")
 		}),
 		SessionPromoteMemberHandler: SessionPromoteMemberHandlerFunc(func(params SessionPromoteMemberParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPromoteMember has not yet been implemented")
@@ -315,6 +321,8 @@ type NeperAPI struct {
 	SessionFilesGetHandler SessionFilesGetHandler
 	// SessionJoinHandler sets the operation handler for the session join operation
 	SessionJoinHandler SessionJoinHandler
+	// SessionPlayerControlHandler sets the operation handler for the session player control operation
+	SessionPlayerControlHandler SessionPlayerControlHandler
 	// SessionPlayerRaceCreateHandler sets the operation handler for the session player race create operation
 	SessionPlayerRaceCreateHandler SessionPlayerRaceCreateHandler
 	// SessionPlayerRaceDeleteHandler sets the operation handler for the session player race delete operation
@@ -325,6 +333,8 @@ type NeperAPI struct {
 	SessionPlayerRaceSetReadyHandler SessionPlayerRaceSetReadyHandler
 	// SessionPlayerSwitchToAIHandler sets the operation handler for the session player switch to a i operation
 	SessionPlayerSwitchToAIHandler SessionPlayerSwitchToAIHandler
+	// SessionPlayerSwitchToHumanHandler sets the operation handler for the session player switch to human operation
+	SessionPlayerSwitchToHumanHandler SessionPlayerSwitchToHumanHandler
 	// SessionPromoteMemberHandler sets the operation handler for the session promote member operation
 	SessionPromoteMemberHandler SessionPromoteMemberHandler
 	// SessionQuitHandler sets the operation handler for the session quit operation
@@ -532,6 +542,9 @@ func (o *NeperAPI) Validate() error {
 	if o.SessionJoinHandler == nil {
 		unregistered = append(unregistered, "SessionJoinHandler")
 	}
+	if o.SessionPlayerControlHandler == nil {
+		unregistered = append(unregistered, "SessionPlayerControlHandler")
+	}
 	if o.SessionPlayerRaceCreateHandler == nil {
 		unregistered = append(unregistered, "SessionPlayerRaceCreateHandler")
 	}
@@ -546,6 +559,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.SessionPlayerSwitchToAIHandler == nil {
 		unregistered = append(unregistered, "SessionPlayerSwitchToAIHandler")
+	}
+	if o.SessionPlayerSwitchToHumanHandler == nil {
+		unregistered = append(unregistered, "SessionPlayerSwitchToHumanHandler")
 	}
 	if o.SessionPromoteMemberHandler == nil {
 		unregistered = append(unregistered, "SessionPromoteMemberHandler")
@@ -813,6 +829,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions/{session_id}/join"] = NewSessionJoin(o.context, o.SessionJoinHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/sessions/{session_id}/player_control"] = NewSessionPlayerControl(o.context, o.SessionPlayerControlHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
@@ -833,6 +853,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_ai"] = NewSessionPlayerSwitchToAI(o.context, o.SessionPlayerSwitchToAIHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_human"] = NewSessionPlayerSwitchToHuman(o.context, o.SessionPlayerSwitchToHumanHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

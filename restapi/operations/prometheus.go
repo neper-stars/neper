@@ -96,6 +96,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 	o.handlers["POST"]["/v1/sessions/{session_id}/join"] = SessionJoinInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/join"])
 
+	o.handlers["GET"]["/v1/sessions/{session_id}/player_control"] = SessionPlayerControlInstrumentHandler(
+		o.handlers["GET"]["/v1/sessions/{session_id}/player_control"])
+
 	o.handlers["POST"]["/v1/sessions/{session_id}/player_race"] = SessionPlayerRaceCreateInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/player_race"])
 
@@ -110,6 +113,9 @@ func (o *NeperAPI) PrometheusInstrumentHandlers() {
 
 	o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_ai"] = SessionPlayerSwitchToAIInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_ai"])
+
+	o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_human"] = SessionPlayerSwitchToHumanInstrumentHandler(
+		o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_human"])
 
 	o.handlers["POST"]["/v1/sessions/{session_id}/promote/{user_profile_id}"] = SessionPromoteMemberInstrumentHandler(
 		o.handlers["POST"]["/v1/sessions/{session_id}/promote/{user_profile_id}"])

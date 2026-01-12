@@ -925,6 +925,83 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/player/{player_order}/switch_to_human": {
+      "post": {
+        "description": "Switch an AI-controlled player back to human control by modifying the .hst file.\nThis is useful when a player returns to the game and wants to take back control\nfrom the AI that was managing their position.\n\nPreconditions:\n- The game must be started (session files must exist)\n- The player must currently be AI-controlled (ai_control_type is NOT NULL)\n- The player must have a real user associated (not a bot slot)\n- Only session managers or global managers can perform this action\n",
+        "summary": "switch an AI player back to human control",
+        "operationId": "sessionPlayerSwitchToHuman",
+        "responses": {
+          "204": {
+            "description": "player successfully switched to human control"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "412": {
+            "$ref": "#/responses/preconditionfailed"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "maximum": 15,
+          "type": "integer",
+          "name": "player_order",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/v1/sessions/{session_id}/player_control": {
+      "get": {
+        "description": "Returns the control status (human vs AI) for all players in the session.\nShows whether each player is human controlled or AI controlled, and the AI type if applicable.\n\nOnly session managers or global managers can access this endpoint.\n",
+        "summary": "get control status for all players in a session",
+        "operationId": "sessionPlayerControl",
+        "responses": {
+          "200": {
+            "description": "list of player control statuses",
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/player_control_list"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/player_race": {
       "get": {
         "description": "Returns the race file (.r1 format, base64 encoded) that you have set for this session.\nThis allows you to download your race configuration for the current session.\n",
@@ -3024,6 +3101,111 @@ func init() {
         }
       ]
     },
+    "/v1/sessions/{session_id}/player/{player_order}/switch_to_human": {
+      "post": {
+        "description": "Switch an AI-controlled player back to human control by modifying the .hst file.\nThis is useful when a player returns to the game and wants to take back control\nfrom the AI that was managing their position.\n\nPreconditions:\n- The game must be started (session files must exist)\n- The player must currently be AI-controlled (ai_control_type is NOT NULL)\n- The player must have a real user associated (not a bot slot)\n- Only session managers or global managers can perform this action\n",
+        "summary": "switch an AI player back to human control",
+        "operationId": "sessionPlayerSwitchToHuman",
+        "responses": {
+          "204": {
+            "description": "player successfully switched to human control"
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Precondition not met",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "maximum": 15,
+          "minimum": 0,
+          "type": "integer",
+          "name": "player_order",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/v1/sessions/{session_id}/player_control": {
+      "get": {
+        "description": "Returns the control status (human vs AI) for all players in the session.\nShows whether each player is human controlled or AI controlled, and the AI type if applicable.\n\nOnly session managers or global managers can access this endpoint.\n",
+        "summary": "get control status for all players in a session",
+        "operationId": "sessionPlayerControl",
+        "responses": {
+          "200": {
+            "description": "list of player control statuses",
+            "schema": {
+              "$ref": "#/definitions/playerControlList"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/player_race": {
       "get": {
         "description": "Returns the race file (.r1 format, base64 encoded) that you have set for this session.\nThis allows you to download your race configuration for the current session.\n",
@@ -4167,6 +4349,69 @@ func init() {
           "package": "github.com/neper-stars/neper/models/types"
         },
         "type": "OrderList"
+      }
+    },
+    "playerControlList": {
+      "description": "List of player control statuses for a session",
+      "type": "object",
+      "properties": {
+        "players": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/playerControlStatus"
+          }
+        }
+      }
+    },
+    "playerControlStatus": {
+      "description": "Control status for a player in a session.\nShows whether the player is human or AI controlled, and the AI type if applicable.\n",
+      "type": "object",
+      "properties": {
+        "ai_control_type": {
+          "description": "The AI expert type if this player is AI-controlled.\nNULL means human controlled.\nValid values: HE, SS, IS, CA, PP, AR\n",
+          "type": "string",
+          "enum": [
+            "HE",
+            "SS",
+            "IS",
+            "CA",
+            "PP",
+            "AR"
+          ],
+          "x-nullable": true
+        },
+        "control_status": {
+          "description": "Current control status: \"human\" or \"ai\"\n",
+          "type": "string",
+          "enum": [
+            "human",
+            "ai"
+          ],
+          "x-nullable": false
+        },
+        "is_bot": {
+          "description": "Whether this player was originally created as a bot slot.\nThis tracks the initial player type, not the current control status.\n",
+          "type": "boolean",
+          "x-nullable": false
+        },
+        "nickname": {
+          "description": "The player's nickname",
+          "type": "string",
+          "x-nullable": false
+        },
+        "player_order": {
+          "description": "The player order number (0-15)",
+          "type": "integer",
+          "format": "int64",
+          "maximum": 15,
+          "minimum": 0,
+          "x-nullable": false
+        },
+        "user_profile_id": {
+          "description": "The user profile ID associated with this player slot",
+          "type": "string",
+          "x-nullable": false
+        }
       }
     },
     "playerOrder": {
