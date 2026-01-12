@@ -889,3 +889,24 @@ definitions:
       type: Decimal
       import:
         package: github.com/neper-stars/neper/models/types
+
+  switch_to_ai_request:
+    type: object
+    description: |
+      Request body for switching a human player to an AI player.
+      This modifies the .hst file to change the player's control type.
+    properties:
+      ai_type:
+        type: string
+        description: |
+          The AI expert type to use. Valid values are:
+            HE - Hyper Expansion (Robotoids)
+            SS - Super Stealth (Turindromes)
+            IS - Inner Strength (Automitrons)
+            CA - Claim Adjuster (Rototills)
+            PP - Packet Physics (Cybertrons)
+            AR - Alternate Reality (Macinti)
+        enum: [HE, SS, IS, CA, PP, AR]
+        x-nullable: false
+    required:
+      - ai_type

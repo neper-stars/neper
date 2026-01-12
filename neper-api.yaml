@@ -642,6 +642,50 @@ paths:
         default:
           $ref: "#/responses/default"
 
+  /v1/sessions/{session_id}/player/{player_order}/switch_to_ai:
+    parameters:
+      - name: session_id
+        in: path
+        type: string
+        required: true
+      - name: player_order
+        in: path
+        type: integer
+        minimum: 0
+        maximum: 15
+        required: true
+    post:
+      operationId: sessionPlayerSwitchToAI
+      summary: "switch a human player to AI control"
+      description: |
+        Switch a human player to AI control by modifying the .hst file.
+        This is useful when a player drops from a game and the session manager
+        wants to replace them with an AI.
+
+        The game must be started (session files must exist) for this endpoint to work.
+        Only session managers or global managers can perform this action.
+      parameters:
+        - name: switch_request
+          in: body
+          required: true
+          schema:
+            $ref: "neper-types.yaml#/definitions/switch_to_ai_request"
+      responses:
+        204:
+          description: player successfully switched to AI control
+        400:
+          $ref: "#/responses/invalid"
+        401:
+          $ref: "#/responses/unauthorized"
+        403:
+          $ref: "#/responses/forbidden"
+        404:
+          $ref: "#/responses/notfound"
+        412:
+          $ref: "#/responses/preconditionfailed"
+        default:
+          $ref: "#/responses/default"
+
   /v1/sessions/{session_id}:
     parameters:
       - name: session_id

@@ -870,6 +870,61 @@ func init() {
         }
       }
     },
+    "/v1/sessions/{session_id}/player/{player_order}/switch_to_ai": {
+      "post": {
+        "description": "Switch a human player to AI control by modifying the .hst file.\nThis is useful when a player drops from a game and the session manager\nwants to replace them with an AI.\n\nThe game must be started (session files must exist) for this endpoint to work.\nOnly session managers or global managers can perform this action.\n",
+        "summary": "switch a human player to AI control",
+        "operationId": "sessionPlayerSwitchToAI",
+        "parameters": [
+          {
+            "name": "switch_request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "neper-types.yaml#/definitions/switch_to_ai_request"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "player successfully switched to AI control"
+          },
+          "400": {
+            "$ref": "#/responses/invalid"
+          },
+          "401": {
+            "$ref": "#/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/notfound"
+          },
+          "412": {
+            "$ref": "#/responses/preconditionfailed"
+          },
+          "default": {
+            "$ref": "#/responses/default"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "maximum": 15,
+          "type": "integer",
+          "name": "player_order",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/player_race": {
       "get": {
         "description": "Returns the race file (.r1 format, base64 encoded) that you have set for this session.\nThis allows you to download your race configuration for the current session.\n",
@@ -2895,6 +2950,80 @@ func init() {
         }
       }
     },
+    "/v1/sessions/{session_id}/player/{player_order}/switch_to_ai": {
+      "post": {
+        "description": "Switch a human player to AI control by modifying the .hst file.\nThis is useful when a player drops from a game and the session manager\nwants to replace them with an AI.\n\nThe game must be started (session files must exist) for this endpoint to work.\nOnly session managers or global managers can perform this action.\n",
+        "summary": "switch a human player to AI control",
+        "operationId": "sessionPlayerSwitchToAI",
+        "parameters": [
+          {
+            "name": "switch_request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/switchToAiRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "player successfully switched to AI control"
+          },
+          "400": {
+            "description": "invalid client request",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "403": {
+            "description": "Access forbidden",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "412": {
+            "description": "Precondition not met",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
+          "default": {
+            "description": "Generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "session_id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "maximum": 15,
+          "minimum": 0,
+          "type": "integer",
+          "name": "player_order",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/v1/sessions/{session_id}/player_race": {
       "get": {
         "description": "Returns the race file (.r1 format, base64 encoded) that you have set for this session.\nThis allows you to download your race configuration for the current session.\n",
@@ -4586,6 +4715,28 @@ func init() {
           "x-go-custom-tag": "db:\"user_profile_id\"",
           "x-nullable": false,
           "readOnly": true
+        }
+      }
+    },
+    "switchToAiRequest": {
+      "description": "Request body for switching a human player to an AI player.\nThis modifies the .hst file to change the player's control type.\n",
+      "type": "object",
+      "required": [
+        "ai_type"
+      ],
+      "properties": {
+        "ai_type": {
+          "description": "The AI expert type to use. Valid values are:\n  HE - Hyper Expansion (Robotoids)\n  SS - Super Stealth (Turindromes)\n  IS - Inner Strength (Automitrons)\n  CA - Claim Adjuster (Rototills)\n  PP - Packet Physics (Cybertrons)\n  AR - Alternate Reality (Macinti)\n",
+          "type": "string",
+          "enum": [
+            "HE",
+            "SS",
+            "IS",
+            "CA",
+            "PP",
+            "AR"
+          ],
+          "x-nullable": false
         }
       }
     },

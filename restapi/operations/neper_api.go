@@ -149,6 +149,9 @@ func NewNeperAPI(spec *loads.Document) *NeperAPI {
 		SessionPlayerRaceSetReadyHandler: SessionPlayerRaceSetReadyHandlerFunc(func(params SessionPlayerRaceSetReadyParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPlayerRaceSetReady has not yet been implemented")
 		}),
+		SessionPlayerSwitchToAIHandler: SessionPlayerSwitchToAIHandlerFunc(func(params SessionPlayerSwitchToAIParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation SessionPlayerSwitchToAI has not yet been implemented")
+		}),
 		SessionPromoteMemberHandler: SessionPromoteMemberHandlerFunc(func(params SessionPromoteMemberParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation SessionPromoteMember has not yet been implemented")
 		}),
@@ -320,6 +323,8 @@ type NeperAPI struct {
 	SessionPlayerRaceGetHandler SessionPlayerRaceGetHandler
 	// SessionPlayerRaceSetReadyHandler sets the operation handler for the session player race set ready operation
 	SessionPlayerRaceSetReadyHandler SessionPlayerRaceSetReadyHandler
+	// SessionPlayerSwitchToAIHandler sets the operation handler for the session player switch to a i operation
+	SessionPlayerSwitchToAIHandler SessionPlayerSwitchToAIHandler
 	// SessionPromoteMemberHandler sets the operation handler for the session promote member operation
 	SessionPromoteMemberHandler SessionPromoteMemberHandler
 	// SessionQuitHandler sets the operation handler for the session quit operation
@@ -538,6 +543,9 @@ func (o *NeperAPI) Validate() error {
 	}
 	if o.SessionPlayerRaceSetReadyHandler == nil {
 		unregistered = append(unregistered, "SessionPlayerRaceSetReadyHandler")
+	}
+	if o.SessionPlayerSwitchToAIHandler == nil {
+		unregistered = append(unregistered, "SessionPlayerSwitchToAIHandler")
 	}
 	if o.SessionPromoteMemberHandler == nil {
 		unregistered = append(unregistered, "SessionPromoteMemberHandler")
@@ -821,6 +829,10 @@ func (o *NeperAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/v1/sessions/{session_id}/player_race/ready"] = NewSessionPlayerRaceSetReady(o.context, o.SessionPlayerRaceSetReadyHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/v1/sessions/{session_id}/player/{player_order}/switch_to_ai"] = NewSessionPlayerSwitchToAI(o.context, o.SessionPlayerSwitchToAIHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
