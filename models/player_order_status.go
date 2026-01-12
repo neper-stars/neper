@@ -7,15 +7,25 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // PlayerOrderStatus Order submission status for a player
 //
 // swagger:model playerOrderStatus
 type PlayerOrderStatus struct {
+
+	// The AI expert type if this player is AI-controlled.
+	// NULL means human controlled.
+	// Valid values: HE, SS, IS, CA, PP, AR
+	//
+	// Enum: [HE SS IS CA PP AR]
+	AiControlType *string `json:"ai_control_type,omitempty"`
 
 	// True if this is a bot player
 	IsBot bool `json:"is_bot,omitempty"`
@@ -32,6 +42,69 @@ type PlayerOrderStatus struct {
 
 // Validate validates this player order status
 func (m *PlayerOrderStatus) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAiControlType(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+var playerOrderStatusTypeAiControlTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["HE","SS","IS","CA","PP","AR"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		playerOrderStatusTypeAiControlTypePropEnum = append(playerOrderStatusTypeAiControlTypePropEnum, v)
+	}
+}
+
+const (
+
+	// PlayerOrderStatusAiControlTypeHE captures enum value "HE"
+	PlayerOrderStatusAiControlTypeHE string = "HE"
+
+	// PlayerOrderStatusAiControlTypeSS captures enum value "SS"
+	PlayerOrderStatusAiControlTypeSS string = "SS"
+
+	// PlayerOrderStatusAiControlTypeIS captures enum value "IS"
+	PlayerOrderStatusAiControlTypeIS string = "IS"
+
+	// PlayerOrderStatusAiControlTypeCA captures enum value "CA"
+	PlayerOrderStatusAiControlTypeCA string = "CA"
+
+	// PlayerOrderStatusAiControlTypePP captures enum value "PP"
+	PlayerOrderStatusAiControlTypePP string = "PP"
+
+	// PlayerOrderStatusAiControlTypeAR captures enum value "AR"
+	PlayerOrderStatusAiControlTypeAR string = "AR"
+)
+
+// prop value enum
+func (m *PlayerOrderStatus) validateAiControlTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, playerOrderStatusTypeAiControlTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PlayerOrderStatus) validateAiControlType(formats strfmt.Registry) error {
+	if swag.IsZero(m.AiControlType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateAiControlTypeEnum("ai_control_type", "body", *m.AiControlType); err != nil {
+		return err
+	}
+
 	return nil
 }
 

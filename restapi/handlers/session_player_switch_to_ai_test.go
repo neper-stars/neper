@@ -15,6 +15,7 @@ import (
 
 	"github.com/neper-stars/neper/fixtures"
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/migration"
 	"github.com/neper-stars/neper/models"
@@ -38,7 +39,8 @@ func TestSessionPlayerSwitchToAIHandler(t *testing.T) {
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_session_player_race.json")
 	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_turn0_files.json")
 
-	handler := NewSessionPlayerSwitchToAIHandler(&log, testdb.DB)
+	testSubmitter := sessionSubmitter.NewTestSessionSubmitter(&log)
+	handler := NewSessionPlayerSwitchToAIHandler(&log, testdb.DB, testSubmitter, nil)
 
 	t.Run("session_manager_can_switch_player_to_ai", func(t *testing.T) {
 		// Merry is the session manager
@@ -323,5 +325,78 @@ func TestSessionPlayerSwitchToAIHandler(t *testing.T) {
 		require.Error(t, err)
 		require.True(t, errors.Is(err, errs.ErrPreconditionFailed), "should get precondition failed when trying to switch last human player")
 		require.Contains(t, err.Error(), "last human", "error should mention last human player")
+	})
+
+	t.Run("triggers_turn_generation_when_last_pending_human_switched_to_ai", func(t *testing.T) {
+		// Reset fixtures - fixture has player 0 (merry) submitted, player 1 (gollum) not submitted
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_started.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_merry.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_gollum.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_session_player_race.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_turn0_files.json")
+
+		// Clear any previous messages from the test submitter
+		testSubmitter.Msgs = nil
+
+		merryPrincipal := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+
+		// Switch player 1 (gollum) to AI - player 1 has NOT submitted orders
+		// Since player 0 (merry) has already submitted, this should trigger turn generation
+		params := operations.SessionPlayerSwitchToAIParams{
+			SessionID:   "merryvsgollumID",
+			PlayerOrder: 1,
+			SwitchRequest: &models.SwitchToAiRequest{
+				AiType: "CA",
+			},
+		}
+
+		err := handler.handle(ctx, params, merryPrincipal)
+		require.NoError(t, err)
+
+		// Verify turn generation was triggered
+		require.Len(t, testSubmitter.Msgs, 1, "turn generation should be triggered when last pending human is switched to AI")
+		require.Equal(t, "Turn.NeedsGeneration", testSubmitter.Msgs[0].Subject)
+	})
+
+	t.Run("does_not_trigger_turn_generation_when_other_humans_still_pending", func(t *testing.T) {
+		// Reset fixtures - fixture has player 0 (merry) submitted, player 1 (gollum) not submitted
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_started.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_merry.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/race_gollum.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_session_player_race.json")
+		fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum_turn0_files.json")
+
+		// Clear any previous messages from the test submitter
+		testSubmitter.Msgs = nil
+
+		merryPrincipal := &models.Principal{
+			StandardClaims: jwt.StandardClaims{
+				Subject:   "merryID",
+				ExpiresAt: time.Now().Add(time.Minute).Unix(),
+			},
+			IsGlobalManager: false,
+		}
+
+		// Switch player 0 (merry) to AI - player 0 has already submitted
+		// Since player 1 (gollum) has NOT submitted, turn generation should NOT be triggered
+		params := operations.SessionPlayerSwitchToAIParams{
+			SessionID:   "merryvsgollumID",
+			PlayerOrder: 0,
+			SwitchRequest: &models.SwitchToAiRequest{
+				AiType: "HE",
+			},
+		}
+
+		err := handler.handle(ctx, params, merryPrincipal)
+		require.NoError(t, err)
+
+		// Verify turn generation was NOT triggered because player 1 still hasn't submitted
+		require.Len(t, testSubmitter.Msgs, 0, "turn generation should NOT be triggered when other humans still haven't submitted")
 	})
 }

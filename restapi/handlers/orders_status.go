@@ -31,10 +31,11 @@ type OrdersStatusHandler struct {
 
 // playerWithOrder holds the joined data for a player and their order submission status
 type playerWithOrder struct {
-	PlayerOrder   int64  `db:"player_order"`
-	UserProfileID string `db:"user_profile_id"`
-	Nickname      string `db:"nickname"`
-	BotLevel      *int64 `db:"bot_level"`
+	PlayerOrder   int64   `db:"player_order"`
+	UserProfileID string  `db:"user_profile_id"`
+	Nickname      string  `db:"nickname"`
+	BotLevel      *int64  `db:"bot_level"`
+	AIControlType *string `db:"ai_control_type"`
 }
 
 func (h *OrdersStatusHandler) handle(
@@ -85,6 +86,7 @@ func (h *OrdersStatusHandler) handle(
 		Column(spr.PlayerOrder.Sql()).
 		Column(spr.UserProfileID.Sql()).
 		Column(spr.BotLevel.Sql()).
+		Column(spr.AIControlType.Sql()).
 		Column("COALESCE(" + u.Nickname.Sql() + ", 'Bot') AS nickname").
 		From(spr.Sql()).
 		LeftJoin(spr.UserProfileID.Join(u.ID).Sql()).
@@ -108,10 +110,11 @@ func (h *OrdersStatusHandler) handle(
 		}
 
 		result = append(result, &models.PlayerOrderStatus{
-			PlayerOrder: player.PlayerOrder,
-			Nickname:    player.Nickname,
-			IsBot:       isBot,
-			Submitted:   submitted,
+			PlayerOrder:   player.PlayerOrder,
+			Nickname:      player.Nickname,
+			IsBot:         isBot,
+			AiControlType: player.AIControlType,
+			Submitted:     submitted,
 		})
 	}
 

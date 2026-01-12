@@ -151,9 +151,14 @@ func (h *TurnSubmitHandler) handle(
 	} else {
 		for i, race := range sessionPlayerRaces {
 			if race.IsBot {
-				// bot are never "ready", the game engine
+				// bots are never "ready", the game engine
 				// plays their turn when all other players are ready,
 				// and we ask it to generate a turn
+				continue
+			}
+			if race.AIControlType != nil {
+				// AI-controlled humans don't need to submit orders,
+				// the game engine plays their turn like bots
 				continue
 			}
 			if !readyPlayers[i] {

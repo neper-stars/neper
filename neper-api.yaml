@@ -1458,6 +1458,14 @@ definitions:
       is_bot:
         type: boolean
         description: True if this is a bot player
+      ai_control_type:
+        type: string
+        description: |
+          The AI expert type if this player is AI-controlled.
+          NULL means human controlled.
+          Valid values: HE, SS, IS, CA, PP, AR
+        enum: [HE, SS, IS, CA, PP, AR]
+        x-nullable: true
       submitted:
         type: boolean
         description: True if orders have been submitted for this turn

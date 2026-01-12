@@ -1808,6 +1808,19 @@ func init() {
       "description": "Order submission status for a player",
       "type": "object",
       "properties": {
+        "ai_control_type": {
+          "description": "The AI expert type if this player is AI-controlled.\nNULL means human controlled.\nValid values: HE, SS, IS, CA, PP, AR\n",
+          "type": "string",
+          "enum": [
+            "HE",
+            "SS",
+            "IS",
+            "CA",
+            "PP",
+            "AR"
+          ],
+          "x-nullable": true
+        },
         "is_bot": {
           "description": "True if this is a bot player",
           "type": "boolean"
@@ -4435,6 +4448,19 @@ func init() {
       "description": "Order submission status for a player",
       "type": "object",
       "properties": {
+        "ai_control_type": {
+          "description": "The AI expert type if this player is AI-controlled.\nNULL means human controlled.\nValid values: HE, SS, IS, CA, PP, AR\n",
+          "type": "string",
+          "enum": [
+            "HE",
+            "SS",
+            "IS",
+            "CA",
+            "PP",
+            "AR"
+          ],
+          "x-nullable": true
+        },
         "is_bot": {
           "description": "True if this is a bot player",
           "type": "boolean"

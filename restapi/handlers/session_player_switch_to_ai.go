@@ -14,20 +14,24 @@ import (
 	"orus.io/orus-io/go-orusapi/database"
 
 	errs "github.com/neper-stars/neper/lib/errors"
+	"github.com/neper-stars/neper/lib/notify"
+	"github.com/neper-stars/neper/lib/sessionSubmitter"
 	"github.com/neper-stars/neper/lib/stars"
 	"github.com/neper-stars/neper/models"
 	"github.com/neper-stars/neper/restapi/operations"
 )
 
 // NewSessionPlayerSwitchToAIHandler creates a new handler for switching a player to AI control
-func NewSessionPlayerSwitchToAIHandler(log *zerolog.Logger, db *sqlx.DB) *SessionPlayerSwitchToAIHandler {
-	return &SessionPlayerSwitchToAIHandler{db: db, log: log}
+func NewSessionPlayerSwitchToAIHandler(log *zerolog.Logger, db *sqlx.DB, submitter sessionSubmitter.SessionSubmitter, notifyService *notify.Service) *SessionPlayerSwitchToAIHandler {
+	return &SessionPlayerSwitchToAIHandler{db: db, log: log, submitter: submitter, notifyService: notifyService}
 }
 
 // SessionPlayerSwitchToAIHandler handles POST /sessions/{session_id}/player/{player_order}/switch_to_ai
 type SessionPlayerSwitchToAIHandler struct {
-	db  *sqlx.DB
-	log *zerolog.Logger
+	db            *sqlx.DB
+	log           *zerolog.Logger
+	submitter     sessionSubmitter.SessionSubmitter
+	notifyService *notify.Service
 }
 
 func (h *SessionPlayerSwitchToAIHandler) handle(
@@ -121,11 +125,75 @@ func (h *SessionPlayerSwitchToAIHandler) handle(
 		return err
 	}
 
+	// Get session_player_race entries before commit to check readiness later
+	var sessionPlayerRaces []models.SessionPlayerRaceDB
+	query = sessionPlayerRaceForSessionQuery(sessionID)
+	if err := sqlH.Select(&sessionPlayerRaces, query); err != nil {
+		return err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}
 
+	// After switching a player to AI, check if all remaining human players have submitted
+	// If so, trigger turn generation (similar to turn_submit.go logic)
+	h.checkAndTriggerTurnGeneration(ctx, sessionID, sessionFilesDB, sessionPlayerRaces, playerOrder)
+
 	return nil
+}
+
+// checkAndTriggerTurnGeneration checks if all remaining human players have submitted orders
+// and triggers turn generation if they have
+func (h *SessionPlayerSwitchToAIHandler) checkAndTriggerTurnGeneration(
+	ctx context.Context, sessionID string, sessionFilesDB models.SessionFilesDB,
+	sessionPlayerRaces []models.SessionPlayerRaceDB, switchedPlayerOrder int,
+) {
+	log := *zerolog.Ctx(ctx)
+
+	readyPlayers := sessionFilesDB.ReadyPlayers()
+	if len(readyPlayers) == 0 {
+		return
+	}
+
+	allPlayersReady := true
+	for _, race := range sessionPlayerRaces {
+		if race.IsBot {
+			// Bots are never "ready" - the game engine plays their turn
+			continue
+		}
+		// The player we just switched is now AI-controlled
+		if int(race.PlayerOrder) == switchedPlayerOrder {
+			continue
+		}
+		if race.AIControlType != nil {
+			// AI-controlled humans don't need to submit orders
+			continue
+		}
+		// Check if this player has submitted orders (by player order, not slice index)
+		playerOrder := int(race.PlayerOrder)
+		if playerOrder >= len(readyPlayers) || !readyPlayers[playerOrder] {
+			allPlayersReady = false
+			break
+		}
+	}
+
+	if allPlayersReady {
+		log.Info().
+			Str("sessionID", sessionID).
+			Int64("year", sessionFilesDB.Year).
+			Msg("all remaining human players have submitted, triggering turn generation after AI switch")
+
+		// Publish order status update notification
+		if h.notifyService != nil {
+			_ = h.notifyService.PublishOrderStatusUpdate(sessionID, sessionFilesDB.Year)
+		}
+
+		// Trigger turn generation
+		if err := h.submitter.Sub(sessionID, sessionFilesDB.Year); err != nil {
+			log.Err(err).Str("sessionID", sessionID).Msg("failed to signal turn generator after AI switch")
+		}
+	}
 }
 
 // updateAIControlType updates the ai_control_type column in session_player_race
