@@ -49,7 +49,7 @@ func (h *RaceDeleteHandler) handle(
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 
 	// Check if race is used in any session
-	countQuery := database.SQ.Select("COUNT(*)").
+	countQuery := database.SQ.Select(Count("*")).
 		From(models.SessionPlayerRaceDBTable).
 		Where(sq.Eq{models.SessionPlayerRaceDBRaceIDColumn: raceID})
 

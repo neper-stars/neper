@@ -79,10 +79,22 @@ func (r *Runner) gameFilesForTurn(sessionID string, players []models.SessionPlay
 	}
 	gf.HostFile = hostContent
 
+	// Find the maximum player order to size the Turns slice correctly.
+	// We use player order as the index so that Turns[playerOrder] works correctly
+	// even if player orders have gaps.
+	var maxOrder int64
 	for _, player := range players {
-		if player.IsBot {
-			continue
+		if player.PlayerOrder > maxOrder {
+			maxOrder = player.PlayerOrder
 		}
+	}
+
+	// Pre-allocate Turns slice with correct size
+	gf.Turns = make([][]byte, maxOrder+1)
+
+	for _, player := range players {
+		// Note: We collect turn files for ALL players (including bots).
+		// Stars! generates .m files for all players regardless of control type.
 		playerTurnContent, err := r.readPlayerTurn(sessionDir, player)
 		if err != nil {
 			r.log.Err(err).
@@ -91,7 +103,8 @@ func (r *Runner) gameFilesForTurn(sessionID string, players []models.SessionPlay
 				Msg("failed to read player turn")
 			return nil, err
 		}
-		gf.Turns = append(gf.Turns, playerTurnContent)
+		// Use player order as the index, not iteration order
+		gf.Turns[player.PlayerOrder] = playerTurnContent
 	}
 	return &gf, nil
 }

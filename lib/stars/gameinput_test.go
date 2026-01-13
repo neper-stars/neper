@@ -47,7 +47,7 @@ func testPlayers(t *testing.T) []models.SessionPlayerRace {
 			BotLevel:      &level1,
 			ID:            "1",
 			IsBot:         true,
-			PlayerOrder:   3,
+			PlayerOrder:   2,
 			RaceID:        "1",
 			SessionID:     "shireID",
 			UserProfileID: "system",

@@ -193,7 +193,7 @@ func TestSessionJoinHandler_DeletesInvitation(t *testing.T) {
 		// Verify invitation exists
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var count int
-		err = sqlH.Get(&count, database.SQ.Select("COUNT(*)").From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: invitationID}))
+		err = sqlH.Get(&count, database.SQ.Select(Count("*")).From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: invitationID}))
 		require.NoError(t, err)
 		require.Equal(t, 1, count, "invitation should exist before join")
 
@@ -206,7 +206,7 @@ func TestSessionJoinHandler_DeletesInvitation(t *testing.T) {
 		require.NotNil(t, session)
 
 		// Verify invitation was deleted
-		err = sqlH.Get(&count, database.SQ.Select("COUNT(*)").From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: invitationID}))
+		err = sqlH.Get(&count, database.SQ.Select(Count("*")).From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: invitationID}))
 		require.NoError(t, err)
 		require.Equal(t, 0, count, "invitation should be deleted after join")
 	})

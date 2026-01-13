@@ -1,0 +1,3 @@
+kind: Changed
+body: Fixed a bug when a player entered a session, then left. This created a hole in the sequence for player orders. and later an error to read the turn file.
+time: 2026-01-13T18:03:10.052934668+01:00

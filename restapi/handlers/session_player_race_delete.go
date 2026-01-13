@@ -86,6 +86,30 @@ func (h *SessionPlayerRaceDeleteHandler) handle(
 		return err
 	}
 
+	// Normalize player orders to remove gaps after deletion.
+	// This ensures player orders are always contiguous (0, 1, 2, ...).
+	var remainingPlayers []models.SessionPlayerRaceDB
+	query := database.SQ.
+		Select().
+		Columns(models.SessionPlayerRaceDBColumns...).
+		From(models.SessionPlayerRaceDBTable).
+		Where(sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: params.SessionID}).
+		OrderBy(models.SessionPlayerRaceDBPlayerOrderColumn)
+	if err := sqlH.Select(&remainingPlayers, query); err != nil {
+		return err
+	}
+
+	// Convert to SessionPlayerRace slice for normalization
+	players := make([]models.SessionPlayerRace, len(remainingPlayers))
+	for i := range remainingPlayers {
+		players[i] = remainingPlayers[i].SessionPlayerRace
+	}
+
+	if _, err := NormalizePlayerOrders(&sqlH, params.SessionID, players); err != nil {
+		log.Err(err).Str("sessionID", params.SessionID).Msg("failed to normalize player orders after deletion")
+		return err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return err
 	}

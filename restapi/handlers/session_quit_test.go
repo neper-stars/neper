@@ -254,7 +254,7 @@ func TestSessionQuitHandler_SessionPlayerRaceIsDeleted(t *testing.T) {
 	require.NoError(t, err)
 	sqlH := database.NewSQLHelper(ctx, tx, log)
 	var sprCount int
-	err = sqlH.Get(&sprCount, database.SQ.Select("COUNT(*)").
+	err = sqlH.Get(&sprCount, database.SQ.Select(Count("*")).
 		From(models.SessionPlayerRaceDBTable).
 		Where(sq.And{
 			sq.Eq{models.SessionPlayerRaceDBUserProfileIDColumn: "finduilasID"},
@@ -282,7 +282,7 @@ func TestSessionQuitHandler_SessionPlayerRaceIsDeleted(t *testing.T) {
 	tx, err = database.Begin(ctx, testdb.DB)
 	require.NoError(t, err)
 	sqlH = database.NewSQLHelper(ctx, tx, log)
-	err = sqlH.Get(&sprCount, database.SQ.Select("COUNT(*)").
+	err = sqlH.Get(&sprCount, database.SQ.Select(Count("*")).
 		From(models.SessionPlayerRaceDBTable).
 		Where(sq.And{
 			sq.Eq{models.SessionPlayerRaceDBUserProfileIDColumn: "finduilasID"},

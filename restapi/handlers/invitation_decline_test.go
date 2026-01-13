@@ -79,7 +79,7 @@ func TestInvitationDeclineHandler(t *testing.T) {
 		// verify invitation is removed from DB
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var count int
-		err = sqlH.Get(&count, database.SQ.Select("COUNT(*)").From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: returnedInvitation.ID}))
+		err = sqlH.Get(&count, database.SQ.Select(Count("*")).From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: returnedInvitation.ID}))
 		require.NoError(t, err)
 		require.Equal(t, 0, count)
 	})
@@ -178,7 +178,7 @@ func TestInvitationDeclineHandler(t *testing.T) {
 		// verify invitation is removed from DB
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var count int
-		err = sqlH.Get(&count, database.SQ.Select("COUNT(*)").From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: returnedInvitation.ID}))
+		err = sqlH.Get(&count, database.SQ.Select(Count("*")).From(models.InvitationDBTable).Where(sq.Eq{models.InvitationDBIDColumn: returnedInvitation.ID}))
 		require.NoError(t, err)
 		require.Equal(t, 0, count)
 	})

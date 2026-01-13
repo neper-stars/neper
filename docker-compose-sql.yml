@@ -1,0 +1,15 @@
+services:
+  psql:
+    image: postgres:16
+    container_name: neper-psql
+    environment:
+      PGPASSWORD: neper
+    networks:
+      - neper_neper-net
+    entrypoint: ["psql", "-h", "neper-postgres", "-U", "neper", "-d", "neper"]
+    stdin_open: true
+    tty: true
+
+networks:
+  neper_neper-net:
+    external: true

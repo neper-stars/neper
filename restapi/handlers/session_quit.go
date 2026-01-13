@@ -144,7 +144,7 @@ func (h *SessionQuitHandler) handle(
 
 // countOtherManagers returns the number of managers in the session excluding the given user
 func (h *SessionQuitHandler) countOtherManagers(sqlH database.SQLHelper, sessionID, excludeUserID string) (int, error) {
-	query := database.SQ.Select("COUNT(*)").
+	query := database.SQ.Select(Count("*")).
 		From(models.UserProfileSessionRelDBTable).
 		Where(sq.And{
 			sq.Eq{models.UserProfileSessionRelDBSessionIDColumn: sessionID},

@@ -37,5 +37,6 @@ func TestRunner(t *testing.T) {
 	sessionID := "shireID"
 	gameFiles, err := runner.NewGame(ctx, &log, sessionID, gi, testPlayers(t), GetTestRaces(t))
 	require.NoError(t, err)
-	require.Equal(t, 2, len(gameFiles.Turns))
+	// 3 players: 2 human + 1 bot, all get turn files
+	require.Equal(t, 3, len(gameFiles.Turns))
 }

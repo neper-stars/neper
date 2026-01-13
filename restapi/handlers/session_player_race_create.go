@@ -144,7 +144,7 @@ func (h *SessionPlayerRaceCreateHandler) handle(
 		// Enforce uniqueness for non-system users: only one entry per session per human player
 		var existingCount int64
 		if err := sqlH.Get(&existingCount, database.SQ.
-			Select("COUNT(*)").
+			Select(Count("*")).
 			From(models.SessionPlayerRaceDBTable).
 			Where(sq.And{
 				sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: params.SessionID},
@@ -264,17 +264,19 @@ func (h *SessionPlayerRaceCreateHandler) Authorize(
 // getNextPlayerOrder returns the next available player_order for a session.
 // Player orders are 0-indexed (0-15 for up to 16 players).
 func getNextPlayerOrder(sqlH database.SQLHelper, sessionID string) (int64, error) {
-	// Count existing players in the session
-	var count int64
-	countQuery := database.SQ.Select("COUNT(*)").
+	// Get the maximum player order in the session
+	var maxOrder sql.NullInt64
+	maxQuery := database.SQ.Select(Max(models.SessionPlayerRaceDBPlayerOrderColumn)).
 		From(models.SessionPlayerRaceDBTable).
 		Where(sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID})
 
-	if err := sqlH.Get(&count, countQuery); err != nil {
+	if err := sqlH.Get(&maxOrder, maxQuery); err != nil {
 		return 0, err
 	}
 
-	// The next player order is simply the count of existing players
-	// (0-indexed: if there are 0 players, next is 0; if there is 1 player, next is 1, etc.)
-	return count, nil
+	// If no players exist (NULL), return 0; otherwise return max + 1
+	if !maxOrder.Valid {
+		return 0, nil
+	}
+	return maxOrder.Int64 + 1, nil
 }

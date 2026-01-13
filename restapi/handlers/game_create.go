@@ -93,6 +93,15 @@ func (h *GameCreateHandler) handle(
 			return err
 		}
 
+		// Normalize player orders to be contiguous (0, 1, 2, ...) without gaps.
+		// Gaps can occur when a player leaves before the game starts.
+		// This is important because the Turns array is indexed by player order.
+		sessionPlayerRaces, err = NormalizePlayerOrders(&sqlH, sessionID, sessionPlayerRaces)
+		if err != nil {
+			h.log.Err(err).Str("sessionID", sessionID).Msg("failed to normalize player orders")
+			return err
+		}
+
 		// Check that all players are ready
 		for _, spr := range sessionPlayerRaces {
 			if !spr.Ready {
@@ -296,3 +305,4 @@ func (h *GameCreateHandler) Authorize(
 	}
 	return authRes.IsManager, nil
 }
+

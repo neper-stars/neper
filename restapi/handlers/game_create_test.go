@@ -131,3 +131,70 @@ func TestGameCreateHandler_PlayersNotReady(t *testing.T) {
 		require.True(t, errors.Is(err, errs.ErrPreconditionFailed), "should get precondition failed when players not ready")
 	})
 }
+
+func TestGameCreateHandler_NormalizesPlayerOrders(t *testing.T) {
+	log := testutils.GetLogger(t)
+	ctx := log.WithContext(context.Background())
+	testdb := database.GetTestDB(ctx, t, migration.Source)
+	defer testdb.Close()
+
+	syncWorker, err := sync.NewWorker(testdb.DB, log)
+	require.NoError(t, err)
+
+	// Load fixtures
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merryvsgollum.json")
+	fixtures.LoadFixtureFile(t, syncWorker, "fixtures/merry_vs_gollum_ruleset.json")
+
+	// Create a gap in player orders by manually updating the database
+	// Change player orders from 0,1 to 0,2 (simulating a player who left)
+	sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
+	_, err = testdb.DB.ExecContext(ctx,
+		"UPDATE session_player_race SET player_order = 2 WHERE session_id = $1 AND player_order = 1",
+		"merryvsgollumID")
+	require.NoError(t, err)
+
+	// Verify the gap exists
+	var playerOrders []int64
+	err = testdb.DB.SelectContext(ctx, &playerOrders,
+		"SELECT player_order FROM session_player_race WHERE session_id = $1 ORDER BY player_order",
+		"merryvsgollumID")
+	require.NoError(t, err)
+	require.Equal(t, []int64{0, 2}, playerOrders, "should have gap in player orders before game start")
+
+	runner := stars.GetTestStarsRunner(t, &log)
+	createHandler := NewGameCreateHandler(&log, testdb.DB, runner, nil)
+
+	t.Run("normalizes_player_orders_on_game_start", func(t *testing.T) {
+		sessionID := "merryvsgollumID"
+		merryID := "merryID"
+		merryPrincipal := getTestPrincipal(merryID, false)
+
+		params := operations.NewGameCreateParams()
+		params.SessionID = sessionID
+
+		returnedFiles, err := createHandler.handle(ctx, params, &merryPrincipal)
+		require.NoError(t, err)
+		require.NotNil(t, returnedFiles)
+
+		// Verify player orders are now contiguous (0, 1)
+		var normalizedOrders []int64
+		err = testdb.DB.SelectContext(ctx, &normalizedOrders,
+			"SELECT player_order FROM session_player_race WHERE session_id = $1 ORDER BY player_order",
+			sessionID)
+		require.NoError(t, err)
+		require.Equal(t, []int64{0, 1}, normalizedOrders, "player orders should be normalized to 0, 1 after game start")
+
+		// Verify both players can access their turn files without panic
+		var sessionFilesDB models.SessionFilesDB
+		require.NoError(t, sqlH.GetBy(&sessionFilesDB, "session_id", sessionID))
+		require.Len(t, sessionFilesDB.Turns, 2, "should have 2 turn files")
+
+		// Access turn for player 0 - should work
+		turn0 := sessionFilesDB.ToTurnFiles(0)
+		require.NotEmpty(t, turn0.Turn.Turn, "player 0 should have turn data")
+
+		// Access turn for player 1 - should work (was player 2 before normalization)
+		turn1 := sessionFilesDB.ToTurnFiles(1)
+		require.NotEmpty(t, turn1.Turn.Turn, "player 1 should have turn data")
+	})
+}

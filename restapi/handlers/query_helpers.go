@@ -13,6 +13,23 @@ import (
 	"github.com/neper-stars/neper/models"
 )
 
+// SQL aggregate function helpers for use with squirrel Select()
+
+// Max returns a MAX(column) expression for use in Select queries.
+func Max(colName string) string {
+	return "MAX(" + colName + ")"
+}
+
+// Min returns a MIN(column) expression for use in Select queries.
+func Min(colName string) string {
+	return "MIN(" + colName + ")"
+}
+
+// Count returns a COUNT(column) expression for use in Select queries.
+func Count(colName string) string {
+	return "COUNT(" + colName + ")"
+}
+
 // IsMemberOfAnySession returns true if the given userProfileID is a member of any session
 func IsMemberOfAnySession(sqlH database.SQLHelper, userProfileID string) (bool, error) {
 	var sessionRel models.UserProfileSessionRelDB
@@ -271,6 +288,42 @@ func GetSessionInviteeIDs(sqlH database.SQLHelper, sessionID string, log *zerolo
 		inviteeIDs = append(inviteeIDs, userProfileID)
 	}
 	return inviteeIDs, rows.Err()
+}
+
+// NormalizePlayerOrders reassigns player orders to be contiguous (0, 1, 2, ...).
+// This is necessary because gaps can occur when players leave before the game starts.
+// The Turns array is indexed by player order, so gaps would cause index out of bounds errors.
+// Players should be already sorted by player_order ASC from SessionPlayerRaces.
+func NormalizePlayerOrders(sqlH *database.SQLHelper, sessionID string, players []models.SessionPlayerRace) ([]models.SessionPlayerRace, error) {
+	// Check if normalization is needed
+	needsNormalization := false
+	for i, player := range players {
+		if player.PlayerOrder != int64(i) {
+			needsNormalization = true
+			break
+		}
+	}
+
+	if !needsNormalization {
+		return players, nil
+	}
+
+	// Reassign player orders to be contiguous
+	for i := range players {
+		if players[i].PlayerOrder != int64(i) {
+			// Update the database
+			var sprDB models.SessionPlayerRaceDB
+			sprDB.SessionPlayerRace = players[i]
+			sprDB.PlayerOrder = int64(i)
+			if err := sqlH.UpdateColumns(&sprDB, models.SessionPlayerRaceDBPlayerOrderColumn); err != nil {
+				return nil, err
+			}
+			// Update the in-memory slice
+			players[i].PlayerOrder = int64(i)
+		}
+	}
+
+	return players, nil
 }
 
 // ValidatePlayerOrder checks that player orders are 0-indexed and have no gaps.

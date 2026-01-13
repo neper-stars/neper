@@ -54,7 +54,7 @@ func TestSessionDeleteHandler(t *testing.T) {
 		// Verify session is deleted
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 		var count int
-		countQuery := database.SQ.Select("COUNT(*)").
+		countQuery := database.SQ.Select(Count("*")).
 			From(models.SessionDBTable).
 			Where(sq.Eq{models.SessionDBIDColumn: "gondorID"})
 		err = sqlH.Get(&count, countQuery)
@@ -163,7 +163,7 @@ func TestSessionDeleteHandler_CascadeDelete(t *testing.T) {
 		sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
 
 		var sprCount int
-		sprQuery := database.SQ.Select("COUNT(*)").
+		sprQuery := database.SQ.Select(Count("*")).
 			From(models.SessionPlayerRaceDBTable).
 			Where(sq.Eq{models.SessionPlayerRaceDBSessionIDColumn: sessionID})
 		err := sqlH.Get(&sprCount, sprQuery)
@@ -171,7 +171,7 @@ func TestSessionDeleteHandler_CascadeDelete(t *testing.T) {
 		require.Greater(t, sprCount, 0, "should have session player races before delete")
 
 		var rulesetCount int
-		rulesetQuery := database.SQ.Select("COUNT(*)").
+		rulesetQuery := database.SQ.Select(Count("*")).
 			From(models.RulesetDBTable).
 			Where(sq.Eq{models.RulesetDBSessionIDColumn: sessionID})
 		err = sqlH.Get(&rulesetCount, rulesetQuery)

@@ -62,7 +62,7 @@ func (h *RaceCreateHandler) handle(
 	if h.opts != nil {
 		var count int
 		err := sqlH.Get(&count, database.SQ.
-			Select("COUNT(*)").
+			Select(Count("*")).
 			From(models.RaceDBTable).
 			Where(sq.Eq{models.RaceDBUserIDColumn: principal.Subject}))
 		if err != nil {

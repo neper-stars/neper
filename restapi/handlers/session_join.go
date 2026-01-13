@@ -58,7 +58,7 @@ func (h *SessionJoinHandler) handle(
 	if h.opts != nil && !principal.IsGlobalManager {
 		var count int
 		err := sqlH.Get(&count, database.SQ.
-			Select("COUNT(*)").
+			Select(Count("*")).
 			From(models.UserProfileSessionRelDBTable).
 			Join(models.SessionDBTable+" ON "+
 				models.SessionDBTable+"."+models.SessionDBIDColumn+" = "+
