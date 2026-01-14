@@ -1,6 +1,7 @@
 package stars
 
 import (
+	"encoding/binary"
 	"os"
 	"testing"
 
@@ -52,12 +53,15 @@ func GetTestStarsRunnerWithAutoDelete(t *testing.T, log *zerolog.Logger, autoDel
 	testWinePrefix := "~/.neper/wine" + uid.String()
 	testExecutableDir := "~/.neper/stars" + uid.String()
 	testSaveDir := "~/.neper/saves" + uid.String()
+	// Generate a unique display number from the UUID to avoid conflicts between
+	// concurrent test runs. Use range 100-9999 to avoid conflicts with system displays.
+	displayNumber := 100 + int(binary.BigEndian.Uint16(uid[:2]))%9900
 	opts := RunnerOptions{
 		ExecutableDir:   testExecutableDir,
 		SaveDir:         testSaveDir,
 		WinePrefix:      testWinePrefix,
 		CommandsTimeout: 60,
-		DisplayNumber:   98,
+		DisplayNumber:   displayNumber,
 	}
 	runner, err := NewRunner(log, &opts)
 	if err != nil {

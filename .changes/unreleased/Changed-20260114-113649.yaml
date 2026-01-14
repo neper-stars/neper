@@ -1,0 +1,3 @@
+kind: Changed
+body: Changed test runner to start xvfb on a random port each time (derived on the uuid)
+time: 2026-01-14T11:36:49.219539738+01:00
