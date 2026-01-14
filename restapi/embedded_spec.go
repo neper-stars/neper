@@ -5106,13 +5106,6 @@ func init() {
           "x-nullable": false,
           "readOnly": true
         },
-        "is_active": {
-          "description": "true if the profile is active, ie the user can identify itself",
-          "type": "boolean",
-          "x-go-custom-tag": "db:\"is_active\"",
-          "x-nullable": false,
-          "readOnly": true
-        },
         "is_manager": {
           "description": "true if the profile is a global manager. This field is readonly",
           "type": "boolean",
@@ -5126,18 +5119,23 @@ func init() {
           "x-go-custom-tag": "db:\"nickname\"",
           "x-nullable": false
         },
-        "pending": {
-          "description": "true if this is a pending registration that needs approval by a global manager.\nPending users cannot authenticate until approved.\n",
-          "type": "boolean",
-          "x-go-custom-tag": "db:\"pending\"",
-          "x-nullable": false,
-          "readOnly": true
-        },
         "registration_message": {
           "description": "optional message provided during registration explaining why they want to join",
           "type": "string",
           "x-go-custom-tag": "db:\"registration_message\"",
           "x-nullable": true,
+          "readOnly": true
+        },
+        "state": {
+          "description": "User account state:\n- pending: Registered but awaiting manager approval. Can authenticate but restricted from most operations.\n- active: Fully approved user with full access.\n- inactive: Deactivated account (e.g., system user).\n",
+          "type": "string",
+          "enum": [
+            "pending",
+            "active",
+            "inactive"
+          ],
+          "x-go-custom-tag": "db:\"state\"",
+          "x-nullable": false,
           "readOnly": true
         }
       }

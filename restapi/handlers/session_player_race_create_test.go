@@ -100,7 +100,7 @@ func TestSessionPlayerRaceCreateHandler_PlayerOrderAssignment(t *testing.T) {
 					"nickname": "Merry",
 					"email": "merry@shire.com",
 					"api_key": "apikeyMerry",
-					"is_active": true,
+					"state": "active",
 					"is_manager": false,
 					"session_list": [{"session_id": "gondorID", "is_manager": false}]
 				}

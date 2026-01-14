@@ -8,7 +8,7 @@
                 "nickname": "GandalfTheGrey",
                 "email": "gandalf@gondor.com",
                 "api_key": "apikeyGandalf",
-                "is_active": true,
+                "state": "active",
                 "is_manager": true,
                 "session_list": [
                     {"session_id":  "gondorID", "is_manager":  true},

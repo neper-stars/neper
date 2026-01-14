@@ -59,9 +59,8 @@ func (h *UserProfileCreateHandler) handle(
 			ID:        userUID.String(),
 			Nickname:  createRequest.Nickname,
 			Email:     createRequest.Email,
-			IsActive:  true,  // Users created by global managers are active immediately
-			IsManager: false, // New users are not managers by default
-			Pending:   false, // No approval needed when created by global manager
+			State:     models.UserProfileStateActive, // Users created by global managers are active immediately
+			IsManager: false,                         // New users are not managers by default
 		},
 	}
 

@@ -4,7 +4,7 @@
   "$$target": "https://neper.io/messages/schemas/v1/neper/user_profile.schema.json",
   "title": "user_profile",
   "description": "user profile",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "object",
   "properties": {
     "__type__": {
@@ -26,9 +26,10 @@
       "description": "email",
       "type": "string"
     },
-    "is_active": {
-      "description": "set to true if a login/password exists for this profile",
-      "type": "boolean"
+    "state": {
+      "description": "User account state: pending, active, or inactive",
+      "type": "string",
+      "enum": ["pending", "active", "inactive"]
     },
     "api_key": {
       "description": "API Key",
@@ -42,10 +43,6 @@
       "description": "Serial key assigned to this user for Stars! game registration",
       "type": "string"
     },
-    "pending": {
-      "description": "True if user registration is pending approval",
-      "type": "boolean"
-    },
     "session_list": {
       "description": "List of session ID. Defines the sessions linked to this profile. Represented as user_profile_rel, user_profile_id is optional",
       "type": "array",
@@ -58,7 +55,6 @@
     "__type__",
     "id",
     "email",
-    "is_active",
-    "lastname"
+    "state"
   ]
 }

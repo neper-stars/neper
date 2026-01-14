@@ -19,7 +19,7 @@
         "nickname": "Sauron",
         "email": "sauron@mordor.com",
         "api_key": "apikeySauron",
-        "is_active": true,
+        "state": "active",
         "is_manager": false,
         "session_list": [{"session_id": "mordorID", "is_manager": true}]
       }

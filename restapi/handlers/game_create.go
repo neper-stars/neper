@@ -305,4 +305,3 @@ func (h *GameCreateHandler) Authorize(
 	}
 	return authRes.IsManager, nil
 }
-

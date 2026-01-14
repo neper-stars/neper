@@ -17,7 +17,7 @@
         "nickname": "merry",
         "email": "merry@shire.com",
         "api_key": "apikeyMerry",
-        "is_active": true,
+        "state": "active",
         "is_manager": false,
         "session_list": [
           {"session_id":  "merryvsgollumID", "is_manager":  true}
@@ -32,7 +32,7 @@
         "nickname": "gollum",
         "email": "gollum@shire.com",
         "api_key": "apikeyGollum",
-        "is_active": true,
+        "state": "active",
         "is_manager": false,
         "session_list": [
           {"session_id":  "merryvsgollumID", "is_manager":  false}

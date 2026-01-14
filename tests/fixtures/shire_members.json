@@ -8,7 +8,7 @@
         "nickname": "frodo",
         "email": "frodo@shire.com",
         "api_key": "apikeyFrodo",
-        "is_active": true,
+        "state": "active",
         "is_manager": false,
         "session_list": [
           {"session_id":  "shireID", "is_manager":  true}
@@ -23,7 +23,7 @@
         "nickname": "pippin",
         "email": "pippin@shire.com",
         "api_key": "apikeyPippin",
-        "is_active": true,
+        "state": "active",
         "is_manager": false,
         "session_list": [
           {"session_id":  "shireID", "is_manager":  false}

@@ -21,7 +21,7 @@ func VerifUserIsValid(ctx context.Context, db *sqlx.DB, log *zerolog.Logger, pri
 			models.UserProfileDBIDColumn,
 			models.UserProfileDBNicknameColumn,
 			models.UserProfileDBAPIKeyColumn,
-			models.UserProfileDBIsActiveColumn,
+			models.UserProfileDBStateColumn,
 		).
 		From(models.UserProfileDBTable).
 		Where(
@@ -36,7 +36,7 @@ func VerifUserIsValid(ctx context.Context, db *sqlx.DB, log *zerolog.Logger, pri
 		}
 		return false, err
 	}
-	if userProfile.APIKey != "" && userProfile.IsActive {
+	if userProfile.APIKey != "" && userProfile.State != models.UserProfileStateInactive {
 		return true, nil
 	}
 	return false, nil

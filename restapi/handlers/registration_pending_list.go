@@ -45,7 +45,7 @@ func (h *PendingRegistrationListHandler) handle(
 	query := database.SQ.
 		Select(models.UserProfileDBColumns...).
 		From(models.UserProfileDBTable).
-		Where(sq.Eq{models.UserProfileDBPendingColumn: true}).
+		Where(sq.Eq{models.UserProfileDBStateColumn: models.UserProfileStatePending}).
 		OrderBy(models.UserProfileDBNicknameColumn + " ASC")
 
 	if err := sqlH.Select(&usersDB, query); err != nil {

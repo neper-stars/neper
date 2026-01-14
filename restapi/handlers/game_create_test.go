@@ -148,14 +148,14 @@ func TestGameCreateHandler_NormalizesPlayerOrders(t *testing.T) {
 	// Create a gap in player orders by manually updating the database
 	// Change player orders from 0,1 to 0,2 (simulating a player who left)
 	sqlH := database.NewSQLHelper(ctx, testdb.DB, log)
-	_, err = testdb.DB.ExecContext(ctx,
+	_, err = testdb.ExecContext(ctx,
 		"UPDATE session_player_race SET player_order = 2 WHERE session_id = $1 AND player_order = 1",
 		"merryvsgollumID")
 	require.NoError(t, err)
 
 	// Verify the gap exists
 	var playerOrders []int64
-	err = testdb.DB.SelectContext(ctx, &playerOrders,
+	err = testdb.SelectContext(ctx, &playerOrders,
 		"SELECT player_order FROM session_player_race WHERE session_id = $1 ORDER BY player_order",
 		"merryvsgollumID")
 	require.NoError(t, err)
@@ -178,7 +178,7 @@ func TestGameCreateHandler_NormalizesPlayerOrders(t *testing.T) {
 
 		// Verify player orders are now contiguous (0, 1)
 		var normalizedOrders []int64
-		err = testdb.DB.SelectContext(ctx, &normalizedOrders,
+		err = testdb.SelectContext(ctx, &normalizedOrders,
 			"SELECT player_order FROM session_player_race WHERE session_id = $1 ORDER BY player_order",
 			sessionID)
 		require.NoError(t, err)

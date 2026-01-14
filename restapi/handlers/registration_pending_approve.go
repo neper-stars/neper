@@ -60,15 +60,15 @@ func (h *PendingRegistrationApproveHandler) handle(
 	}
 
 	// Check if it's actually pending
-	if !userDB.Pending {
+	if userDB.State != models.UserProfileStatePending {
 		return nil, errs.NewErrInvalidSomething("user profile is not pending approval")
 	}
 
-	// Update the user profile: set pending=false to grant full access
-	// (is_active and API key were already set at registration)
+	// Update the user profile: set state=active to grant full access
+	// (API key was already set at registration)
 	_, err = sqlH.Exec(database.SQ.
 		Update(models.UserProfileDBTable).
-		Set(models.UserProfileDBPendingColumn, false).
+		Set(models.UserProfileDBStateColumn, models.UserProfileStateActive).
 		Where(sq.Eq{models.UserProfileDBIDColumn: params.UserProfileID}))
 	if err != nil {
 		return nil, err

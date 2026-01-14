@@ -1062,23 +1062,20 @@ type UserProfile struct {
 	// Id unique record id
 	Id string `json:"id"`
 
-	// IsActive set to true if a login/password exists for this profile
-	IsActive bool `json:"is_active"`
-
 	// IsManager Is this user a global manager
 	IsManager bool `json:"is_manager,omitempty"`
 
 	// Nickname nickname of this user (name displayed to other users)
 	Nickname string `json:"nickname,omitempty"`
 
-	// Pending True if user registration is pending approval
-	Pending bool `json:"pending,omitempty"`
-
 	// SerialKey Serial key assigned to this user for Stars! game registration
 	SerialKey string `json:"serial_key,omitempty"`
 
 	// SessionList List of session ID. Defines the sessions linked to this profile. Represented as user_profile_rel, user_profile_id is optional
 	SessionList []*UserProfileSessionRel `json:"session_list,omitempty"`
+
+	// State User account state: pending, active, or inactive
+	State string `json:"state"`
 
 	// Type data type
 	Type string `json:"__type__"`
@@ -3023,14 +3020,6 @@ func (s UserProfile) MarshalJSONStream(stream *jsoniter.Stream) {
 	stream.WriteObjectField("id")
 	stream.WriteString(s.Id)
 
-	// Marshal the IsActive field
-	ct.More()
-	stream.WriteObjectField("is_active")
-	stream.WriteVal(s.IsActive)
-	if stream.Error != nil {
-		return
-	}
-
 	// Marshal the IsManager field
 	if !IsEmpty(s.IsManager) {
 		ct.More()
@@ -3046,16 +3035,6 @@ func (s UserProfile) MarshalJSONStream(stream *jsoniter.Stream) {
 		ct.More()
 		stream.WriteObjectField("nickname")
 		stream.WriteString(s.Nickname)
-	}
-
-	// Marshal the Pending field
-	if !IsEmpty(s.Pending) {
-		ct.More()
-		stream.WriteObjectField("pending")
-		stream.WriteVal(s.Pending)
-		if stream.Error != nil {
-			return
-		}
 	}
 
 	// Marshal the SerialKey field
@@ -3075,6 +3054,11 @@ func (s UserProfile) MarshalJSONStream(stream *jsoniter.Stream) {
 		}
 	}
 
+	// Marshal the State field
+	ct.More()
+	stream.WriteObjectField("state")
+	stream.WriteString(s.State)
+
 	// Marshal the Type field
 	ct.More()
 	stream.WriteObjectField("__type__")
@@ -3093,7 +3077,7 @@ func (s *UserProfile) UnmarshalJSON(data []byte) error {
 func (s *UserProfile) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 	EmailReceived := false
 	IdReceived := false
-	IsActiveReceived := false
+	StateReceived := false
 	TypeReceived := false
 
 	for field := iter.ReadObject(); field != ""; field = iter.ReadObject() {
@@ -3136,12 +3120,6 @@ func (s *UserProfile) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 				return
 			}
 			IdReceived = true
-		case "is_active":
-			s.IsActive = iter.ReadBool()
-			if iter.Error != nil {
-				return
-			}
-			IsActiveReceived = true
 		case "is_manager":
 			s.IsManager = iter.ReadBool()
 			if iter.Error != nil {
@@ -3156,11 +3134,6 @@ func (s *UserProfile) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 				// received 'false', which we accept and ignore for now
 			}
 			s.Nickname = iter.ReadString()
-			if iter.Error != nil {
-				return
-			}
-		case "pending":
-			s.Pending = iter.ReadBool()
 			if iter.Error != nil {
 				return
 			}
@@ -3188,6 +3161,19 @@ func (s *UserProfile) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 			if iter.Error != nil {
 				return
 			}
+		case "state":
+			if iter.WhatIsNext() == jsoniter.BoolValue {
+				if iter.ReadBool() {
+					iter.ReportError("reading field state", "state is 'true', but the expected type is string")
+					return
+				}
+				// received 'false', which we accept and ignore for now
+			}
+			s.State = iter.ReadString()
+			if iter.Error != nil {
+				return
+			}
+			StateReceived = true
 		case "__type__":
 			if iter.WhatIsNext() == jsoniter.BoolValue {
 				if iter.ReadBool() {
@@ -3221,8 +3207,8 @@ func (s *UserProfile) UnmarshalJSONIterator(iter *jsoniter.Iterator) {
 		iter.ReportError("validating UserProfile", "\"id\" is required but was not present")
 	}
 
-	if !IsActiveReceived {
-		iter.ReportError("validating UserProfile", "\"is_active\" is required but was not present")
+	if !StateReceived {
+		iter.ReportError("validating UserProfile", "\"state\" is required but was not present")
 	}
 
 	if !TypeReceived {

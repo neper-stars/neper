@@ -68,17 +68,19 @@ func (h *RegisterHandler) handle(
 	needApproval := h.opts != nil && h.opts.NeedApproval
 
 	// Create the user profile
-	// - pending: depends on server configuration (NeedApproval option)
-	// - is_active=true: can authenticate immediately
+	// - state: pending or active depending on server configuration (NeedApproval option)
 	// - API key: generated now for immediate use
+	state := models.UserProfileStateActive
+	if needApproval {
+		state = models.UserProfileStatePending
+	}
 	userProfileDB := models.UserProfileDB{
 		UserProfile: models.UserProfile{
 			ID:                  uuid.New().String(),
 			Nickname:            strings.TrimSpace(params.Registration.Nickname),
 			Email:               strings.TrimSpace(params.Registration.Email),
-			IsActive:            true,
+			State:               state,
 			IsManager:           false,
-			Pending:             needApproval,
 			RegistrationMessage: params.Registration.Message,
 		},
 		APIKey: apiKey,

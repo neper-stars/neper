@@ -242,8 +242,7 @@ func TestSessionJoinHandler_Limits(t *testing.T) {
 				ID:       userID,
 				Nickname: "LimitTestUser",
 				Email:    "limit@test.com",
-				IsActive: true,
-				Pending:  false,
+				State:    models.UserProfileStateActive,
 			},
 		})
 		require.NoError(t, err)
@@ -292,8 +291,7 @@ func TestSessionJoinHandler_Limits(t *testing.T) {
 				ID:       userID,
 				Nickname: "GlobalManager",
 				Email:    "gm@test.com",
-				IsActive: true,
-				Pending:  false,
+				State:    models.UserProfileStateActive,
 			},
 		})
 		require.NoError(t, err)
@@ -335,8 +333,7 @@ func TestSessionJoinHandler_Limits(t *testing.T) {
 				ID:       userID,
 				Nickname: "NoLimitUser",
 				Email:    "nolimit-session@test.com",
-				IsActive: true,
-				Pending:  false,
+				State:    models.UserProfileStateActive,
 			},
 		})
 		require.NoError(t, err)

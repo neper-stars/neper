@@ -39,7 +39,7 @@ func TestEnsureAdminUser(t *testing.T) {
 		require.Equal(t, "testadmin", user.Nickname)
 		require.Equal(t, "testadmin@example.com", user.Email)
 		require.True(t, user.IsManager, "admin user should be a manager")
-		require.True(t, user.IsActive, "admin user should be active")
+		require.Equal(t, models.UserProfileStateActive, user.State, "admin user should be active")
 		require.Equal(t, apiKey, user.APIKey)
 	})
 

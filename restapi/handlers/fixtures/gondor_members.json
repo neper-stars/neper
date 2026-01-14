@@ -8,7 +8,7 @@
         "nickname": "BoromirDúnedain",
         "email": "boromir@gondor.com",
         "api_key": "apikeyBoromir",
-        "is_active": true,
+        "state": "active",
         "is_manager": false,
         "session_list": [
           {"session_id":  "gondorID", "is_manager":  true}
@@ -23,7 +23,7 @@
         "nickname": "FinduilasDúnedain",
         "email": "finduilas@gondor.com",
         "api_key": "apikeyFinduilas",
-        "is_active": true,
+        "state": "active",
         "is_manager": false,
         "session_list": [
           {"session_id":  "gondorID", "is_manager":  false}

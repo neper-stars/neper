@@ -52,8 +52,7 @@ func TestRegisterHandler(t *testing.T) {
 		err = sqlH.GetByPKey(&userDB, result.UserID)
 		require.NoError(t, err)
 		require.Equal(t, "newuser@example.com", userDB.Email)
-		require.True(t, userDB.Pending, "new user should be pending")
-		require.True(t, userDB.IsActive, "new user should be active for authentication")
+		require.Equal(t, models.UserProfileStatePending, userDB.State, "new user should be pending")
 		require.NotNil(t, userDB.RegistrationMessage)
 		require.Equal(t, "I want to join to play Stars!", *userDB.RegistrationMessage)
 		require.Equal(t, result.Apikey, userDB.APIKey, "API key should match")
@@ -145,8 +144,7 @@ func TestRegisterHandler_NoApprovalNeeded(t *testing.T) {
 		var userDB models.UserProfileDB
 		err = sqlH.GetByPKey(&userDB, result.UserID)
 		require.NoError(t, err)
-		require.False(t, userDB.Pending, "user should not be pending")
-		require.True(t, userDB.IsActive, "user should be active")
+		require.Equal(t, models.UserProfileStateActive, userDB.State, "user should be active")
 	})
 }
 
@@ -188,7 +186,7 @@ func TestPendingRegistrationListHandler(t *testing.T) {
 		require.GreaterOrEqual(t, len(users), 3, "should have at least 3 pending users")
 
 		for _, user := range users {
-			require.True(t, user.Pending, "all listed users should be pending")
+			require.Equal(t, models.UserProfileStatePending, user.State, "all listed users should be pending")
 		}
 	})
 
@@ -252,8 +250,7 @@ func TestPendingRegistrationApproveHandler(t *testing.T) {
 		var userDB models.UserProfileDB
 		err = sqlH.GetByPKey(&userDB, pendingUser.UserID)
 		require.NoError(t, err)
-		require.False(t, userDB.Pending, "user should no longer be pending")
-		require.True(t, userDB.IsActive, "user should be active")
+		require.Equal(t, models.UserProfileStateActive, userDB.State, "user should be active")
 		require.NotEmpty(t, userDB.APIKey, "user should have an API key")
 	})
 

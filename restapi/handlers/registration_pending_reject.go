@@ -59,7 +59,7 @@ func (h *PendingRegistrationRejectHandler) handle(
 	}
 
 	// Check if it's actually pending
-	if !userDB.Pending {
+	if userDB.State != models.UserProfileStatePending {
 		return errs.NewErrInvalidSomething("user profile is not pending approval")
 	}
 

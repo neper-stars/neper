@@ -12,11 +12,11 @@ import (
 func (w *Worker) syncUserProfile(ctx context.Context, sql database.SQLHelper, op Operation, data *UserProfile) error {
 	if op == OpCreate || op == OpUpdate {
 		// sanity check
-		if data.IsActive && data.ApiKey == "" {
+		if data.State != models.UserProfileStateInactive && data.ApiKey == "" {
 			w.logger.Warn().
 				Str("userID", data.Id).
 				Str("email", data.Email).
-				Msg("user is marked as active but has no api_key set... will not work as expected")
+				Msg("user is not inactive but has no api_key set... will not work as expected")
 		}
 
 		var serialKey *string
@@ -29,9 +29,8 @@ func (w *Worker) syncUserProfile(ctx context.Context, sql database.SQLHelper, op
 				ID:        data.Id,
 				Nickname:  data.Nickname,
 				Email:     data.Email,
-				IsActive:  data.IsActive,
+				State:     data.State,
 				IsManager: data.IsManager,
-				Pending:   data.Pending,
 			},
 			APIKey:    data.ApiKey,
 			SerialKey: serialKey,

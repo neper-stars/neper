@@ -8,7 +8,7 @@
         "nickname": "Sam",
         "email": "sam@shire.com",
         "api_key": "apikeySam",
-        "is_active": true,
+        "state": "active",
         "is_manager": false
       }
     }

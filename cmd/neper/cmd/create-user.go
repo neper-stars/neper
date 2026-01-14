@@ -75,7 +75,7 @@ func (cmd *CreateUserCmd) Execute([]string) error {
 		UserProfile: models.UserProfile{
 			ID:        userID.String(),
 			Email:     email,
-			IsActive:  true,
+			State:     models.UserProfileStateActive,
 			IsManager: cmd.IsManager,
 			Nickname:  cmd.Args.Username,
 		},

@@ -559,20 +559,17 @@ const (
 	// UserProfileIDColumn is the name of the column containing field "ID" data
 	UserProfileIDColumn = "id"
 
-	// UserProfileIsActiveColumn is the name of the column containing field "IsActive" data
-	UserProfileIsActiveColumn = "is_active"
-
 	// UserProfileIsManagerColumn is the name of the column containing field "IsManager" data
 	UserProfileIsManagerColumn = "is_manager"
 
 	// UserProfileNicknameColumn is the name of the column containing field "Nickname" data
 	UserProfileNicknameColumn = "nickname"
 
-	// UserProfilePendingColumn is the name of the column containing field "Pending" data
-	UserProfilePendingColumn = "pending"
-
 	// UserProfileRegistrationMessageColumn is the name of the column containing field "RegistrationMessage" data
 	UserProfileRegistrationMessageColumn = "registration_message"
+
+	// UserProfileStateColumn is the name of the column containing field "State" data
+	UserProfileStateColumn = "state"
 
 	// UserProfileDBTable is the name of the table where UserProfileDB are stored
 	UserProfileDBTable = "user_profile"
@@ -586,20 +583,17 @@ const (
 	// UserProfileDBIDColumn is the name of the column containing field "ID" data
 	UserProfileDBIDColumn = "id"
 
-	// UserProfileDBIsActiveColumn is the name of the column containing field "IsActive" data
-	UserProfileDBIsActiveColumn = "is_active"
-
 	// UserProfileDBIsManagerColumn is the name of the column containing field "IsManager" data
 	UserProfileDBIsManagerColumn = "is_manager"
 
 	// UserProfileDBNicknameColumn is the name of the column containing field "Nickname" data
 	UserProfileDBNicknameColumn = "nickname"
 
-	// UserProfileDBPendingColumn is the name of the column containing field "Pending" data
-	UserProfileDBPendingColumn = "pending"
-
 	// UserProfileDBRegistrationMessageColumn is the name of the column containing field "RegistrationMessage" data
 	UserProfileDBRegistrationMessageColumn = "registration_message"
+
+	// UserProfileDBStateColumn is the name of the column containing field "State" data
+	UserProfileDBStateColumn = "state"
 
 	// UserProfileDBAPIKeyColumn is the name of the column containing field "APIKey" data
 	UserProfileDBAPIKeyColumn = "apikey"
@@ -875,20 +869,18 @@ var (
 	UserProfileColumns = []string{
 		UserProfileEmailColumn,
 		UserProfileIDColumn,
-		UserProfileIsActiveColumn,
 		UserProfileIsManagerColumn,
 		UserProfileNicknameColumn,
-		UserProfilePendingColumn,
 		UserProfileRegistrationMessageColumn,
+		UserProfileStateColumn,
 	}
 	// UserProfileDBDataColumns is the list of the columns for the UserProfileDB structure, expect its primary key
 	UserProfileDBDataColumns = []string{
 		UserProfileDBEmailColumn,
-		UserProfileDBIsActiveColumn,
 		UserProfileDBIsManagerColumn,
 		UserProfileDBNicknameColumn,
-		UserProfileDBPendingColumn,
 		UserProfileDBRegistrationMessageColumn,
+		UserProfileDBStateColumn,
 		UserProfileDBAPIKeyColumn,
 		UserProfileDBSerialKeyColumn,
 	}
@@ -2595,16 +2587,14 @@ func (s UserProfile) Values(columns ...string) []interface{} {
 			values[i] = s.Email
 		case "id":
 			values[i] = s.ID
-		case "is_active":
-			values[i] = s.IsActive
 		case "is_manager":
 			values[i] = s.IsManager
 		case "nickname":
 			values[i] = s.Nickname
-		case "pending":
-			values[i] = s.Pending
 		case "registration_message":
 			values[i] = s.RegistrationMessage
+		case "state":
+			values[i] = s.State
 		}
 	}
 	return values
@@ -2620,16 +2610,14 @@ func (s UserProfile) ValuesMap(columns ...string) map[string]interface{} {
 			values["email"] = s.Email
 		case "id":
 			values["id"] = s.ID
-		case "is_active":
-			values["is_active"] = s.IsActive
 		case "is_manager":
 			values["is_manager"] = s.IsManager
 		case "nickname":
 			values["nickname"] = s.Nickname
-		case "pending":
-			values["pending"] = s.Pending
 		case "registration_message":
 			values["registration_message"] = s.RegistrationMessage
+		case "state":
+			values["state"] = s.State
 		}
 	}
 	return values
@@ -2663,16 +2651,14 @@ func (s UserProfileDB) Values(columns ...string) []interface{} {
 			values[i] = s.Email
 		case "id":
 			values[i] = s.ID
-		case "is_active":
-			values[i] = s.IsActive
 		case "is_manager":
 			values[i] = s.IsManager
 		case "nickname":
 			values[i] = s.Nickname
-		case "pending":
-			values[i] = s.Pending
 		case "registration_message":
 			values[i] = s.RegistrationMessage
+		case "state":
+			values[i] = s.State
 		case "apikey":
 			values[i] = s.APIKey
 		case "serial_key":
@@ -2692,16 +2678,14 @@ func (s UserProfileDB) ValuesMap(columns ...string) map[string]interface{} {
 			values["email"] = s.Email
 		case "id":
 			values["id"] = s.ID
-		case "is_active":
-			values["is_active"] = s.IsActive
 		case "is_manager":
 			values["is_manager"] = s.IsManager
 		case "nickname":
 			values["nickname"] = s.Nickname
-		case "pending":
-			values["pending"] = s.Pending
 		case "registration_message":
 			values["registration_message"] = s.RegistrationMessage
+		case "state":
+			values["state"] = s.State
 		case "apikey":
 			values["apikey"] = s.APIKey
 		case "serial_key":
@@ -2715,11 +2699,10 @@ func NewUserProfileDBTableSchema() *UserProfileDBTableSchema {
 	t := UserProfileDBTableSchema{}
 	t.Email = NewColumn(&t, "email")
 	t.ID = NewColumn(&t, "id")
-	t.IsActive = NewColumn(&t, "is_active")
 	t.IsManager = NewColumn(&t, "is_manager")
 	t.Nickname = NewColumn(&t, "nickname")
-	t.Pending = NewColumn(&t, "pending")
 	t.RegistrationMessage = NewColumn(&t, "registration_message")
+	t.State = NewColumn(&t, "state")
 	t.APIKey = NewColumn(&t, "apikey")
 	t.SerialKey = NewColumn(&t, "serial_key")
 	return &t
@@ -2729,11 +2712,10 @@ type UserProfileDBTableSchema struct {
 	alias string
 	Email Column
 	ID Column
-	IsActive Column
 	IsManager Column
 	Nickname Column
-	Pending Column
 	RegistrationMessage Column
+	State Column
 	APIKey Column
 	SerialKey Column
 }
@@ -2766,11 +2748,10 @@ func (t UserProfileDBTableSchema) As(name string) *UserProfileDBTableSchema {
 	t.alias = name
 	t.Email = NewColumn(&t, "email")
 	t.ID = NewColumn(&t, "id")
-	t.IsActive = NewColumn(&t, "is_active")
 	t.IsManager = NewColumn(&t, "is_manager")
 	t.Nickname = NewColumn(&t, "nickname")
-	t.Pending = NewColumn(&t, "pending")
 	t.RegistrationMessage = NewColumn(&t, "registration_message")
+	t.State = NewColumn(&t, "state")
 	t.APIKey = NewColumn(&t, "apikey")
 	t.SerialKey = NewColumn(&t, "serial_key")
 	return &t

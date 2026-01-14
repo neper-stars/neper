@@ -226,8 +226,7 @@ func TestRaceCreateHandler_Limits(t *testing.T) {
 				ID:       pendingUserID,
 				Nickname: "PendingUser",
 				Email:    "pending@test.com",
-				IsActive: true,
-				Pending:  true,
+				State:    models.UserProfileStatePending,
 			},
 		})
 		require.NoError(t, err)
@@ -277,8 +276,7 @@ func TestRaceCreateHandler_Limits(t *testing.T) {
 				ID:       approvedUserID,
 				Nickname: "ApprovedUser",
 				Email:    "approved@test.com",
-				IsActive: true,
-				Pending:  false,
+				State:    models.UserProfileStateActive,
 			},
 		})
 		require.NoError(t, err)
@@ -324,8 +322,7 @@ func TestRaceCreateHandler_Limits(t *testing.T) {
 				ID:       userID,
 				Nickname: "NoLimitUser",
 				Email:    "nolimit@test.com",
-				IsActive: true,
-				Pending:  true,
+				State:    models.UserProfileStatePending,
 			},
 		})
 		require.NoError(t, err)

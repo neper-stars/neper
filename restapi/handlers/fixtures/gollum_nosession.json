@@ -8,7 +8,7 @@
         "nickname": "SméagolGollum",
         "email": "smeagol@shire.com",
         "api_key": "apikeyGollum",
-        "is_active": false,
+        "state": "inactive",
         "is_manager": false
       }
     }

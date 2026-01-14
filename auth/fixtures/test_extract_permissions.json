@@ -32,7 +32,7 @@
                 "nickname": "JackLondon",
                 "email": "jack@london.com",
                 "api_key": "apikeyJackLondon",
-                "is_active": true,
+                "state": "active",
                 "is_manager": true,
                 "session_list": [
                     {"session_id":  "session1ID", "is_manager":  false},

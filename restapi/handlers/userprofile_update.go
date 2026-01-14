@@ -50,7 +50,7 @@ func (h *UserProfileUpdateHandler) handle(
 		updateColumnList = append(
 			updateColumnList,
 			models.UserProfileDBIsManagerColumn,
-			models.UserProfileDBIsActiveColumn,
+			models.UserProfileDBStateColumn,
 			models.UserProfileDBEmailColumn,
 		)
 	}

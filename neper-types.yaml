@@ -233,25 +233,22 @@ definitions:
         description: user primary email
         x-go-custom-tag: db:"email"
         x-nullable: false
-      is_active:
-        type: boolean
-        description: "true if the profile is active, ie the user can identify itself"
+      state:
+        type: string
+        enum: [pending, active, inactive]
+        description: |
+          User account state:
+          - pending: Registered but awaiting manager approval. Can authenticate but restricted from most operations.
+          - active: Fully approved user with full access.
+          - inactive: Deactivated account (e.g., system user).
         readOnly: true
-        x-go-custom-tag: db:"is_active"
+        x-go-custom-tag: db:"state"
         x-nullable: false
       is_manager:
         type: boolean
         description: "true if the profile is a global manager. This field is readonly"
         readOnly: true
         x-go-custom-tag: db:"is_manager"
-        x-nullable: false
-      pending:
-        type: boolean
-        description: |
-          true if this is a pending registration that needs approval by a global manager.
-          Pending users cannot authenticate until approved.
-        readOnly: true
-        x-go-custom-tag: db:"pending"
         x-nullable: false
       registration_message:
         type: string

@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -27,10 +28,6 @@ type UserProfile struct {
 	// Read Only: true
 	ID string `json:"id,omitempty" db:"id"`
 
-	// true if the profile is active, ie the user can identify itself
-	// Read Only: true
-	IsActive bool `json:"is_active,omitempty" db:"is_active"`
-
 	// true if the profile is a global manager. This field is readonly
 	// Read Only: true
 	IsManager bool `json:"is_manager,omitempty" db:"is_manager"`
@@ -38,15 +35,18 @@ type UserProfile struct {
 	// user nickname (name displayed to other users)
 	Nickname string `json:"nickname,omitempty" db:"nickname"`
 
-	// true if this is a pending registration that needs approval by a global manager.
-	// Pending users cannot authenticate until approved.
-	//
-	// Read Only: true
-	Pending bool `json:"pending,omitempty" db:"pending"`
-
 	// optional message provided during registration explaining why they want to join
 	// Read Only: true
 	RegistrationMessage *string `json:"registration_message,omitempty" db:"registration_message"`
+
+	// User account state:
+	// - pending: Registered but awaiting manager approval. Can authenticate but restricted from most operations.
+	// - active: Fully approved user with full access.
+	// - inactive: Deactivated account (e.g., system user).
+	//
+	// Read Only: true
+	// Enum: [pending active inactive]
+	State string `json:"state,omitempty" db:"state"`
 }
 
 // Validate validates this user profile
@@ -54,6 +54,10 @@ func (m *UserProfile) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateEmail(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateState(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -72,6 +76,51 @@ func (m *UserProfile) validateEmail(formats strfmt.Registry) error {
 	return nil
 }
 
+var userProfileTypeStatePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["pending","active","inactive"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		userProfileTypeStatePropEnum = append(userProfileTypeStatePropEnum, v)
+	}
+}
+
+const (
+
+	// UserProfileStatePending captures enum value "pending"
+	UserProfileStatePending string = "pending"
+
+	// UserProfileStateActive captures enum value "active"
+	UserProfileStateActive string = "active"
+
+	// UserProfileStateInactive captures enum value "inactive"
+	UserProfileStateInactive string = "inactive"
+)
+
+// prop value enum
+func (m *UserProfile) validateStateEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, userProfileTypeStatePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *UserProfile) validateState(formats strfmt.Registry) error {
+	if swag.IsZero(m.State) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateStateEnum("state", "body", m.State); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ContextValidate validate this user profile based on the context it is used
 func (m *UserProfile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
@@ -80,19 +129,15 @@ func (m *UserProfile) ContextValidate(ctx context.Context, formats strfmt.Regist
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateIsActive(ctx, formats); err != nil {
-		res = append(res, err)
-	}
-
 	if err := m.contextValidateIsManager(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidatePending(ctx, formats); err != nil {
+	if err := m.contextValidateRegistrationMessage(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.contextValidateRegistrationMessage(ctx, formats); err != nil {
+	if err := m.contextValidateState(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -111,15 +156,6 @@ func (m *UserProfile) contextValidateID(ctx context.Context, formats strfmt.Regi
 	return nil
 }
 
-func (m *UserProfile) contextValidateIsActive(ctx context.Context, formats strfmt.Registry) error {
-
-	if err := validate.ReadOnly(ctx, "is_active", "body", bool(m.IsActive)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *UserProfile) contextValidateIsManager(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "is_manager", "body", bool(m.IsManager)); err != nil {
@@ -129,18 +165,18 @@ func (m *UserProfile) contextValidateIsManager(ctx context.Context, formats strf
 	return nil
 }
 
-func (m *UserProfile) contextValidatePending(ctx context.Context, formats strfmt.Registry) error {
+func (m *UserProfile) contextValidateRegistrationMessage(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "pending", "body", bool(m.Pending)); err != nil {
+	if err := validate.ReadOnly(ctx, "registration_message", "body", m.RegistrationMessage); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (m *UserProfile) contextValidateRegistrationMessage(ctx context.Context, formats strfmt.Registry) error {
+func (m *UserProfile) contextValidateState(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "registration_message", "body", m.RegistrationMessage); err != nil {
+	if err := validate.ReadOnly(ctx, "state", "body", string(m.State)); err != nil {
 		return err
 	}
 

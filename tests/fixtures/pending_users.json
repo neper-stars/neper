@@ -8,9 +8,8 @@
                 "nickname": "PendingUser",
                 "email": "pending@test.com",
                 "api_key": "apikeyPending",
-                "is_active": true,
-                "is_manager": false,
-                "pending": true
+                "state": "pending",
+                "is_manager": false
             }
         },
         {
@@ -21,9 +20,8 @@
                 "nickname": "RejectedUser",
                 "email": "rejected@test.com",
                 "api_key": "apikeyRejected",
-                "is_active": true,
-                "is_manager": false,
-                "pending": true
+                "state": "pending",
+                "is_manager": false
             }
         },
         {
@@ -34,9 +32,8 @@
                 "nickname": "ThirdPendingUser",
                 "email": "third@test.com",
                 "api_key": "apikeyThird",
-                "is_active": true,
-                "is_manager": false,
-                "pending": true
+                "state": "pending",
+                "is_manager": false
             }
         },
         {
@@ -47,9 +44,8 @@
                 "nickname": "MerryRegular",
                 "email": "merry@shire.com",
                 "api_key": "apikeyMerryRegular",
-                "is_active": true,
-                "is_manager": false,
-                "pending": false
+                "state": "active",
+                "is_manager": false
             }
         }
     ]

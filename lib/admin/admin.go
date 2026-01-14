@@ -74,7 +74,7 @@ func EnsureAdminUser(ctx context.Context, db *sqlx.DB, log *zerolog.Logger, opts
 		UserProfile: models.UserProfile{
 			ID:        userID.String(),
 			Email:     email,
-			IsActive:  true,
+			State:     models.UserProfileStateActive,
 			IsManager: true, // Admin user is always a manager
 			Nickname:  opts.AdminUsername,
 		},

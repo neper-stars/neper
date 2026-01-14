@@ -8,7 +8,7 @@
         "nickname": "Faramir",
         "email": "faramir@gondor.com",
         "api_key": "apikeyFaramir",
-        "is_active": true,
+        "state": "active",
         "is_manager": false
       }
     },
@@ -20,7 +20,7 @@
         "nickname": "Imrahil",
         "email": "imrahil@gondor.com",
         "api_key": "apikeyImrahil",
-        "is_active": true,
+        "state": "active",
         "is_manager": false
       }
     }

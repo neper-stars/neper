@@ -41,9 +41,8 @@ func (h *UserProfilesList) handle(
 		Column(u.ID.Sql()).
 		Column(u.Nickname.Sql()).
 		Column(u.Email.Sql()).
-		Column(u.IsActive.Sql()).
+		Column(u.State.Sql()).
 		Column(u.IsManager.Sql()).
-		Column(u.Pending.Sql()).
 		From(u.Sql()).
 		Where(sq.NotEq{models.UserProfileDBIDColumn: neper.SystemUserID}).
 		OrderBy(u.ID.Sql())

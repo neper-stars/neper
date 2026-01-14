@@ -235,12 +235,13 @@ func (auth *Auth) Authenticate(
 			models.UserProfileDBIDColumn,
 			models.UserProfileDBNicknameColumn,
 			models.UserProfileDBIsManagerColumn,
-			models.UserProfileDBPendingColumn,
+			models.UserProfileDBStateColumn,
 		).
 		From(models.UserProfileDBTable).
 		Where(
 			sq.And{
-				sq.Eq{models.UserProfileDBIsActiveColumn: true},
+				// Only inactive users cannot authenticate
+				sq.NotEq{models.UserProfileDBStateColumn: models.UserProfileStateInactive},
 				sq.Eq{models.UserProfileDBAPIKeyColumn: credentials.Apikey},
 				sq.Eq{models.UserProfileDBNicknameColumn: credentials.Nickname},
 			},
@@ -260,7 +261,7 @@ func (auth *Auth) Authenticate(
 			ExpiresAt: 0,
 		},
 		IsGlobalManager: authRes.IsManager,
-		IsPending:       authRes.Pending,
+		IsPending:       authRes.State == models.UserProfileStatePending,
 		NickName:        authRes.Nickname,
 	}, nil
 }

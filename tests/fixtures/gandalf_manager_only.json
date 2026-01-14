@@ -8,9 +8,8 @@
                 "nickname": "GandalfTheGrey",
                 "email": "gandalf@gondor.com",
                 "api_key": "apikeyGandalf",
-                "is_active": true,
-                "is_manager": true,
-                "pending": false
+                "state": "active",
+                "is_manager": true
             }
         }
     ]
